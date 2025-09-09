@@ -1,7 +1,7 @@
 # Matcha
 
 ## Description
-**Matcha** est un projet de site de rencontre développé dans le cadre du cursus de l’école 42.  
+**Matcha** est un projet de site de rencontre développé dans le cadre du cursus post tronc-commun de l’école 42.  
 L’application couvre l’ensemble du parcours utilisateur : de l’inscription à la mise en relation, avec un système de profils détaillés, de recherche avancée, de matching, de chat en temps réel et de notifications.  
 
 ## Fonctionnalités
@@ -15,7 +15,7 @@ L’application couvre l’ensemble du parcours utilisateur : de l’inscription
 
 ## Stack utilisée
 - **Backend** : Node.js, Express  
-- **Frontend** : React  
+- **Frontend** : React, Tailwind
 - **Base de données** : PostgreSQL  
 - **Authentification et sécurité** : JWT, bcrypt, validation des entrées  
 - **Temps réel** : Socket.IO  
