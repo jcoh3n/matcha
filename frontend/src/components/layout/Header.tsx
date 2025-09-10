@@ -1,146 +1,134 @@
-import { useState } from "react"
-import { Search, Bell, MessageCircle, User, Heart, Compass } from "lucide-react"
-import { BrutalButton } from "@/components/ui/brutal-button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
-import { useNavigate } from 'react-router-dom'
+import { Bell, MessageCircle, Heart, Compass, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
-  currentPage?: 'discover' | 'matches' | 'messages' | 'profile' | 'notifications' | 'search'
-  notificationCount?: number
-  messageCount?: number
-  onNavigate?: (page: string) => void
+  currentPage?:
+    | "discover"
+    | "matches"
+    | "messages"
+    | "profile"
+    | "notifications"
+    | "search";
+  notificationCount?: number;
+  messageCount?: number;
+  onNavigate?: (page: string) => void;
 }
 
-export function Header({ currentPage = 'discover', notificationCount = 0, messageCount = 0, onNavigate }: HeaderProps) {
-  const [searchOpen, setSearchOpen] = useState(false)
-  const navigate = useNavigate()
+export function Header({
+  currentPage = "discover",
+  notificationCount = 0,
+  messageCount = 0,
+  onNavigate,
+}: HeaderProps) {
+  const navigate = useNavigate();
 
   const navItems = [
-    { id: 'discover', icon: Compass, label: 'Discover', path: '/discover' },
-    { id: 'matches', icon: Heart, label: 'Matches', path: '/matches' },
-    { id: 'messages', icon: MessageCircle, label: 'Messages', path: '/messages' },
-    { id: 'notifications', icon: Bell, label: 'Notifications', path: '/notifications' },
-    { id: 'search', icon: Search, label: 'Search', path: '/search' },
-    { id: 'profile', icon: User, label: 'Profile', path: '/profile' },
-  ]
+    { id: "discover", icon: Compass, label: "Discover", path: "/discover" },
+    { id: "matches", icon: Heart, label: "Matches", path: "/matches" },
+    {
+      id: "messages",
+      icon: MessageCircle,
+      label: "Messages",
+      path: "/messages",
+    },
+    {
+      id: "notifications",
+      icon: Bell,
+      label: "Notifications",
+      path: "/notifications",
+    },
+    { id: "profile", icon: User, label: "Profile", path: "/profile" },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
+    <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur border-b border-border/40">
+      <div className="container mx-auto h-16 flex items-center">
+        <button
+          onClick={() => navigate("/discover")}
+          className="font-montserrat font-extrabold text-xl tracking-tight text-black select-none"
+        >
+          Matcha
+        </button>
+        <nav className="flex-1 flex justify-center gap-8 font-montserrat text-sm">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPage === item.id;
+            const showBadge =
+              (item.id === "messages" && messageCount > 0) ||
+              (item.id === "matches" && notificationCount > 0);
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  onNavigate?.(item.id);
+                  navigate(item.path);
+                }}
+                className={cn(
+                  "relative inline-flex items-center gap-2 font-medium px-1 pb-1 transition-colors",
+                  isActive
+                    ? "text-black after:absolute after:-bottom-0.5 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-primary"
+                    : "text-neutral-500 hover:text-black"
+                )}
+              >
+                <Icon className="w-4 h-4" />
+                {item.label}
+                {showBadge && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 text-[10px] font-medium rounded-full flex items-center justify-center"
+                  >
+                    {item.id === "messages" ? messageCount : notificationCount}
+                  </Badge>
+                )}
+              </button>
+            );
+          })}
+        </nav>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center">
-            <Heart className="w-6 h-6 text-primary-foreground fill-current" />
-          </div>
-          <h1 className="font-display text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Web Matcha
-          </h1>
-        </div>
-
-        {/* Search Bar */}
-        <div className={cn(
-          "flex-1 max-w-md mx-8 transition-smooth",
-          searchOpen ? "scale-105" : ""
-        )}>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search profiles, tags..."
-              className="pl-10 rounded-2xl bg-muted/50 border-0 focus:ring-2 focus:ring-primary transition-smooth"
-              onFocus={() => setSearchOpen(true)}
-              onBlur={() => setSearchOpen(false)}
-            />
-          </div>
-        </div>
-
-        {/* Navigation & Actions */}
-        <div className="flex items-center gap-2">
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const isActive = currentPage === item.id
-              const showBadge = (item.id === 'messages' && messageCount > 0) || 
-                              (item.id === 'matches' && notificationCount > 0)
-
-              return (
-                <BrutalButton
-                  key={item.id}
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  className={cn(
-                    "relative transition-smooth",
-                    isActive && "scale-105"
-                  )}
-                  onClick={() => { onNavigate?.(item.id); navigate(item.path) }}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden lg:inline">{item.label}</span>
-                  {showBadge && (
-                    <Badge 
-                      variant="destructive" 
-                      className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-xs rounded-full animate-bounce-in"
-                    >
-                      {item.id === 'messages' ? messageCount : notificationCount}
-                    </Badge>
-                  )}
-                </BrutalButton>
-              )
-            })}
-          </nav>
-
-          {/* Notifications */}
-          <BrutalButton variant="ghost" size="icon" className="relative" onClick={()=>navigate('/notifications')}>
-            <Bell className="w-5 h-5" />
+          <button
+            onClick={() => navigate("/notifications")}
+            className="relative w-10 h-10 rounded-full flex items-center justify-center bg-neutral-100 hover:bg-neutral-200 transition"
+          >
+            <Bell className="w-5 h-5 text-neutral-700" />
             {notificationCount > 0 && (
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-xs rounded-full animate-pulse"
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] font-medium rounded-full flex items-center justify-center"
               >
                 {notificationCount}
               </Badge>
             )}
-          </BrutalButton>
+          </button>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      <div className="md:hidden border-t bg-background/95 backdrop-blur">
-        <nav className="container mx-auto px-4 py-2 flex justify-around">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border/40 backdrop-blur bg-white/85">
+        <nav className="flex justify-around py-1">
           {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = currentPage === item.id
-            const showBadge = (item.id === 'messages' && messageCount > 0) || 
-                            (item.id === 'matches' && notificationCount > 0)
-
+            const Icon = item.icon;
+            const isActive = currentPage === item.id;
             return (
               <button
                 key={item.id}
+                onClick={() => {
+                  onNavigate?.(item.id);
+                  navigate(item.path);
+                }}
                 className={cn(
-                  "relative flex flex-col items-center gap-1 p-2 rounded-xl transition-smooth",
-                  isActive 
-                    ? "text-primary bg-primary/10" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  "flex flex-col items-center gap-0.5 p-2 rounded-xl text-[11px] transition",
+                  isActive
+                    ? "text-black font-medium"
+                    : "text-neutral-500 hover:text-black"
                 )}
-                onClick={() => { onNavigate?.(item.id); navigate(item.path) }}
               >
                 <Icon className="w-5 h-5" />
-                <span className="text-xs font-medium">{item.label}</span>
-                {showBadge && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-1 -right-1 w-4 h-4 p-0 flex items-center justify-center text-xs rounded-full"
-                  >
-                    {item.id === 'messages' ? messageCount : notificationCount}
-                  </Badge>
-                )}
+                {item.label}
               </button>
-            )
+            );
           })}
         </nav>
       </div>
     </header>
-  )
+  );
 }

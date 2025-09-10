@@ -1,218 +1,170 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Heart, MapPin, Star } from "lucide-react"
-import { BrutalButton } from "./brutal-button"
-import { OrientationBadge } from "@/components/ui/orientation-badge"
-import { MatchPercentage } from "@/components/ui/match-percentage"
-import { OnlineStatus } from "@/components/ui/online-status"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { Heart, MapPin, X } from "lucide-react";
+
+interface ProfileCardUser {
+  id: string;
+  name: string;
+  age: number;
+  images: string[];
+  location: string;
+  distance?: number;
+  bio?: string; // kept for other variants
+  tags?: string[]; // kept for other variants
+  isOnline?: boolean;
+}
 
 interface ProfileCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  user: {
-    id: string
-    name: string
-    age: number
-    images: string[]
-    bio?: string
-    location: string
-    distance?: number
-    tags: string[]
-    fame: number
-    isOnline?: boolean
-  lastSeen?: string
-  orientation?: 'straight' | 'gay' | 'lesbian' | 'bisexual' | 'pansexual'
-  matchPercent?: number
-  }
-  onLike?: (userId: string) => void
-  onPass?: (userId: string) => void
-  variant?: "discovery" | "grid" | "compact"
+  user: ProfileCardUser;
+  onLike?: (userId: string) => void;
+  onPass?: (userId: string) => void;
+  variant?: "discovery" | "grid" | "compact";
 }
 
 const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
-  ({ className, user, onLike, onPass, variant = "discovery", ...props }, ref) => {
-    const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
+  (
+    { className, user, onLike, onPass, variant = "discovery", ...props },
+    ref
+  ) => {
+    const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
-    const handleLike = () => onLike?.(user.id)
-    const handlePass = () => onPass?.(user.id)
+    const handleLike = () => onLike?.(user.id);
+    const handlePass = () => onPass?.(user.id);
+    const goTo = (i: number) => setCurrentImageIndex(i);
+    const nextImage = () => goTo((currentImageIndex + 1) % user.images.length);
+    const prevImage = () =>
+      goTo((currentImageIndex - 1 + user.images.length) % user.images.length);
 
-    const nextImage = () => {
-      setCurrentImageIndex((prev) => (prev + 1) % user.images.length)
+    // Discovery (split) variant
+    if (variant === "discovery") {
+      return (
+        <Card
+          ref={ref}
+          className={cn(
+            "rounded-3xl max-w-4xl mx-auto bg-white shadow-soft animate-scale-in overflow-hidden",
+            className
+          )}
+          {...props}
+        >
+          <div className="flex flex-col md:flex-row h-[480px] md:h-[520px]">
+            {/* Left: Photo (50%) */}
+            <div className="relative w-full md:w-1/2 h-1/2 md:h-full">
+              <img
+                src={user.images[0]}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Right: Minimal info (50%) */}
+            <div className="flex flex-col justify-center w-full md:w-1/2 px-8 md:px-12 font-montserrat bg-white">
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900">
+                {user.name}, {user.age}
+              </h2>
+              <p className="mt-6 flex items-center gap-2 text-sm md:text-base text-neutral-600 font-medium">
+                <MapPin className="w-4 h-4 text-primary" />
+                {user.distance ? `${user.distance} km away` : user.location}
+              </p>
+              {(onLike || onPass) && (
+                <div className="mt-10 flex items-center gap-8">
+                  {onPass && (
+                    <button
+                      onClick={handlePass}
+                      className="w-16 h-16 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-700 shadow-sm flex items-center justify-center transition active:scale-95"
+                      aria-label="Pass"
+                    >
+                      <X className="w-7 h-7" />
+                    </button>
+                  )}
+                  {onLike && (
+                    <button
+                      onClick={handleLike}
+                      className="w-20 h-20 rounded-full bg-primary text-primary-foreground shadow-md hover:shadow-lg flex items-center justify-center transition active:scale-95"
+                      aria-label="Like"
+                    >
+                      <Heart className="w-8 h-8" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      );
     }
 
-    const prevImage = () => {
-      setCurrentImageIndex((prev) => (prev - 1 + user.images.length) % user.images.length)
-    }
-
+    // Compact variant: tiny version
     if (variant === "compact") {
       return (
-        <Card ref={ref} className={cn("interactive-card rounded-3xl overflow-hidden", className)} {...props}>
+        <Card
+          ref={ref}
+          className={cn("rounded-3xl overflow-hidden w-56", className)}
+          {...props}
+        >
           <div className="relative h-32">
             <img
               src={user.images[0]}
               alt={user.name}
               className="w-full h-full object-cover"
             />
-            {user.isOnline && <div className="absolute top-3 right-3 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />}
           </div>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-sm">{user.name}, {user.age}</h3>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {user.distance}km away
-                </p>
-              </div>
-              <div className="flex items-center gap-1">
-                <Star className="w-3 h-3 fill-primary text-primary" />
-                <span className="text-xs font-medium" title="Fame rating">{user.fame}</span>
-              </div>
-            </div>
-          </CardContent>
+          <div className="p-4 font-montserrat">
+            <h3 className="font-semibold text-sm">
+              {user.name}, {user.age}
+            </h3>
+            <p className="text-[11px] text-neutral-500 flex items-center gap-1 mt-1">
+              <MapPin className="w-3 h-3" />
+              {user.distance ? `${user.distance} km` : user.location}
+            </p>
+          </div>
         </Card>
-      )
+      );
     }
 
+    // Grid variant (gallery style)
     return (
-      <Card 
-        ref={ref} 
+      <Card
+        ref={ref}
         className={cn(
-          "interactive-card overflow-hidden animate-scale-in",
-          variant === "grid" ? "rounded-3xl" : "rounded-3xl max-w-sm mx-auto",
-          className
-        )} 
+          "rounded-3xl overflow-hidden interactive-card",
+          className,
+          "h-72 relative"
+        )}
         {...props}
       >
-        <div className="relative">
-          <div 
-            className={cn(
-              "relative overflow-hidden",
-              variant === "grid" ? "h-64" : "h-96"
-            )}
-          >
-            <img
-              src={user.images[currentImageIndex]}
-              alt={`${user.name} photo ${currentImageIndex + 1}`}
-              className="w-full h-full object-cover transition-smooth"
-            />
-            
-            {/* Navigation dots */}
-            {user.images.length > 1 && (
-              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-1">
-                {user.images.map((_, index) => (
-                  <button
-                    key={index}
-                    className={cn(
-                      "w-2 h-2 rounded-full transition-smooth",
-                      index === currentImageIndex ? "bg-white" : "bg-white/50"
-                    )}
-                    onClick={() => setCurrentImageIndex(index)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Image navigation */}
-            {user.images.length > 1 && (
-              <>
-                <button
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-black/20 rounded-full flex items-center justify-center text-white hover:bg-black/40 transition-smooth"
-                  onClick={prevImage}
-                >
-                  ←
-                </button>
-                <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-black/20 rounded-full flex items-center justify-center text-white hover:bg-black/40 transition-smooth"
-                  onClick={nextImage}
-                >
-                  →
-                </button>
-              </>
-            )}
-
-            {/* Online indicator */}
-            {user.isOnline && <div className="absolute top-4 right-4 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse" />}
-
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          </div>
-
-          {/* Profile info overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <div className="flex items-start justify-between mb-3">
-              <div className="space-y-1">
-                <h2 className="font-display text-2xl font-bold">
-                  {user.name}, {user.age}
-                </h2>
-                <p className="text-sm text-white/90 flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  {user.distance ? `${user.distance}km away` : user.location}
-                </p>
-                <div className="flex items-center gap-2">
-                  {user.orientation && <OrientationBadge value={user.orientation} />}
-                  <OnlineStatus online={user.isOnline} lastSeen={user.lastSeen} className="!text-[10px] text-white" />
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium">{user.fame}</span>
-                </div>
-                {typeof user.matchPercent === 'number' && (
-                  <MatchPercentage value={user.matchPercent} compact className="scale-75 origin-top-right" />
+        <img
+          src={user.images[currentImageIndex]}
+          alt={user.name}
+          className="w-full h-full object-cover"
+        />
+        {user.images.length > 1 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+            {user.images.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                className={cn(
+                  "w-2 h-2 rounded-full",
+                  i === currentImageIndex ? "bg-white" : "bg-white/50"
                 )}
-              </div>
-            </div>
-
-            {user.bio && (
-              <p className="text-sm text-white/90 mb-3 line-clamp-2">{user.bio}</p>
-            )}
-
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {user.tags.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="secondary" className="bg-white/20 text-white border-0 rounded-full text-xs">
-                  {tag}
-                </Badge>
-              ))}
-              {user.tags.length > 3 && (
-                <Badge variant="secondary" className="bg-white/20 text-white border-0 rounded-full text-xs">
-                  +{user.tags.length - 3}
-                </Badge>
-              )}
-            </div>
+              />
+            ))}
           </div>
-        </div>
-
-        {/* Action buttons - only for discovery variant */}
-        {variant === "discovery" && onLike && onPass && (
-          <CardContent className="p-6">
-            <div className="flex gap-4 justify-center">
-              <BrutalButton 
-                variant="outline" 
-                size="lg" 
-                onClick={handlePass}
-                className="flex-1 max-w-32"
-              >
-                Pass
-              </BrutalButton>
-              <BrutalButton 
-                variant="hero" 
-                size="lg" 
-                onClick={handleLike}
-                className="flex-1 max-w-32"
-              >
-                <Heart className="w-5 h-5" />
-                Like
-              </BrutalButton>
-            </div>
-          </CardContent>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute bottom-3 left-4 right-4 text-white font-montserrat">
+          <h3 className="text-lg font-semibold">
+            {user.name}, {user.age}
+          </h3>
+          <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+            <MapPin className="w-3 h-3" />
+            {user.distance ? `${user.distance} km` : user.location}
+          </p>
+        </div>
       </Card>
-    )
+    );
   }
-)
-ProfileCard.displayName = "ProfileCard"
+);
+ProfileCard.displayName = "ProfileCard";
 
-export { ProfileCard }
+export { ProfileCard };

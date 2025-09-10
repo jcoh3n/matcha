@@ -1,5 +1,5 @@
 /* Matcha Design System - Matcha Latte Theme */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -48,10 +48,22 @@
     --radius-xl: 2.5rem;
 
     /* Custom Gradients - Matcha Latte */
-    --gradient-primary: linear-gradient(135deg, hsl(75 23% 45%) 0%, hsl(75 30% 50%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(66 62% 13%) 0%, hsl(58 60% 17%) 100%);
-    --gradient-warm: linear-gradient(135deg, hsl(32 32% 73%) 0%, hsl(48 14% 91%) 100%);
-    
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(75 23% 45%) 0%,
+      hsl(75 30% 50%) 100%
+    );
+    --gradient-secondary: linear-gradient(
+      135deg,
+      hsl(66 62% 13%) 0%,
+      hsl(58 60% 17%) 100%
+    );
+    --gradient-warm: linear-gradient(
+      135deg,
+      hsl(32 32% 73%) 0%,
+      hsl(48 14% 91%) 100%
+    );
+
     /* Shadows */
     --shadow-soft: 0 4px 20px -4px hsl(var(--primary) / 0.15);
     --shadow-brutal: 8px 8px 0px hsl(var(--secondary) / 0.8);
@@ -123,12 +135,23 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    font-family: "Montserrat", "Poppins", "Inter", system-ui, sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
-    @apply font-semibold;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Montserrat", "Poppins", "Inter", system-ui, sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+  .font-montserrat {
+    font-family: "Montserrat", "Poppins", "Inter", system-ui, sans-serif;
+  }
+  .font-poppins {
+    font-family: "Poppins", "Montserrat", "Inter", system-ui, sans-serif;
   }
 }
 
@@ -185,22 +208,45 @@
   }
 
   .interactive-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-card);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
   }
 
   .brutal-button {
-    @apply font-bold px-6 py-3 rounded-2xl transition-bounce;
-    box-shadow: 4px 4px 0px hsl(var(--secondary));
+    @apply font-semibold px-6 py-3 rounded-full transition-smooth;
+    background: linear-gradient(
+      120deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary) / 0.65) 90%
+    );
+    box-shadow: 0 4px 14px -4px hsl(var(--primary) / 0.45);
   }
 
   .brutal-button:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px hsl(var(--secondary));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px -6px hsl(var(--primary) / 0.5);
   }
 
   .brutal-button:active {
-    transform: translate(0px, 0px);
-    box-shadow: 2px 2px 0px hsl(var(--secondary));
+    transform: translateY(0);
+    box-shadow: 0 3px 10px -2px hsl(var(--primary) / 0.5);
+  }
+
+  .bg-matcha-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary) / 0.6) 100%
+    );
+  }
+
+  .surface {
+    @apply rounded-3xl bg-card/60 backdrop-blur-xl border border-border/40 shadow-soft;
+  }
+  .surface-solid {
+    @apply rounded-3xl bg-card border border-border/50 shadow-card;
+  }
+  .tag-pill {
+    @apply rounded-full px-3 py-1 text-[11px] font-medium bg-primary/10 text-primary hover:bg-primary/15 transition-smooth border border-primary/20;
   }
 }
