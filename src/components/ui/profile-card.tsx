@@ -4,6 +4,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Heart, MapPin, Star } from "lucide-react"
 import { BrutalButton } from "./brutal-button"
+import { OrientationBadge } from "@/components/ui/orientation-badge"
+import { MatchPercentage } from "@/components/ui/match-percentage"
+import { OnlineStatus } from "@/components/ui/online-status"
 
 interface ProfileCardProps extends React.HTMLAttributes<HTMLDivElement> {
   user: {
@@ -17,6 +20,9 @@ interface ProfileCardProps extends React.HTMLAttributes<HTMLDivElement> {
     tags: string[]
     fame: number
     isOnline?: boolean
+  lastSeen?: string
+  orientation?: 'straight' | 'gay' | 'lesbian' | 'bisexual' | 'pansexual'
+  matchPercent?: number
   }
   onLike?: (userId: string) => void
   onPass?: (userId: string) => void
@@ -47,9 +53,7 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
               alt={user.name}
               className="w-full h-full object-cover"
             />
-            {user.isOnline && (
-              <div className="absolute top-3 right-3 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
-            )}
+            {user.isOnline && <div className="absolute top-3 right-3 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />}
           </div>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -62,7 +66,7 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
               </div>
               <div className="flex items-center gap-1">
                 <Star className="w-3 h-3 fill-primary text-primary" />
-                <span className="text-xs font-medium">{user.fame}</span>
+                <span className="text-xs font-medium" title="Fame rating">{user.fame}</span>
               </div>
             </div>
           </CardContent>
@@ -128,9 +132,7 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
             )}
 
             {/* Online indicator */}
-            {user.isOnline && (
-              <div className="absolute top-4 right-4 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-            )}
+            {user.isOnline && <div className="absolute top-4 right-4 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse" />}
 
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -139,18 +141,27 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
           {/* Profile info overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
             <div className="flex items-start justify-between mb-3">
-              <div>
-                <h2 className="font-display text-2xl font-bold mb-1">
+              <div className="space-y-1">
+                <h2 className="font-display text-2xl font-bold">
                   {user.name}, {user.age}
                 </h2>
-                <p className="text-sm text-white/90 flex items-center gap-1 mb-2">
+                <p className="text-sm text-white/90 flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
                   {user.distance ? `${user.distance}km away` : user.location}
                 </p>
+                <div className="flex items-center gap-2">
+                  {user.orientation && <OrientationBadge value={user.orientation} />}
+                  <OnlineStatus online={user.isOnline} lastSeen={user.lastSeen} className="!text-[10px] text-white" />
+                </div>
               </div>
-              <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-medium">{user.fame}</span>
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-medium">{user.fame}</span>
+                </div>
+                {typeof user.matchPercent === 'number' && (
+                  <MatchPercentage value={user.matchPercent} compact className="scale-75 origin-top-right" />
+                )}
               </div>
             </div>
 
