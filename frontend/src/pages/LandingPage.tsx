@@ -52,7 +52,7 @@ export function LandingPage({ onAuth }: LandingPageProps) {
                     <Heart className="w-7 h-7 text-primary-foreground fill-current" />
                   </div>
                   <h1 className="font-display text-3xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    Web Matcha
+                    Matcha
                   </h1>
                 </div>
                 
@@ -232,7 +232,7 @@ export function LandingPage({ onAuth }: LandingPageProps) {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h3 className="font-display text-4xl font-bold mb-4">
-              Why Choose Web Matcha?
+              Why Choose Matcha?
             </h3>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               We've reimagined online dating with cutting-edge technology and a focus on genuine connections.
