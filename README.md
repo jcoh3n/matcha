@@ -1,73 +1,43 @@
-# Welcome to your Lovable project
+# Matcha
 
-## Project info
+## Description
+**Matcha** est un projet de site de rencontre développé dans le cadre du cursus post tronc-commun de l’école 42.  
+L’application couvre l’ensemble du parcours utilisateur : de l’inscription à la mise en relation, avec un système de profils détaillés, de recherche avancée, de matching, de chat en temps réel et de notifications.  
 
-**URL**: https://lovable.dev/projects/bfb65cb6-29ec-46df-906c-a0f0d3c4571c
+## Fonctionnalités
+- Inscription et connexion sécurisées (email de vérification, mot de passe chiffré, reset password).  
+- Gestion de profil utilisateur (genre, préférences, biographie, tags, photos).  
+- Système de matching basé sur la localisation, les centres d’intérêt et un indicateur de réputation ("fame rating").  
+- Recherche avancée avec filtres (âge, localisation, tags, réputation).  
+- Consultation des profils avec options : like/unlike, blocage, signalement, statut en ligne.  
+- Chat en temps réel entre profils connectés par un like réciproque.  
+- Notifications en temps réel (likes, messages, visites de profil, etc.).  
 
-## How can I edit this code?
+## Stack utilisée
+- **Backend** : Node.js, Express  
+- **Frontend** : React, Tailwind
+- **Base de données** : PostgreSQL  
+- **Authentification et sécurité** : JWT, bcrypt, validation des entrées  
+- **Temps réel** : Socket.IO  
+- **Serveur web** : Nginx  
+- **Autres** : dotenv, responsive design  
 
-There are several ways of editing your application.
+## Installation
+1. Cloner le dépôt :  
+   ```bash
+   git clone https://github.com/<user>/<repo>.git
+   cd <repo>
+   ```
+2. Installer les dépendances :  
+   ```bash
+   npm install
+   ```
+3. Configurer les variables d’environnement dans un fichier `.env`.  
+4. Lancer le projet :  
+   ```bash
+   npm run dev
+   ```
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/bfb65cb6-29ec-46df-906c-a0f0d3c4571c) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/bfb65cb6-29ec-46df-906c-a0f0d3c4571c) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Contributeurs
+- [@me](https://github.com/me)  
+- [@demsCod](https://github.com/demsCod)  
