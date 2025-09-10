@@ -4,9 +4,10 @@ import { BrutalButton } from "@/components/ui/brutal-button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useNavigate } from 'react-router-dom'
 
 interface HeaderProps {
-  currentPage?: 'discover' | 'matches' | 'messages' | 'profile'
+  currentPage?: 'discover' | 'matches' | 'messages' | 'profile' | 'notifications' | 'search'
   notificationCount?: number
   messageCount?: number
   onNavigate?: (page: string) => void
@@ -14,12 +15,15 @@ interface HeaderProps {
 
 export function Header({ currentPage = 'discover', notificationCount = 0, messageCount = 0, onNavigate }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false)
+  const navigate = useNavigate()
 
   const navItems = [
-    { id: 'discover', icon: Compass, label: 'Discover' },
-    { id: 'matches', icon: Heart, label: 'Matches' },
-    { id: 'messages', icon: MessageCircle, label: 'Messages' },
-    { id: 'profile', icon: User, label: 'Profile' },
+    { id: 'discover', icon: Compass, label: 'Discover', path: '/discover' },
+    { id: 'matches', icon: Heart, label: 'Matches', path: '/matches' },
+    { id: 'messages', icon: MessageCircle, label: 'Messages', path: '/messages' },
+    { id: 'notifications', icon: Bell, label: 'Notifications', path: '/notifications' },
+    { id: 'search', icon: Search, label: 'Search', path: '/search' },
+    { id: 'profile', icon: User, label: 'Profile', path: '/profile' },
   ]
 
   return (
@@ -70,7 +74,7 @@ export function Header({ currentPage = 'discover', notificationCount = 0, messag
                     "relative transition-smooth",
                     isActive && "scale-105"
                   )}
-                  onClick={() => onNavigate?.(item.id)}
+                  onClick={() => { onNavigate?.(item.id); navigate(item.path) }}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden lg:inline">{item.label}</span>
@@ -88,7 +92,7 @@ export function Header({ currentPage = 'discover', notificationCount = 0, messag
           </nav>
 
           {/* Notifications */}
-          <BrutalButton variant="ghost" size="icon" className="relative">
+          <BrutalButton variant="ghost" size="icon" className="relative" onClick={()=>navigate('/notifications')}>
             <Bell className="w-5 h-5" />
             {notificationCount > 0 && (
               <Badge 
@@ -120,7 +124,7 @@ export function Header({ currentPage = 'discover', notificationCount = 0, messag
                     ? "text-primary bg-primary/10" 
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
-                onClick={() => onNavigate?.(item.id)}
+                onClick={() => { onNavigate?.(item.id); navigate(item.path) }}
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-xs font-medium">{item.label}</span>

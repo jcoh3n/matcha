@@ -12,6 +12,7 @@ export interface MockProfile {
   lastSeen?: string
   orientation: 'straight' | 'gay' | 'lesbian' | 'bisexual' | 'pansexual'
   gender: 'male' | 'female' | 'non-binary' | 'other'
+  matchPercent?: number
 }
 
 export const mockProfiles: MockProfile[] = [
@@ -159,5 +160,8 @@ export const mockProfiles: MockProfile[] = [
 
 export const getRandomProfiles = (count: number = 10): MockProfile[] => {
   const shuffled = [...mockProfiles].sort(() => 0.5 - Math.random())
-  return shuffled.slice(0, Math.min(count, mockProfiles.length))
+  return shuffled.slice(0, Math.min(count, mockProfiles.length)).map(p => ({
+    ...p,
+    matchPercent: Math.round(Math.random()*60)+20
+  }))
 }

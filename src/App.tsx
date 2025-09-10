@@ -7,6 +7,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LandingPage } from "./pages/LandingPage"
 import { DiscoverPage } from "./pages/DiscoverPage"
 import NotFound from "./pages/NotFound";
+import { MatchesPage } from "@/pages/MatchesPage";
+import { MessagesPage } from "@/pages/MessagesPage";
+import { ProfilePage } from "@/pages/ProfilePage";
+import { NotificationsPage } from "@/pages/NotificationsPage";
+import { SearchPage } from "@/pages/SearchPage";
+import { AppShell } from "@/components/layout/AppShell";
 
 const queryClient = new QueryClient();
 
@@ -30,18 +36,26 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route 
-              path="/" 
+            <Route
+              path="/"
               element={
                 isAuthenticated ? (
-                  <DiscoverPage />
+                  <AppShell current="discover"><DiscoverPage /></AppShell>
                 ) : (
                   <LandingPage onAuth={handleAuth} />
                 )
-              } 
+              }
             />
-            <Route path="/discover" element={<DiscoverPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            {isAuthenticated && (
+              <>
+                <Route path="/discover" element={<AppShell current="discover"><DiscoverPage /></AppShell>} />
+                <Route path="/matches" element={<AppShell current="matches"><MatchesPage /></AppShell>} />
+                <Route path="/messages" element={<AppShell current="messages"><MessagesPage /></AppShell>} />
+                <Route path="/profile" element={<AppShell current="profile"><ProfilePage onLogout={handleLogout} /></AppShell>} />
+                <Route path="/notifications" element={<AppShell current="notifications"><NotificationsPage /></AppShell>} />
+                <Route path="/search" element={<AppShell current="search"><SearchPage /></AppShell>} />
+              </>
+            )}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

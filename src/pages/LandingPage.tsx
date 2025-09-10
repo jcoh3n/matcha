@@ -41,7 +41,7 @@ export function LandingPage({ onAuth }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-gradient-warm">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+  <section className="relative overflow-hidden">
         <div className="container mx-auto px-4 py-16 lg:py-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
@@ -88,7 +88,7 @@ export function LandingPage({ onAuth }: LandingPageProps) {
 
             {/* Right Content - Auth Form */}
             <div className="animate-slide-up">
-              <Card className="rounded-3xl card-shadow border-0 bg-card/80 backdrop-blur-sm">
+              <Card className="rounded-3xl card-shadow border-0 bg-card/70 backdrop-blur glass-card gradient-ring">
                 <CardHeader className="pb-6">
                   <CardTitle className="font-display text-2xl font-bold text-center">
                     Start Your Journey
@@ -248,8 +248,8 @@ export function LandingPage({ onAuth }: LandingPageProps) {
                   className={`rounded-3xl border-0 card-shadow bg-card/80 backdrop-blur-sm interactive-card animate-fade-in`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <CardHeader className="text-center pb-4">
-                    <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-4 brutal-shadow">
+          <CardHeader className="text-center pb-4">
+            <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-4 brutal-shadow gradient-ring">
                       <Icon className="w-8 h-8 text-primary-foreground" />
                     </div>
                     <CardTitle className="font-display text-xl font-bold">
