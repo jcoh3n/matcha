@@ -29,10 +29,18 @@ Le projet est organisé en deux parties distinctes :
    npm run install:all
    ```
 3. Configurer les variables d’environnement dans `backend/.env`.  
-4. Lancer le projet :  
+4. Lancer le projet avec Docker Compose :  
    ```bash
-   npm run dev
+   docker-compose up -d
    ```
+5. Exécuter les migrations de base de données :  
+   ```bash
+   # Attendre que PostgreSQL soit prêt, puis exécuter :
+   docker exec matcha_backend npm run migrate
+   ```
+
+## Configuration du développement
+Pour plus d'informations sur la configuration du développement, y compris la résolution des problèmes courants, consultez [SETUP.md](SETUP.md).
 
 ## Contributeurs
 - [@me](https://github.com/me)  

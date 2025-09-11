@@ -12,6 +12,9 @@ import { MessagesPage } from "@/pages/MessagesPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { SearchPage } from "@/pages/SearchPage";
+import { LoginPage } from "@/pages/LoginPage";
+import { RegisterPage } from "@/pages/RegisterPage";
+import { HealthPage } from "@/pages/HealthPage";
 import { AppShell } from "@/components/layout/AppShell";
 
 const queryClient = new QueryClient();
@@ -36,19 +39,22 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/health" element={<HealthPage />} />
             <Route
-              path="/"
+              path="/discover"
               element={
                 isAuthenticated ? (
                   <AppShell current="discover"><DiscoverPage /></AppShell>
                 ) : (
-                  <LandingPage onAuth={handleAuth} />
+                  <LoginPage />
                 )
               }
             />
             {isAuthenticated && (
               <>
-                <Route path="/discover" element={<AppShell current="discover"><DiscoverPage /></AppShell>} />
                 <Route path="/matches" element={<AppShell current="matches"><MatchesPage /></AppShell>} />
                 <Route path="/messages" element={<AppShell current="messages"><MessagesPage /></AppShell>} />
                 <Route path="/profile" element={<AppShell current="profile"><ProfilePage onLogout={handleLogout} /></AppShell>} />

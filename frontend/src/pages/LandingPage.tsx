@@ -1,11 +1,10 @@
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { FooterSection } from "@/components/ui/footer-section";
 
-interface LandingPageProps {
-  onAuth?: (type: "login" | "register") => void;
-}
+export function LandingPage() {
+  const navigate = useNavigate();
 
-export function LandingPage({ onAuth }: LandingPageProps) {
   return (
     <div className="relative min-h-screen flex flex-col w-full overflow-hidden bg-transparent">
       <div className="relative flex-1 w-full overflow-hidden">
@@ -37,7 +36,7 @@ export function LandingPage({ onAuth }: LandingPageProps) {
             </li>
             <li>
               <button
-                onClick={() => onAuth?.("login")}
+                onClick={() => navigate("/login")}
                 className="font-semibold px-5 py-2 rounded-full border border-white/30 hover:bg-gradient-to-b from-primary to-primary/70"
               >
                 Connexion
@@ -47,7 +46,7 @@ export function LandingPage({ onAuth }: LandingPageProps) {
           {/* Mobile simple login */}
           <div className="md:hidden">
             <button
-              onClick={() => onAuth?.("login")}
+              onClick={() => navigate("/login")}
               className="font-semibold px-4 py-2 rounded-full border border-white/30 text-sm hover:bg-gradient-to-b from-primary to-primary/70"
             >
               Connexion
@@ -66,11 +65,19 @@ export function LandingPage({ onAuth }: LandingPageProps) {
           </p>
 
           <button
-            onClick={() => onAuth?.("register")}
+            onClick={() => navigate("/register")}
             className="mt-10 inline-flex items-center gap-2 rounded-full bg-gradient-to-b from-primary to-primary/70 px-10 py-4 text-lg font-bold font-montserrat text-primary-foreground tracking-wide hover:from-primary/90 hover:to-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 transition-colors shadow-lg shadow-black/30"
           >
             Créer un compte
             <ArrowRight className="w-5 h-5" />
+          </button>
+          
+          {/* Health check link for testing */}
+          <button
+            onClick={() => navigate("/health")}
+            className="mt-6 text-white/70 hover:text-white underline text-sm"
+          >
+            System Status
           </button>
         </div>
       </div>

@@ -3,7 +3,7 @@
 ## Sprint 0 — Socle
 - [ ] Mettre en place Docker Compose (Postgres + serveur Node)
 - [ ] Script migrations init (`users`, `profiles`)
-- [ ] Config Tailwind (palette fournie)
+- [X] Config Tailwind (palette fournie)
 - [ ] Router côté FE : routes Register, Login, Discover, Search, Profile, Chat
 - [ ] Test `/health` affiché côté UI
 

@@ -6,6 +6,8 @@
     "frontend": "cd frontend && npm run dev",
     "backend": "cd backend && npm run dev",
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "dev:full": "docker-compose up -d && sleep 10 && concurrently \"npm run backend\" \"npm run frontend\"",
+    "dev:stop": "docker-compose down",
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
   "devDependencies": {

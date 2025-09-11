@@ -16,4 +16,13 @@ app.get('/', (req, res) => {
   res.json({ message: 'Matcha backend API' });
 });
 
+// Dedicated health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    service: 'matcha-backend'
+  });
+});
+
 module.exports = app;
