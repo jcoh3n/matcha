@@ -12,6 +12,8 @@ import {
   Star,
   Clock,
   Briefcase,
+  Heart,
+  ThumbsDown,
 } from "lucide-react";
 import { ProfileCard } from "@/components/ui/profile-card";
 import { BrutalButton } from "@/components/ui/brutal-button";
@@ -67,6 +69,9 @@ export function DiscoverPage() {
     distance: 50,
     tags: [],
   });
+  // Chat/matches sidebar data
+  const [peers] = useState<MockProfile[]>(getRandomProfiles(8));
+  const [activePeerId, setActivePeerId] = useState<string>(peers[0]?.id || "");
 
   const currentProfile = profiles[currentIndex];
 
@@ -114,201 +119,200 @@ export function DiscoverPage() {
   };
 
   return (
-    <div className="w-full min-h-screen relative font-poppins flex justify-center">
-      {/* Grid layout centered */}
-      <div className="grid gap-8 xl:gap-12 px-4 md:px-8 py-8 grid-cols-1 lg:grid-cols-[320px_auto] justify-center items-start mt-40">
-        {/* Filters (desktop) */}
-        <aside className="hidden lg:flex flex-col gap-8 w-full mt-10 ">
-          <div className="rounded-xl border-0 bg-white shadow-sm p-6 w-full">
-            <div className="flex items-center gap-2 mb-6">
-              <h2 className="font-montserrat font-semibold text-lg text-gray-800">
-                Filtres
-              </h2>
+    <div className="w-full min-h-screen font-poppins">
+      {/* Desktop / large screens: split screen */}
+      <div className="hidden lg:flex w-full min-h-[90vh] relative ">
+        {/* Central vertical divider */}
+        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] bg-gradient-to-b from-transparent via-gray-300 to-transparent rounded-full pointer-events-none" />
+        {/* LEFT HALF: Chat / Matches sidebar */}
+        <div className="w-3/5 flex flex-col p-8 ">
+          <div className="w-[90%] mr-auto  min-h-full">
+            {/* Top identity */}
+
+            {/* Tabs */}
+            <div className="flex  gap-2 mb-4 font-montserrat">
+              <button className="px-4 py-2 rounded-full bg-gray-100 text-gray-500 text-xl">
+                Conversations
+              </button>
+              <button className="px-4 py-2 rounded-full bg-white shadow-xl text-gray-900 text-xl font-semibold border border-gray-200">
+                Matches
+              </button>
             </div>
-            <div className="space-y-5">
-              <div className="space-y-3 pt-2">
-                <Label className="text-sm font-medium text-gray-600">
-                  Intérêts
-                </Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {availableTags.map((tag) => (
+            {/* List */}
+            <div className="rounded-3xl bg-white border min-h-full border-gray-200 shadow-xl overflow-hidden">
+              <ul className="max-h-[100vh] overflow-y-auto divide-y divide-gray-100">
+                {peers.map((p) => (
+                  <li key={p.id}>
                     <button
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        filters.tags.includes(tag)
-                          ? "bg-gray-900 text-white"
-                          : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                      } `}
+                      onClick={() => setActivePeerId(p.id)}
+                      className={`w-full flex items-center gap-4 p-4 text-left transition ${
+                        activePeerId === p.id
+                          ? "bg-gray-50"
+                          : "hover:bg-gray-50"
+                      }`}
                     >
-                      {tag}
-                      {filters.tags.includes(tag) && (
-                        <X className="w-3 h-3 ml-1.5 inline-block opacity-70" />
-                      )}
+                      <span className="relative inline-flex">
+                        <img
+                          src={p.images[0]}
+                          alt={""}
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                        <span className="absolute inset-0 rounded-full ring-4 ring-yellow-300/70"></span>
+                      </span>
+                      <div>
+                        <p className="font-semibold leading-tight">{p.name}</p>
+                        <p className="text-[22px] text-gray-500">
+                          Expires in {Math.round(Math.random() * 48) + 1}{" "}
+                          {Math.random() > 0.5 ? "hours" : "days"}
+                        </p>
+                      </div>
                     </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-3 pt-6">
-                <button
-                  onClick={applyFilters}
-                  className="flex-1 h-11 rounded-lg bg-[#7FB77E] text-white font-medium flex items-center justify-center gap-2 transition-all duration-200 hover:bg-[#6FA76E] active:scale-[0.98]"
-                >
-                  Appliquer
-                </button>
-                <button
-                  onClick={() =>
-                    setFilters({ ageRange: [18, 35], distance: 50, tags: [] })
-                  }
-                  className="flex-1 h-11 rounded-lg bg-gray-100 text-gray-700 font-medium flex items-center justify-center gap-2 hover:bg-gray-200 transition-all duration-200 active:scale-[0.98]"
-                >
-                  Réinitialiser
-                </button>
-              </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-        </aside>
-
-        {/* Main swipe area */}
-        <div className="flex flex-col items-center w-full ">
-          <header className="w-full flex items-center justify-between mb-6 lg:mb-8">
-            <div className="lg:hidden">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <BrutalButton
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full"
-                  >
-                    <Filter className="w-4 h-4" />
-                    {filters.tags.length > 0 && (
-                      <span className="text-[10px] bg-primary text-primary-foreground rounded-full px-1.5 py-0 ml-1">
-                        {filters.tags.length}
-                      </span>
-                    )}
-                  </BrutalButton>
-                </SheetTrigger>
-                <SheetContent className="w-full sm:max-w-sm overflow-y-auto">
-                  <SheetHeader>
-                    <SheetTitle className="font-montserrat text-xl font-semibold tracking-tight">
-                      Filtres
-                    </SheetTitle>
-                  </SheetHeader>
-                  {/* ...mobile filters unchanged for brevity... */}
-                </SheetContent>
-              </Sheet>
-            </div>
-          </header>
-
+        </div>
+        {/* RIGHT HALF: Profile Card (80% width inner wrapper) */}
+        <div className="ml-auto w-[60%] flex flex-col justify-center p-8 ">
           {currentProfile ? (
-            <div className="w-full mx-auto">
-              {/* Split card */}
-              <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300 max-w-[900px] mx-auto">
-                {/* LEFT (image 50%) */}
-                <div className="relative w-full lg:w-1/2 h-[420px] lg:h-[600px] shrink-0">
+            <div className="w-[100%] ml-auto">
+              <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300">
+                <div className="relative w-full lg:w-1/2 h-[520px] lg:h-[700px] shrink-0">
                   <img
                     src={currentProfile.images[0]}
                     alt={currentProfile.name}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                  {/* Overlay info */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
-                    <div className="space-y-3">
-                      <h2 className="font-montserrat text-3xl lg:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
-                        {currentProfile.name}, {currentProfile.age}
-                      </h2>
-                      <p className="flex items-center gap-2 text-white/90 text-sm font-medium">
-                        <MapPin className="w-4 h-4" />
-                        <span>
-                          {currentProfile.distance.toFixed(1)} km •{" "}
-                          {currentProfile.location}
-                        </span>
-                      </p>
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {currentProfile.tags.slice(0, 4).map((t) => (
-                          <span
-                            key={t}
-                            className="px-3 py-1.5 font-poppins rounded-full bg-white/15 backdrop-blur-sm text-white/90 text-[11px] font-medium transition-colors hover:bg-white/20"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                      {typeof currentProfile.matchPercent === "number" && (
-                        <div className="flex gap-2 pt-1">
-                          <span className="px-3 py-1 rounded-full bg-[#7FB77E] text-white text-[11px] font-poppins font-bold shadow-sm">
-                            {currentProfile.matchPercent}% match
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8"></div>
                 </div>
-                {/* RIGHT (summary) */}
-                <div className="w-full lg:w-1/2 flex flex-col p-6 lg:p-8 gap-6 bg-primary">
-                  {/* Bio */}
-                  <div className="space-y-3 text-center">
-                    <h3 className="font-montserrat t font-bold text-lg lg:text-xl text-white font-poppins  tracking-tight">
-                      À propos
-                    </h3>
-                    <p className="text-sm lg:text-lg leading-relaxed text-white font-poppins font-semibold font-poppins  line-clamp-5">
-                      Passionné(e) par {currentProfile.tags[0]?.toLowerCase()}{" "}
-                      et{" "}
-                      {currentProfile.tags[1]?.toLowerCase() ||
-                        "les rencontres"}
-                      . Toujours partant(e) pour créer des connexions
-                      authentiques et vivre des expériences mémorables.
+                <div className="w-full  flex flex-col p-6 lg:p-8 gap-4 bg-primary">
+                  <div className="flex flex-col space-y-3 items-center justify-center py-20">
+                    <h2 className="font-montserrat text-3xl lg:text-7xl font-extrabold tracking-tight text-white drop-shadow-xl">
+                      {currentProfile.name}, {currentProfile.age}
+                    </h2>
+                    <p className="flex items-center gap-2 text-white/90 text-lg font-montserrat lg:text-xl font-semibold">
+                      <MapPin className="w-4 h-4 lg:w-8 lg:h-8" />
+                      <span>
+                        {currentProfile.distance.toFixed(1)} km •{" "}
+                        {currentProfile.location}
+                      </span>
                     </p>
-                  </div>
-                  {/* Details list */}
-
-                  <div className="mt-auto pt-2">
-                    <div className="flex items-center gap-6">
-                      <button
-                        onClick={() => handlePass(currentProfile.id)}
-                        className="w-16 h-16 rounded-full bg-[#FF6F61]/10 text-[#FF6F61] hover:bg-[#FF6F61] hover:text-white flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm"
-                        aria-label="Passer"
-                      >
-                        <X className="w-8 h-8" />
-                      </button>
-                      <button
-                        onClick={() => handleLike(currentProfile.id)}
-                        className="w-20 h-20 rounded-full bg-gradient-to-b from-[#7FB77E] to-[#6FA76E] text-white flex items-center justify-center shadow-lg shadow-[#7FB77E]/30 transition-all duration-300 hover:scale-105 active:scale-95 hover:brightness-[1.05]"
-                        aria-label="Aimer"
-                      >
-                        <Check className="w-10 h-10" />
-                      </button>
+                    <div className="flex flex-wrap gap-2 pt-10">
+                      {currentProfile.tags.slice(0, 4).map((t) => (
+                        <span
+                          key={t}
+                          className="px-3 py-1.5 font-poppins rounded-full bg-white/15 backdrop-blur-sm text-white/90 text-[14px] font-montserrat font-bold transition-colors hover:bg-white/20"
+                        >
+                          {t}
+                        </span>
+                      ))}
                     </div>
+                    {typeof currentProfile.matchPercent === "number" && (
+                      <div className="flex gap-2 pt-1">
+                        <span className="px-3 py-1 rounded-full bg-[#7FB77E] text-white text-[22px] font-poppins font-bold shadow-sm">
+                          {currentProfile.matchPercent}% match
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
+              {/* Action bar desktop */}
+              <div className="mt-8 flex items-center justify-center gap-8">
+                <button
+                  onClick={() => handlePass(currentProfile.id)}
+                  aria-label="Passer le profil"
+                  className="group relative px-10 py-4 rounded-xl font-montserrat text-sm tracking-widest font-semibold bg-gradient-to-b from-gray-100 to-gray-200 text-gray-700 border border-gray-300 shadow-[0_4px_0_0_rgba(0,0,0,0.12)] hover:shadow-[0_6px_0_0_rgba(0,0,0,0.18)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_0_0_rgba(0,0,0,0.1)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-gray-300/50"
+                >
+                  <ThumbsDown className="w-5 h-5 mr-2 inline-block opacity-70 group-hover:opacity-100 transition" />
+                  PASS
+                </button>
+                <button
+                  onClick={() => handleLike(currentProfile.id)}
+                  aria-label="Aimer le profil"
+                  className="group relative px-12 py-4 rounded-xl font-montserrat text-sm tracking-widest font-semibold bg-gradient-to-r from-[#7FB77E] via-[#6FA76E] to-[#5d8f5c] text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_6px_0_0_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_0_0_rgba(0,0,0,0.12)] focus:outline-none focus:ring-4 focus:ring-[#7FB77E]/40 transition-all duration-200"
+                >
+                  <Heart className="w-5 h-5 mr-2 inline-block animate-pulse group-hover:animate-none" />
+                  SMASH
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="h-[600px] flex items-center justify-center text-lg font-medium text-muted-foreground">
+            <div className="text-lg font-medium text-muted-foreground">
               Aucun profil
             </div>
           )}
         </div>
-
-        {/* Mobile fixed buttons */}
       </div>
-      {currentProfile && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-4 bg-gradient-to-t from-[#F9FAFB] to-transparent pt-16">
-          <button
-            onClick={() => handlePass(currentProfile.id)}
-            className="w-14 h-14 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-100 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-          >
-            <X className="w-7 h-7" />
-          </button>
-          <button
-            onClick={() => handleLike(currentProfile.id)}
-            className="w-16 h-16 rounded-full bg-[#7FB77E] hover:bg-[#6FA76E] text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-          >
-            <Check className="w-8 h-8" />
-          </button>
-        </div>
-      )}
+
+      {/* Mobile layout (unchanged basic card with sheet trigger) */}
+      <div className="lg:hidden px-4 py-6">
+        <header className="w-full flex items-center justify-between mb-6">
+          <Sheet>
+            <SheetTrigger asChild>
+              <BrutalButton
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+              >
+                <Filter className="w-4 h-4" />
+                {filters.tags.length > 0 && (
+                  <span className="text-[10px] bg-primary text-primary-foreground rounded-full px-1.5 py-0 ml-1">
+                    {filters.tags.length}
+                  </span>
+                )}
+              </BrutalButton>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-sm overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle className="font-montserrat text-xl font-semibold tracking-tight">
+                  Filtres
+                </SheetTitle>
+              </SheetHeader>
+              {/* Could replicate filter controls here if needed */}
+            </SheetContent>
+          </Sheet>
+        </header>
+        {currentProfile && (
+          <div>
+            <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col transition-all duration-300">
+              <div className="relative w-full h-[420px]">
+                <img
+                  src={currentProfile.images[1]}
+                  alt={currentProfile.name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h2 className="font-montserrat text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">
+                    {currentProfile.name}, {currentProfile.age}
+                  </h2>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex items-center justify-center gap-6">
+              <button
+                onClick={() => handlePass(currentProfile.id)}
+                aria-label="Passer le profil"
+                className="group relative flex-1 max-w-[180px] px-6 py-3 rounded-xl font-montserrat text-xs tracking-widest font-semibold bg-gradient-to-b from-gray-100 to-gray-200 text-gray-700 border border-gray-300 shadow-[0_3px_0_0_rgba(0,0,0,0.12)] hover:shadow-[0_5px_0_0_rgba(0,0,0,0.18)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_0_0_rgba(0,0,0,0.1)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-gray-300/50"
+              >
+                <ThumbsDown className="w-4 h-4 mr-1.5 inline-block opacity-70 group-hover:opacity-100 transition" />
+                PASS
+              </button>
+              <button
+                onClick={() => handleLike(currentProfile.id)}
+                aria-label="Aimer le profil"
+                className="group relative flex-1 max-w-[180px] px-6 py-3 rounded-xl font-montserrat text-xs tracking-widest font-semibold bg-gradient-to-r from-[#7FB77E] via-[#6FA76E] to-[#5d8f5c] text-white shadow-[0_3px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_5px_0_0_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_0_0_rgba(0,0,0,0.12)] focus:outline-none focus:ring-4 focus:ring-[#7FB77E]/40 transition-all duration-200"
+              >
+                <Heart className="w-4 h-4 mr-1.5 inline-block" />
+                SMASH
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

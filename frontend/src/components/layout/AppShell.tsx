@@ -34,8 +34,8 @@ export function AppShell({
       />
       <div
         className={`flex-1 w-full ${
-          fullWidth ? "" : "container mx-auto"
-        } mt-20 mb-20 px-4 py-10 md:mb-0`}
+          fullWidth ? "px-0" : "container mx-auto px-4"
+        } mt-20 mb-20 py-10 md:mb-0`}
       >
         {children}
       </div>
