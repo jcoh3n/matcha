@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { Header } from "@/components/layout/Header";
-import { BrutalButton } from "@/components/ui/brutal-button";
-import { Sun, Moon } from "lucide-react";
+import { Footer } from "@/components/layout/Footer";
 
 type NavKey =
   | "discover"
@@ -16,16 +15,13 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, current }: AppShellProps) {
-  const toggleTheme = () => {
-    document.documentElement.classList.toggle("dark");
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-white relative">
+    <div className="min-h-screen flex flex-col relative bg-transparent">
       <Header currentPage={current} notificationCount={3} messageCount={2} />
-      <div className="flex-1 w-full container mx-auto mt-20 px-4 py-10">
+      <div className="flex-1 w-full container mx-auto mt-20 mb-20 px-4 py-10 md:mb-0">
         {children}
       </div>
+      {/* <Footer currentPage={current} /> */}
     </div>
   );
 }
