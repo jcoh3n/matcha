@@ -11,6 +11,7 @@ import {
   MapPin,
   Star,
   Clock,
+  Briefcase,
 } from "lucide-react";
 import { ProfileCard } from "@/components/ui/profile-card";
 import { BrutalButton } from "@/components/ui/brutal-button";
@@ -113,7 +114,7 @@ export function DiscoverPage() {
   };
 
   return (
-    <div className="h-screen w-full  relative font-inter">
+    <div className="h-screen w-full  relative font-poppins">
       {/* Grid layout: left filters (desktop), center large card */}
       <div className="grid gap-8 xl:gap-12 mx-auto px-4 md:px-8 py-6 grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)]">
         {/* Filters (desktop) */}
@@ -200,66 +201,87 @@ export function DiscoverPage() {
           </header>
 
           {currentProfile ? (
-            <div className=" max-w-4xl mx-auto">
-              <div className="relative aspect-[4/5] rounded-xl overflow-hidden shadow-sm">
-                {/* Photo principale */}
-                <img
-                  src={currentProfile.images[0]}
-                  alt={currentProfile.name}
-                  className="w-full h-full object-cover"
-                />
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
-                {/* Infos profil */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
-                  <div className="flex justify-between items-end gap-4">
-                    <div className="space-y-2">
-                      <h2 className="font-montserrat text-3xl lg:text-4xl font-bold tracking-tight text-white">
+            <div className="w-full max-w-6xl mx-auto">
+              {/* Split card */}
+              <div className="rounded-2xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300">
+                {/* LEFT (image 50%) */}
+                <div className="relative w-full lg:w-1/2 h-[420px] lg:h-[600px] shrink-0">
+                  <img
+                    src={currentProfile.images[0]}
+                    alt={currentProfile.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                  {/* Overlay info */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
+                    <div className="space-y-3">
+                      <h2 className="font-montserrat text-3xl lg:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">
                         {currentProfile.name}, {currentProfile.age}
                       </h2>
-                      <p className="flex items-center gap-1.5 text-white/90 text-sm">
-                        <MapPin className="w-3.5 h-3.5" />
+                      <p className="flex items-center gap-2 text-white/90 text-sm font-medium">
+                        <MapPin className="w-4 h-4" />
                         <span>
                           {currentProfile.distance.toFixed(1)} km •{" "}
                           {currentProfile.location}
                         </span>
                       </p>
-                      <div className="flex flex-wrap gap-1.5 pt-2">
-                        {currentProfile.tags.slice(0, 3).map((t) => (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {currentProfile.tags.slice(0, 4).map((t) => (
                           <span
                             key={t}
-                            className="px-2.5 py-1 rounded-md bg-white/15 backdrop-blur-[2px] text-white/90 text-xs font-medium"
+                            className="px-3 py-1.5 font-poppins rounded-full bg-white/15 backdrop-blur-sm text-white/90 text-[11px] font-medium transition-colors hover:bg-white/20"
                           >
                             {t}
                           </span>
                         ))}
                       </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
                       {typeof currentProfile.matchPercent === "number" && (
-                        <span className="px-2.5 py-1 rounded-md bg-white/20 backdrop-blur-[2px] text-white text-xs font-medium">
-                          {currentProfile.matchPercent}% Match
-                        </span>
+                        <div className="flex gap-2 pt-1">
+                          <span className="px-3 py-1 rounded-full bg-[#7FB77E] text-white text-[11px] font-poppins font-bold shadow-sm">
+                            {currentProfile.matchPercent}% match
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
+                {/* RIGHT (summary) */}
+                <div className="w-full lg:w-1/2 flex flex-col p-6 lg:p-8 gap-6 bg-[#69bf64]">
+                  {/* Bio */}
+                  <div className="space-y-3 text-center">
+                    <h3 className="font-montserrat t font-bold text-lg lg:text-xl text-white font-poppins  tracking-tight">
+                      À propos
+                    </h3>
+                    <p className="text-sm lg:text-lg leading-relaxed text-white font-poppins font-semibold font-poppins  line-clamp-5">
+                      Passionné(e) par {currentProfile.tags[0]?.toLowerCase()}{" "}
+                      et{" "}
+                      {currentProfile.tags[1]?.toLowerCase() ||
+                        "les rencontres"}
+                      . Toujours partant(e) pour créer des connexions
+                      authentiques et vivre des expériences mémorables.
+                    </p>
+                  </div>
+                  {/* Details list */}
 
-              {/* Boutons Like/Pass */}
-              <div className="flex items-center justify-center gap-4 mt-6">
-                <button
-                  onClick={() => handlePass(currentProfile.id)}
-                  className="w-14 h-14 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-100 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  <X className="w-7 h-7" />
-                </button>
-                <button
-                  onClick={() => handleLike(currentProfile.id)}
-                  className="w-16 h-16 rounded-full bg-[#7FB77E] hover:bg-[#6FA76E] text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  <Check className="w-8 h-8" />
-                </button>
+                  <div className="mt-auto pt-2">
+                    <div className="flex items-center gap-6">
+                      <button
+                        onClick={() => handlePass(currentProfile.id)}
+                        className="w-16 h-16 rounded-full bg-[#FF6F61]/10 text-[#FF6F61] hover:bg-[#FF6F61] hover:text-white flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm"
+                        aria-label="Passer"
+                      >
+                        <X className="w-8 h-8" />
+                      </button>
+                      <button
+                        onClick={() => handleLike(currentProfile.id)}
+                        className="w-20 h-20 rounded-full bg-gradient-to-b from-[#7FB77E] to-[#6FA76E] text-white flex items-center justify-center shadow-lg shadow-[#7FB77E]/30 transition-all duration-300 hover:scale-105 active:scale-95 hover:brightness-[1.05]"
+                        aria-label="Aimer"
+                      >
+                        <Check className="w-10 h-10" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (

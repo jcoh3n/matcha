@@ -43,92 +43,84 @@ export function Header({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur border-b border-border/40">
-      <div className="container mx-auto h-16 flex items-center">
-        <button
-          onClick={() => navigate("/discover")}
-          className="font-montserrat font-extrabold text-xl tracking-tight text-black select-none"
-        >
+    <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-8 py-5 text-black">
+      <div className="flex items-center gap-2">
+        <span className="text-2xl font-extrabold tracking-tight font-montserrat">
           Matcha
-        </button>
-        <nav className="flex-1 flex justify-center gap-8 font-montserrat text-sm">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentPage === item.id;
-            const showBadge =
-              (item.id === "messages" && messageCount > 0) ||
-              (item.id === "matches" && notificationCount > 0);
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onNavigate?.(item.id);
-                  navigate(item.path);
-                }}
-                className={cn(
-                  "relative inline-flex items-center gap-2 font-medium px-1 pb-1 transition-colors",
-                  isActive
-                    ? "text-black after:absolute after:-bottom-0.5 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-primary"
-                    : "text-neutral-500 hover:text-black"
-                )}
-              >
-                <Icon className="w-4 h-4" />
-                {item.label}
-                {showBadge && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 text-[10px] font-medium rounded-full flex items-center justify-center"
-                  >
-                    {item.id === "messages" ? messageCount : notificationCount}
-                  </Badge>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="flex items-center gap-3">
+        </span>
+      </div>
+      <ul className="hidden md:flex items-center gap-8 font-medium font-montserrat">
+        <li>
           <button
-            onClick={() => navigate("/notifications")}
-            className="relative w-10 h-10 rounded-full flex items-center justify-center bg-neutral-100 hover:bg-neutral-200 transition"
+            onClick={() => {
+              if (onNavigate) onNavigate("messages");
+              else navigate("/messages");
+            }}
+            className="relative flex items-center gap-2 hover:opacity-80 transition"
           >
-            <Bell className="w-5 h-5 text-neutral-700" />
-            {notificationCount > 0 && (
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] font-medium rounded-full flex items-center justify-center"
-              >
-                {notificationCount}
-              </Badge>
+            <MessageCircle className="w-5 h-5" />
+            <span>Messages</span>
+            {messageCount > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/90 text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
+                {messageCount > 99 ? "99+" : messageCount}
+              </span>
             )}
           </button>
-        </div>
+        </li>
+        <li>
+          <button
+            onClick={() => {
+              if (onNavigate) onNavigate("notifications");
+              else navigate("/notifications");
+            }}
+            className="relative flex items-center gap-2 hover:opacity-80 transition"
+          >
+            <Bell className="w-5 h-5" />
+            <span>Notifications</span>
+            {notificationCount > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
+                {notificationCount > 99 ? "99+" : notificationCount}
+              </span>
+            )}
+          </button>
+        </li>
+        <li>
+          <button className="hover:opacity-80 transition">Langue</button>
+        </li>
+      </ul>
+      {/* Mobile: icons only */}
+      <div className="md:hidden flex items-center gap-4">
+        <button
+          onClick={() =>
+            onNavigate ? onNavigate("messages") : navigate("/messages")
+          }
+          className="relative p-2 rounded-full border border-white/30 hover:bg-white/10 transition"
+          aria-label="Messages"
+        >
+          <MessageCircle className="w-5 h-5" />
+          {messageCount > 0 && (
+            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
+              {messageCount > 99 ? "99+" : messageCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() =>
+            onNavigate
+              ? onNavigate("notifications")
+              : navigate("/notifications")
+          }
+          className="relative p-2 rounded-full border border-white/30 hover:bg-white/10 transition"
+          aria-label="Notifications"
+        >
+          <Bell className="w-5 h-5" />
+          {notificationCount > 0 && (
+            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
+              {notificationCount > 99 ? "99+" : notificationCount}
+            </span>
+          )}
+        </button>
       </div>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border/40 backdrop-blur bg-white/85">
-        <nav className="flex justify-around py-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentPage === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onNavigate?.(item.id);
-                  navigate(item.path);
-                }}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 p-2 rounded-xl text-[11px] transition",
-                  isActive
-                    ? "text-black font-medium"
-                    : "text-neutral-500 hover:text-black"
-                )}
-              >
-                <Icon className="w-5 h-5" />
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-    </header>
+    </nav>
   );
 }

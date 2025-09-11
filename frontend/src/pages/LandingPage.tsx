@@ -36,7 +36,7 @@ export function LandingPage({ onAuth }: LandingPageProps) {
           <li>
             <button
               onClick={() => onAuth?.("login")}
-              className="font-semibold px-5 py-2 rounded-full border border-white/30 hover:bg-white/10 transition"
+              className="font-semibold px-5 py-2 rounded-full border border-white/30 hover:bg-gradient-to-b from-primary to-primary/70"
             >
               Connexion
             </button>
@@ -46,7 +46,7 @@ export function LandingPage({ onAuth }: LandingPageProps) {
         <div className="md:hidden">
           <button
             onClick={() => onAuth?.("login")}
-            className="font-semibold px-4 py-2 rounded-full border border-white/30 text-sm hover:bg-white/10 transition"
+            className="font-semibold px-4 py-2 rounded-full border border-white/30 text-sm hover:bg-gradient-to-b from-primary to-primary/70"
           >
             Connexion
           </button>
