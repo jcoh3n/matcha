@@ -1,3 +1,7 @@
+export { LoginPage } from "./auth/LoginPage";
+export { SignupPage } from "./auth/SignupPage";
+export { ForgotPasswordPage } from "./auth/ForgotPasswordPage";
+
 // Update this page (the content is just a fallback if you fail to update the page)
 
 const Index = () => {

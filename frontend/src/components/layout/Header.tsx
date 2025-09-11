@@ -1,7 +1,8 @@
-import { Bell, MessageCircle, Heart, Compass, User } from "lucide-react";
+import { Bell, MessageCircle, Heart, Compass, User, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 interface HeaderProps {
   currentPage?:
@@ -14,6 +15,7 @@ interface HeaderProps {
   notificationCount?: number;
   messageCount?: number;
   onNavigate?: (page: string) => void;
+  onLogout?: () => void;
 }
 
 export function Header({
@@ -21,26 +23,26 @@ export function Header({
   notificationCount = 0,
   messageCount = 0,
   onNavigate,
+  onLogout,
 }: HeaderProps) {
   const navigate = useNavigate();
 
-  const navItems = [
-    { id: "discover", icon: Compass, label: "Discover", path: "/discover" },
-    { id: "matches", icon: Heart, label: "Matches", path: "/matches" },
-    {
-      id: "messages",
-      icon: MessageCircle,
-      label: "Messages",
-      path: "/messages",
-    },
-    {
-      id: "notifications",
-      icon: Bell,
-      label: "Notifications",
-      path: "/notifications",
-    },
-    { id: "profile", icon: User, label: "Profile", path: "/profile" },
-  ];
+  // Log when component mounts and when props change
+  useEffect(() => {
+    console.log("Header component mounted/updated");
+    console.log("onLogout prop:", onLogout);
+  }, [onLogout]);
+
+  const handleLogout = () => {
+    console.log("Logout button clicked in Header");
+    console.log("onLogout function:", onLogout);
+    if (onLogout) {
+      console.log("Calling onLogout function");
+      onLogout();
+    } else {
+      console.log("No onLogout function provided");
+    }
+  };
 
   return (
     <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-8 py-5 text-black">
@@ -87,6 +89,16 @@ export function Header({
         <li>
           <button className="hover:opacity-80 transition">Langue</button>
         </li>
+        {/* Simple logout button with icon */}
+        <li>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
+        </li>
       </ul>
       {/* Mobile: icons only */}
       <div className="md:hidden flex items-center gap-4">
@@ -119,6 +131,14 @@ export function Header({
               {notificationCount > 99 ? "99+" : notificationCount}
             </span>
           )}
+        </button>
+        {/* Mobile logout button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center justify-center p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+          aria-label="Logout"
+        >
+          <LogOut className="w-4 h-4" />
         </button>
       </div>
     </nav>

@@ -114,12 +114,12 @@ export function DiscoverPage() {
   };
 
   return (
-    <div className="h-screen w-full  relative font-poppins">
-      {/* Grid layout: left filters (desktop), center large card */}
-      <div className="grid gap-8 xl:gap-12 mx-auto px-4 md:px-8 py-6 grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="w-full min-h-screen relative font-poppins flex justify-center">
+      {/* Grid layout centered */}
+      <div className="grid gap-8 xl:gap-12 px-4 md:px-8 py-8 grid-cols-1 lg:grid-cols-[320px_auto] justify-center items-start mt-40">
         {/* Filters (desktop) */}
-        <aside className="hidden lg:flex flex-col gap-8 sticky top-24 self-start w-full">
-          <div className="rounded-xl border-0 bg-white shadow-sm p-6 space-y-6 w-full">
+        <aside className="hidden lg:flex flex-col gap-8 w-full mt-10 ">
+          <div className="rounded-xl border-0 bg-white shadow-sm p-6 w-full">
             <div className="flex items-center gap-2 mb-6">
               <h2 className="font-montserrat font-semibold text-lg text-gray-800">
                 Filtres
@@ -170,7 +170,7 @@ export function DiscoverPage() {
         </aside>
 
         {/* Main swipe area */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-full ">
           <header className="w-full flex items-center justify-between mb-6 lg:mb-8">
             <div className="lg:hidden">
               <Sheet>
@@ -201,9 +201,9 @@ export function DiscoverPage() {
           </header>
 
           {currentProfile ? (
-            <div className="w-full max-w-6xl mx-auto">
+            <div className="w-full mx-auto">
               {/* Split card */}
-              <div className="rounded-2xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300">
+              <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300 max-w-[900px] mx-auto">
                 {/* LEFT (image 50%) */}
                 <div className="relative w-full lg:w-1/2 h-[420px] lg:h-[600px] shrink-0">
                   <img
@@ -246,7 +246,7 @@ export function DiscoverPage() {
                   </div>
                 </div>
                 {/* RIGHT (summary) */}
-                <div className="w-full lg:w-1/2 flex flex-col p-6 lg:p-8 gap-6 bg-[#69bf64]">
+                <div className="w-full lg:w-1/2 flex flex-col p-6 lg:p-8 gap-6 bg-primary">
                   {/* Bio */}
                   <div className="space-y-3 text-center">
                     <h3 className="font-montserrat t font-bold text-lg lg:text-xl text-white font-poppins  tracking-tight">
@@ -289,40 +289,26 @@ export function DiscoverPage() {
               Aucun profil
             </div>
           )}
-
-          {/* Action buttons */}
-
-          {/* Progress bar */}
-          <div className="mt-8 w-full max-w-3xl mx-auto px-4">
-            <div className="h-0.5 w-full bg-gray-100 overflow-hidden">
-              <div
-                className="h-full bg-[#7FB77E] transition-all duration-300 ease-out"
-                style={{
-                  width: `${((currentIndex + 1) / profiles.length) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
         </div>
 
         {/* Mobile fixed buttons */}
-        {currentProfile && (
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-4 bg-gradient-to-t from-[#F9FAFB] to-transparent pt-16">
-            <button
-              onClick={() => handlePass(currentProfile.id)}
-              className="w-14 h-14 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-100 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              <X className="w-7 h-7" />
-            </button>
-            <button
-              onClick={() => handleLike(currentProfile.id)}
-              className="w-16 h-16 rounded-full bg-[#7FB77E] hover:bg-[#6FA76E] text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              <Check className="w-8 h-8" />
-            </button>
-          </div>
-        )}
       </div>
+      {currentProfile && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-4 bg-gradient-to-t from-[#F9FAFB] to-transparent pt-16">
+          <button
+            onClick={() => handlePass(currentProfile.id)}
+            className="w-14 h-14 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-100 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            <X className="w-7 h-7" />
+          </button>
+          <button
+            onClick={() => handleLike(currentProfile.id)}
+            className="w-16 h-16 rounded-full bg-[#7FB77E] hover:bg-[#6FA76E] text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            <Check className="w-8 h-8" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

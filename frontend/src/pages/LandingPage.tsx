@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { FooterSection } from "@/components/ui/footer-section";
 
 interface LandingPageProps {
@@ -41,42 +42,42 @@ export function LandingPage({ onAuth }: LandingPageProps) {
               <button className="hover:opacity-80 transition">Langue</button>
             </li>
             <li>
-              <button
-                onClick={() => onAuth?.("login")}
+              <Link
+                to="/auth/login"
                 className="font-semibold px-5 py-2 rounded-full border border-white/30 hover:bg-gradient-to-b from-primary to-primary/70"
               >
                 Connexion
-              </button>
+              </Link>
             </li>
           </ul>
           {/* Mobile simple login */}
           <div className="md:hidden">
-            <button
-              onClick={() => onAuth?.("login")}
+            <Link
+              to="/auth/login"
               className="font-semibold px-4 py-2 rounded-full border border-white/30 text-sm hover:bg-gradient-to-b from-primary to-primary/70"
             >
               Connexion
-            </button>
+            </Link>
           </div>
         </nav>
 
         {/* Central CTA */}
         <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 pt-40 md:pt-80 pb-40">
-          <h1 className="font-montserrat text-5xl md:text-7xl font-extrabold leading-[1.05] text-white drop-shadow-sm">
-            Find your Matcha
+          <h1 className="font-montserrat text-5xl md:text-9xl font-extrabold leading-[1.05] text-white drop-shadow-sm">
+            MATCHA
           </h1>
-          <p className="mt-6 max-w-2xl text-base md:text-xl text-white/90 font-montserrat">
+          <p className="mt-6 max-w-2xl text-base md:text-2xl text-white/90 font-montserrat">
             Crée des connexions authentiques. Une nouvelle façon élégante de
             rencontrer des personnes compatibles.
           </p>
 
-          <button
-            onClick={() => onAuth?.("register")}
+          <Link
+            to="/auth/register"
             className="mt-10 inline-flex items-center gap-2 rounded-full bg-gradient-to-b from-primary to-primary/70 px-10 py-4 text-lg font-bold font-montserrat text-primary-foreground tracking-wide hover:from-primary/90 hover:to-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 transition-colors shadow-lg shadow-black/30"
           >
             Créer un compte
             <ArrowRight className="w-5 h-5" />
-          </button>
+          </Link>
         </div>
       </div>
       <FooterSection />
