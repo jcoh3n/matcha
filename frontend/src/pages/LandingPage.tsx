@@ -33,6 +33,11 @@ export function LandingPage({ onAuth }: LandingPageProps) {
               </button>
             </li>
             <li>
+              <a href="/health-test" className="hover:opacity-80 transition">
+                Health Test
+              </a>
+            </li>
+            <li>
               <button className="hover:opacity-80 transition">Langue</button>
             </li>
             <li>

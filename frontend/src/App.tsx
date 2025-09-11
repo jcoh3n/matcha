@@ -12,6 +12,7 @@ import { MessagesPage } from "@/pages/MessagesPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { SearchPage } from "@/pages/SearchPage";
+import HealthTestPage from "./pages/HealthTestPage";
 import { AppShell } from "@/components/layout/AppShell";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/health-test" element={<HealthTestPage />} />
             <Route
               path="/"
               element={

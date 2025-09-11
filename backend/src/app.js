@@ -11,9 +11,18 @@ app.use(express.json());
 // Routes
 app.use('/api', apiRoutes);
 
-// Health check endpoint
+// Basic endpoint
 app.get('/', (req, res) => {
   res.json({ message: 'Matcha backend API' });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 module.exports = app;
