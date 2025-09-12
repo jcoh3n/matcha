@@ -1,72 +1,113 @@
 const User = require('../models/User');
-
-// Mock data store (in a real app, this would be a database)
-let users = [
-  new User({ id: 1, email: 'john@example.com', username: 'johndoe', firstName: 'John', lastName: 'Doe' }),
-  new User({ id: 2, email: 'jane@example.com', username: 'janesmith', firstName: 'Jane', lastName: 'Smith' })
-];
-let nextId = 3;
+const Profile = require('../models/Profile');
+const { authJWT } = require('../middleware/authJWT');
 
 // Get all users
-const getAllUsers = (req, res) => {
-  res.json(users.map(user => user.toJSON()));
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll();
+    res.json(users.map(user => user.toJSON()));
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
 // Get user by ID
-const getUserById = (req, res) => {
-  const user = users.find(u => u.id === parseInt(req.params.id));
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user.toJSON());
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-  res.json(user.toJSON());
 };
 
 // Create a new user
-const createUser = (req, res) => {
-  const errors = User.validate(req.body);
-  if (errors.length > 0) {
-    return res.status(400).json({ errors });
+const createUser = async (req, res) => {
+  try {
+    const errors = User.validate(req.body);
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    // Check if user with this email already exists
+    const existingUser = await User.findByEmail(req.body.email);
+    if (existingUser) {
+      return res.status(400).json({ errors: ['User with this email already exists'] });
+    }
+
+    const newUser = await User.create(req.body);
+    res.status(201).json(newUser.toJSON());
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-
-  const newUser = new User({
-    id: nextId++,
-    ...req.body
-  });
-
-  users.push(newUser);
-  res.status(201).json(newUser.toJSON());
 };
 
 // Update user
-const updateUser = (req, res) => {
-  const userIndex = users.findIndex(u => u.id === parseInt(req.params.id));
-  if (userIndex === -1) {
-    return res.status(404).json({ message: 'User not found' });
+const updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const errors = User.validate(req.body);
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    const updatedUser = await User.update(req.params.id, req.body);
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(updatedUser.toJSON());
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-
-  const errors = User.validate(req.body);
-  if (errors.length > 0) {
-    return res.status(400).json({ errors });
-  }
-
-  users[userIndex] = new User({
-    ...users[userIndex],
-    ...req.body,
-    id: users[userIndex].id // Preserve the ID
-  });
-
-  res.json(users[userIndex].toJSON());
 };
 
 // Delete user
-const deleteUser = (req, res) => {
-  const userIndex = users.findIndex(u => u.id === parseInt(req.params.id));
-  if (userIndex === -1) {
-    return res.status(404).json({ message: 'User not found' });
+const deleteUser = async (req, res) => {
+  try {
+    const deleted = await User.delete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
+};
 
-  users.splice(userIndex, 1);
-  res.status(204).send();
+// Get current user profile (protected route)
+const getCurrentUser = async (req, res) => {
+  try {
+    // req.user is added by the authJWT middleware
+    const user = req.user;
+    
+    // Get user profile
+    const profile = await Profile.findByUserId(user.id);
+    
+    // Combine user and profile data
+    const userData = {
+      ...user.toJSON(),
+      profile: profile ? profile.toJSON() : null
+    };
+    
+    res.json(userData);
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
 module.exports = {
@@ -74,5 +115,6 @@ module.exports = {
   getUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  getCurrentUser
 };
