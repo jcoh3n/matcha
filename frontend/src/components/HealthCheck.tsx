@@ -1,9 +1,19 @@
 import { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export function HealthCheck() {
-  const [healthStatus, setHealthStatus] = useState<{ status: string; timestamp: string; service: string } | null>(null);
+  const [healthStatus, setHealthStatus] = useState<{
+    status: string;
+    timestamp: string;
+    service: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +28,9 @@ export function HealthCheck() {
       const data = await response.json();
       setHealthStatus(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
     }
@@ -47,10 +59,13 @@ export function HealthCheck() {
             <div className="space-y-2">
               <p>
                 <span className="font-medium">Status:</span>{" "}
-                <span className="text-green-500 font-medium">{healthStatus.status}</span>
+                <span className="text-green-500 font-medium">
+                  {healthStatus.status}
+                </span>
               </p>
               <p>
-                <span className="font-medium">Service:</span> {healthStatus.service}
+                <span className="font-medium">Service:</span>{" "}
+                {healthStatus.service}
               </p>
               <p>
                 <span className="font-medium">Timestamp:</span>{" "}
@@ -66,3 +81,5 @@ export function HealthCheck() {
     </div>
   );
 }
+
+export default HealthCheck;

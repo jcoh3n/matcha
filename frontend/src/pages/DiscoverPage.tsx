@@ -27,10 +27,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 
 interface Filters {
   ageRange: [number, number];
@@ -79,27 +75,32 @@ export function DiscoverPage() {
   useEffect(() => {
     const checkProfileCompletion = async () => {
       try {
-        const accessToken = localStorage.getItem('accessToken');
+        const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
           return;
         }
 
-        const response = await fetch('http://localhost:3000/api/me', {
+        const response = await fetch("http://localhost:3000/api/me", {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         });
 
         if (response.ok) {
           const userData = await response.json();
           // Check if essential profile fields are filled
-          if (!userData.profile || !userData.profile.bio || !userData.profile.gender || 
-              !userData.profile.orientation || !userData.profile.birthDate) {
+          if (
+            !userData.profile ||
+            !userData.profile.bio ||
+            !userData.profile.gender ||
+            !userData.profile.orientation ||
+            !userData.profile.birthDate
+          ) {
             navigate("/onboarding");
           }
         }
       } catch (error) {
-        console.error('Error checking profile completion:', error);
+        console.error("Error checking profile completion:", error);
       }
     };
 

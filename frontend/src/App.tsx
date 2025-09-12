@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "./components/ui/toaster";
+import { Toaster as Sonner } from "./components/ui/sonner";
+import { TooltipProvider } from "./components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { LandingPage } from "./pages/LandingPage";
 import { DiscoverPage } from "./pages/DiscoverPage";
 import NotFound from "./pages/NotFound";
-import { MatchesPage } from "@/pages/MatchesPage";
-import { MessagesPage } from "@/pages/MessagesPage";
-import { ProfilePage } from "@/pages/ProfilePage";
-import { NotificationsPage } from "@/pages/NotificationsPage";
-import { SearchPage } from "@/pages/SearchPage";
-import { LoginPage } from "@/pages/LoginPage";
-import { RegisterPage } from "@/pages/RegisterPage";
-import { HealthPage } from "@/pages/HealthPage";
-import { AppShell } from "@/components/layout/AppShell";
-import { HealthTestPage } from "@/pages/HealthTestPage";
+import { MatchesPage } from "./pages/MatchesPage";
+import { MessagesPage } from "./pages/MessagesPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { NotificationsPage } from "./pages/NotificationsPage";
+import { SearchPage } from "./pages/SearchPage";
+import { HealthPage } from "./pages/HealthPage";
+import { AppShell } from "./components/layout/AppShell";
+import { HealthTestPage } from "./pages/HealthTestPage";
+import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
@@ -80,9 +80,17 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/"
+              element={
+                isAuthenticated ? (
+                  <Home onLogout={handleLogout} />
+                ) : (
+                  <LandingPage />
+                )
+              }
+            />
+            {/** canonical auth routes under /auth */}
             <Route path="/health" element={<HealthPage />} />
             <Route path="/health-test" element={<HealthTestPage />} />
             <Route
@@ -95,80 +103,13 @@ const App = () => {
               element={<ForgotPasswordPage />}
             />
             <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-            <Route
-              path="/discover"
-              element={
-                isAuthenticated ? (
-                  <Home onLogout={handleLogout} />
-                ) : (
-                  //<LoginPage />
-                  <LandingPage />
-                )
-              }
-            />
+            {/** discover route is handled below based on auth state */}
             {isAuthenticated ? (
               <>
-                <Route
-                  path="/matches"
-                  element={
-                    <AppShell current="matches">
-                      <MatchesPage />
-                    </AppShell>
-                  }
-                />
-                <Route
-                  path="/messages"
-                  element={
-                    <AppShell current="messages">
-                      <MessagesPage />
-                    </AppShell>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <AppShell current="profile">
-                      <ProfilePage onLogout={handleLogout} />
-                    </AppShell>
-                  }
-                />
-                <Route
-                  path="/notifications"
-                  element={
-                    <AppShell current="notifications">
-                      <NotificationsPage />
-                    </AppShell>
-                  }
-                />
-                <Route
-                  path="/search"
-                  element={
-                    <AppShell current="search">
-                      <SearchPage />
-                    </AppShell>
-                  }
-                />
-                <Route
-                  path="/onboarding"
-                  element={
-                    <ProtectedRoute>
-                      <OnboardingPage />
-                    </ProtectedRoute>
-                  }
-                />
+                <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route
                   path="/discover"
-                  element={
-                    <ProtectedRoute>
-                      <AppShell
-                        current="discover"
-                        onLogout={handleLogout}
-                        fullWidth
-                      >
-                        <DiscoverPage />
-                      </AppShell>
-                    </ProtectedRoute>
-                  }
+                  element={<Home onLogout={handleLogout} />}
                 />
                 <Route
                   path="/matches"
