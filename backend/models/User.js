@@ -6,9 +6,9 @@ class User {
     this.id = data.id;
     this.email = data.email;
     this.username = data.username;
-    this.firstName = data.firstName;
-    this.lastName = data.lastName;
-    this.password = data.password;
+    this.firstName = data.first_name || data.firstName;
+    this.lastName = data.last_name || data.lastName;
+    this.password = data.password;  // This will be the hashed password
     this.createdAt = data.created_at || data.createdAt || new Date();
     this.updatedAt = data.updated_at || data.updatedAt || new Date();
   }

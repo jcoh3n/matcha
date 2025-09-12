@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-<<<<<<< HEAD
   db:
     image: postgres:15
     container_name: matcha_db
@@ -10,20 +9,10 @@ services:
       POSTGRES_USER: matcha_user
       POSTGRES_PASSWORD: matcha_password
       POSTGRES_DB: matcha_db
-=======
-  postgres:
-    image: postgres:15
-    container_name: matcha_postgres
-    environment:
-      POSTGRES_DB: matcha_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
->>>>>>> mdembele_sprint
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-<<<<<<< HEAD
       - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   backend:
@@ -65,9 +54,6 @@ services:
       - /app/node_modules
     depends_on:
       - backend
-=======
-    restart: unless-stopped
->>>>>>> mdembele_sprint
 
 volumes:
   postgres_data:

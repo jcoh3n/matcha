@@ -48,7 +48,9 @@ const register = async (req, res) => {
     }
     
     // Check if user already exists
+    console.log('Checking if user already exists...');
     const existingUser = await User.findByEmail(email);
+    console.log('Existing user check result:', existingUser);
     if (existingUser) {
       return res.status(409).json({ 
         message: 'User with this email already exists' 
@@ -56,22 +58,45 @@ const register = async (req, res) => {
     }
     
     // Hash password
+    console.log('Hashing password...');
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    let hashedPassword;
+    try {
+      hashedPassword = await bcrypt.hash(password, saltRounds);
+      console.log('Password hashed successfully');
+    } catch (hashError) {
+      console.error('Error hashing password:', hashError);
+      return res.status(500).json({ 
+        message: 'Error hashing password' 
+      });
+    }
     
     // Create user
-    const newUser = await User.create({
-      email,
-      username,
-      firstName,
-      lastName,
-      password: hashedPassword
-    });
+    console.log('Creating user...');
+    let newUser;
+    try {
+      newUser = await User.create({
+        email,
+        username,
+        firstName,
+        lastName,
+        password: hashedPassword
+      });
+      console.log('User created successfully:', newUser);
+    } catch (createError) {
+      console.error('Error creating user:', createError);
+      return res.status(500).json({ 
+        message: 'Error creating user' 
+      });
+    }
     
     // Generate tokens
+    console.log('Generating tokens...');
     const { accessToken, refreshToken } = generateTokens(newUser.id);
+    console.log('Tokens generated successfully');
     
     // Store refresh token in database (for logout/invalidation)
+    console.log('Storing refresh token in database...');
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
     
@@ -79,6 +104,7 @@ const register = async (req, res) => {
       'INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, $3)',
       [newUser.id, refreshToken, expiresAt]
     );
+    console.log('Refresh token stored successfully');
     
     // Return user data and tokens (without password)
     const userResponse = {
@@ -90,11 +116,13 @@ const register = async (req, res) => {
       createdAt: newUser.createdAt
     };
     
+    console.log('Sending response...');
     res.status(201).json({
       user: userResponse,
       accessToken,
       refreshToken
     });
+    console.log('Response sent successfully');
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ 
