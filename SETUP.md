@@ -31,6 +31,8 @@ This document describes the implementation of Sprint 0 for the Matcha dating app
 
 ## Setup Instructions
 
+### Using Docker Compose (Recommended)
+
 1. Make sure no other PostgreSQL instance is running on port 5432:
    ```bash
    # Check if port 5432 is in use
@@ -57,7 +59,58 @@ This document describes the implementation of Sprint 0 for the Matcha dating app
    - Backend API: http://localhost:3000
    - Database: localhost:5432
 
+### Using npm run dev for Development
+
+When using `npm run dev`, the PostgreSQL database does not start automatically. You have two options:
+
+#### Option 1: Use Docker for Database Only
+
+1. Start only the database service:
+   ```bash
+   docker-compose up -d db
+   ```
+
+2. In one terminal, start the backend:
+   ```bash
+   cd backend
+   npm run dev
+   ```
+
+3. In another terminal, start the frontend:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+4. Access the application:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
+
+#### Option 2: Local PostgreSQL Installation
+
+1. Install PostgreSQL locally on your machine
+2. Create the database and user according to the configuration in `backend/.env`
+3. Start the backend and frontend as described in Option 1
+
 ## Troubleshooting
+
+### Port Conflicts
+
+If you encounter port conflicts:
+
+1. Check which processes are using the required ports:
+   ```bash
+   lsof -i :3000  # Backend
+   lsof -i :5173  # Frontend
+   lsof -i :5432  # Database
+   ```
+
+2. Kill the conflicting processes:
+   ```bash
+   kill -9 <PID>
+   ```
+
+3. Or change the ports in docker-compose.yml and update the corresponding environment variables.
 
 ### Port 5432 Already Allocated
 
@@ -96,4 +149,25 @@ If migrations fail to run:
 3. Check the backend logs:
    ```bash
    docker logs matcha_backend
+   ```
+
+### Docker Cleanup
+
+If you encounter issues with Docker containers or networks:
+
+1. Stop and remove all containers:
+   ```bash
+   docker stop $(docker ps -aq)
+   docker rm $(docker ps -aq)
+   ```
+
+2. Remove unused volumes and networks:
+   ```bash
+   docker volume prune -f
+   docker network prune -f
+   ```
+
+3. Remove unused images (optional):
+   ```bash
+   docker image prune -f
    ```
