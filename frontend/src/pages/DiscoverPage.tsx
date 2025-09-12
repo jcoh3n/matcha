@@ -123,21 +123,14 @@ export function DiscoverPage() {
       {/* Desktop / large screens: split screen */}
       <div className="hidden lg:flex w-full min-h-[90vh] relative ">
         {/* Central vertical divider */}
-        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] bg-gradient-to-b from-transparent via-gray-300 to-transparent rounded-full pointer-events-none" />
+        <div className="absolute inset-y-0 left-[40%] -translate-x-1/2 w-[3px] bg-gradient-to-b from-transparent via-black/60 to-transparent rounded-full pointer-events-none" />
         {/* LEFT HALF: Chat / Matches sidebar */}
         <div className="w-3/5 flex flex-col p-8 ">
           <div className="w-[90%] mr-auto  min-h-full">
             {/* Top identity */}
 
             {/* Tabs */}
-            <div className="flex  gap-2 mb-4 font-montserrat">
-              <button className="px-4 py-2 rounded-full bg-gray-100 text-gray-500 text-xl">
-                Conversations
-              </button>
-              <button className="px-4 py-2 rounded-full bg-white shadow-xl text-gray-900 text-xl font-semibold border border-gray-200">
-                Matches
-              </button>
-            </div>
+
             {/* List */}
             <div className="rounded-3xl bg-white border min-h-full border-gray-200 shadow-xl overflow-hidden">
               <ul className="max-h-[100vh] overflow-y-auto divide-y divide-gray-100">
@@ -174,7 +167,7 @@ export function DiscoverPage() {
           </div>
         </div>
         {/* RIGHT HALF: Profile Card (80% width inner wrapper) */}
-        <div className="ml-auto w-[60%] flex flex-col justify-center p-8 ">
+        <div className="ml-auto w-[90%] flex flex-col justify-center p-8 ">
           {currentProfile ? (
             <div className="w-[100%] ml-auto">
               <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300">
@@ -184,15 +177,13 @@ export function DiscoverPage() {
                     alt={currentProfile.name}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8"></div>
                 </div>
-                <div className="w-full  flex flex-col p-6 lg:p-8 gap-4 bg-primary">
-                  <div className="flex flex-col space-y-3 items-center justify-center py-20">
-                    <h2 className="font-montserrat text-3xl lg:text-7xl font-extrabold tracking-tight text-white drop-shadow-xl">
+                <div className="w-full  flex flex-col p-6 lg:p-8 gap-4 bg-[#9ed09d]">
+                  <div className="flex flex-col space-y-3 items-start  py-40">
+                    <h2 className="font-poppins text-3xl lg:text-7xl font-bold tracking-tight text-black/70 drop-shadow-xl">
                       {currentProfile.name}, {currentProfile.age}
                     </h2>
-                    <p className="flex items-center gap-2 text-white/90 text-lg font-montserrat lg:text-xl font-semibold">
+                    <p className="flex items-center gap-2 text-black/80 text-lg mt-40 font-inter lg:text-xl font-medium">
                       <MapPin className="w-4 h-4 lg:w-8 lg:h-8" />
                       <span>
                         {currentProfile.distance.toFixed(1)} km •{" "}
@@ -203,7 +194,7 @@ export function DiscoverPage() {
                       {currentProfile.tags.slice(0, 4).map((t) => (
                         <span
                           key={t}
-                          className="px-3 py-1.5 font-poppins rounded-full bg-white/15 backdrop-blur-sm text-white/90 text-[14px] font-montserrat font-bold transition-colors hover:bg-white/20"
+                          className="px-3 py-1.5 font-poppins rounded-full bg-white/15 backdrop-blur-sm text-black/80 text-[14px] font-inter font-bold transition-colors hover:bg-white/20"
                         >
                           {t}
                         </span>
@@ -211,7 +202,7 @@ export function DiscoverPage() {
                     </div>
                     {typeof currentProfile.matchPercent === "number" && (
                       <div className="flex gap-2 pt-1">
-                        <span className="px-3 py-1 rounded-full bg-[#7FB77E] text-white text-[22px] font-poppins font-bold shadow-sm">
+                        <span className="px-3 py-1 rounded-full bg-[#7FB77E] text-black/8ext-[22px] font-poppins font-bold shadow-sm">
                           {currentProfile.matchPercent}% match
                         </span>
                       </div>

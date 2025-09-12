@@ -1,8 +1,16 @@
-import { Bell, MessageCircle, Heart, Compass, User, LogOut } from "lucide-react";
+import {
+  Bell,
+  Heart,
+  Compass,
+  User,
+  MessageCircle,
+  LogOut,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { QuestionAnswer, Notifications, Logout } from "@mui/icons-material";
 
 interface HeaderProps {
   currentPage?:
@@ -60,7 +68,7 @@ export function Header({
             }}
             className="relative flex items-center gap-2 hover:opacity-80 transition"
           >
-            <MessageCircle className="w-5 h-5" />
+            <QuestionAnswer className="w-5 h-5" />
             <span>Messages</span>
             {messageCount > 0 && (
               <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/90 text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
@@ -75,9 +83,9 @@ export function Header({
               if (onNavigate) onNavigate("notifications");
               else navigate("/notifications");
             }}
-            className="relative flex items-center gap-2 hover:opacity-80 transition"
+            className="relative flex items-center gap-2 hover:opacity-80 transition "
           >
-            <Bell className="w-5 h-5" />
+            <Notifications className="w-5 h-5" />
             <span>Notifications</span>
             {notificationCount > 0 && (
               <span className="ml-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
@@ -85,9 +93,6 @@ export function Header({
               </span>
             )}
           </button>
-        </li>
-        <li>
-          <button className="hover:opacity-80 transition">Langue</button>
         </li>
         {/* Simple logout button with icon */}
         <li>
@@ -138,7 +143,7 @@ export function Header({
           className="flex items-center justify-center p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
           aria-label="Logout"
         >
-          <LogOut className="w-4 h-4" />
+          <Logout className="w-4 h-4" />
         </button>
       </div>
     </nav>
