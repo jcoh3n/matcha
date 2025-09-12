@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Filter,
   Settings,
@@ -72,6 +73,38 @@ export function DiscoverPage() {
   // Chat/matches sidebar data
   const [peers] = useState<MockProfile[]>(getRandomProfiles(8));
   const [activePeerId, setActivePeerId] = useState<string>(peers[0]?.id || "");
+  const navigate = useNavigate();
+
+  // Check if profile is complete
+  useEffect(() => {
+    const checkProfileCompletion = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+          return;
+        }
+
+        const response = await fetch('http://localhost:3000/api/me', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          // Check if essential profile fields are filled
+          if (!userData.profile || !userData.profile.bio || !userData.profile.gender || 
+              !userData.profile.orientation || !userData.profile.birthDate) {
+            navigate("/onboarding");
+          }
+        }
+      } catch (error) {
+        console.error('Error checking profile completion:', error);
+      }
+    };
+
+    checkProfileCompletion();
+  }, [navigate]);
 
   const currentProfile = profiles[currentIndex];
 

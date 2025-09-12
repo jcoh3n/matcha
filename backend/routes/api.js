@@ -1,6 +1,8 @@
 const express = require('express');
 const { getAllUsers, getUserById, createUser, updateUser, deleteUser, getCurrentUser } = require('../controllers/userController');
+const profileRoutes = require('./profile');
 const authRoutes = require('./auth');
+const onboardingRoutes = require('./onboarding');
 const { authJWT } = require('../middleware/authJWT');
 
 const router = express.Router();
@@ -15,7 +17,13 @@ router.delete('/users/:id', deleteUser);
 // Protected route to get current user
 router.get('/me', authJWT, getCurrentUser);
 
+// Profile routes
+router.use('/', profileRoutes);
+
 // Auth routes
 router.use('/auth', authRoutes);
+
+// Onboarding routes
+router.use('/', onboardingRoutes);
 
 module.exports = router;

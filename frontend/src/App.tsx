@@ -18,6 +18,9 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
+import { OnboardingPage } from "./pages/OnboardingPage";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { Home } from "./pages/Home";
 
 const queryClient = new QueryClient();
 
@@ -91,13 +94,7 @@ const App = () => {
               path="/"
               element={
                 isAuthenticated ? (
-                  <AppShell
-                    current="discover"
-                    onLogout={handleLogout}
-                    fullWidth
-                  >
-                    <DiscoverPage />
-                  </AppShell>
+                  <Home onLogout={handleLogout} />
                 ) : (
                   <LandingPage />
                 )
@@ -106,61 +103,82 @@ const App = () => {
             {isAuthenticated ? (
               <>
                 <Route
+                  path="/onboarding"
+                  element={
+                    <ProtectedRoute>
+                      <OnboardingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/discover"
                   element={
-                    <AppShell
-                      current="discover"
-                      onLogout={handleLogout}
-                      fullWidth
-                    >
-                      <DiscoverPage />
-                    </AppShell>
+                    <ProtectedRoute>
+                      <AppShell
+                        current="discover"
+                        onLogout={handleLogout}
+                        fullWidth
+                      >
+                        <DiscoverPage />
+                      </AppShell>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/matches"
                   element={
-                    <AppShell current="matches" onLogout={handleLogout}>
-                      <MatchesPage />
-                    </AppShell>
+                    <ProtectedRoute>
+                      <AppShell current="matches" onLogout={handleLogout}>
+                        <MatchesPage />
+                      </AppShell>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/messages"
                   element={
-                    <AppShell current="messages" onLogout={handleLogout}>
-                      <MessagesPage />
-                    </AppShell>
+                    <ProtectedRoute>
+                      <AppShell current="messages" onLogout={handleLogout}>
+                        <MessagesPage />
+                      </AppShell>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/profile"
                   element={
-                    <AppShell current="profile" onLogout={handleLogout}>
-                      <ProfilePage onLogout={handleLogout} />
-                    </AppShell>
+                    <ProtectedRoute>
+                      <AppShell current="profile" onLogout={handleLogout}>
+                        <ProfilePage onLogout={handleLogout} />
+                      </AppShell>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/notifications"
                   element={
-                    <AppShell current="notifications" onLogout={handleLogout}>
-                      <NotificationsPage />
-                    </AppShell>
+                    <ProtectedRoute>
+                      <AppShell current="notifications" onLogout={handleLogout}>
+                        <NotificationsPage />
+                      </AppShell>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/search"
                   element={
-                    <AppShell current="search" onLogout={handleLogout}>
-                      <SearchPage />
-                    </AppShell>
+                    <ProtectedRoute>
+                      <AppShell current="search" onLogout={handleLogout}>
+                        <SearchPage />
+                      </AppShell>
+                    </ProtectedRoute>
                   }
                 />
               </>
             ) : (
               // Redirect all authenticated routes to landing page when not authenticated
               <>
+                <Route path="/onboarding" element={<LandingPage />} />
                 <Route path="/discover" element={<LandingPage />} />
                 <Route path="/matches" element={<LandingPage />} />
                 <Route path="/messages" element={<LandingPage />} />

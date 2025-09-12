@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Profile = require('../models/Profile');
 const { authJWT } = require('../middleware/authJWT');
 
 // Get all users
@@ -91,7 +92,18 @@ const deleteUser = async (req, res) => {
 const getCurrentUser = async (req, res) => {
   try {
     // req.user is added by the authJWT middleware
-    res.json(req.user.toJSON());
+    const user = req.user;
+    
+    // Get user profile
+    const profile = await Profile.findByUserId(user.id);
+    
+    // Combine user and profile data
+    const userData = {
+      ...user.toJSON(),
+      profile: profile ? profile.toJSON() : null
+    };
+    
+    res.json(userData);
   } catch (error) {
     console.error('Error fetching current user:', error);
     res.status(500).json({ message: 'Internal server error' });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BrutalButton } from "@/components/ui/brutal-button";
 import { MatchPercentage } from "@/components/ui/match-percentage";
 import { OrientationBadge } from "@/components/ui/orientation-badge";
@@ -16,12 +17,19 @@ interface UserProfile {
   lastName: string;
   createdAt: string;
   updatedAt: string;
+  profile?: {
+    bio: string;
+    gender: string;
+    orientation: string;
+    birthDate: string;
+  };
 }
 
 export function ProfilePage({ onLogout }: ProfilePageProps) {
   console.log("ProfilePage rendered with onLogout:", onLogout);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -42,6 +50,13 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
+          
+          // Check if profile is complete
+          if (!userData.profile || !userData.profile.bio || !userData.profile.gender || 
+              !userData.profile.orientation || !userData.profile.birthDate) {
+            navigate("/onboarding");
+            return;
+          }
         } else {
           // Token might be expired, try to refresh
           const refreshToken = localStorage.getItem('refreshToken');
@@ -68,6 +83,13 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
               if (retryResponse.ok) {
                 const userData = await retryResponse.json();
                 setUser(userData);
+                
+                // Check if profile is complete
+                if (!userData.profile || !userData.profile.bio || !userData.profile.gender || 
+                    !userData.profile.orientation || !userData.profile.birthDate) {
+                  navigate("/onboarding");
+                  return;
+                }
               } else {
                 console.log("Retry failed, calling onLogout");
                 onLogout?.();
@@ -91,7 +113,7 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
     };
 
     fetchUserProfile();
-  }, [onLogout]);
+  }, [onLogout, navigate]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
@@ -109,11 +131,11 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop&crop=face"
   ];
 
-  const mockBio = "Art student who loves coffee shops and weekend hikes. Always up for trying new restaurants! 🎨☕";
+  const mockBio = user.profile?.bio || "Art student who loves coffee shops and weekend hikes. Always up for trying new restaurants! 🎨☕";
   const mockTags = ["Art", "Coffee", "Hiking", "Foodie", "Photography"];
   const mockLocation = "Paris, France";
   const mockAge = 24;
-  const mockOrientation = "straight";
+  const mockOrientation = user.profile?.orientation || "straight";
   const mockIsOnline = true;
   const mockMatchPercent = 100;
 
