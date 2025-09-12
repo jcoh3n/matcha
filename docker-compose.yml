@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: matcha_db
+    restart: always
+    environment:
+      POSTGRES_USER: matcha_user
+      POSTGRES_PASSWORD: matcha_password
+      POSTGRES_DB: matcha_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: matcha_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://matcha_user:matcha_password@db:5432/matcha_db
+      POSTGRES_USER: matcha_user
+      POSTGRES_PASSWORD: matcha_password
+      POSTGRES_DB: matcha_db
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      RUNNING_IN_DOCKER: "true"
+      JWT_SECRET: your_jwt_secret_here
+      NODE_ENV: development
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: matcha_frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

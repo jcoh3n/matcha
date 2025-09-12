@@ -1,11 +1,11 @@
 # Breakdown Full-Stack – Dev B
 
 ## Sprint 0 — Socle
-- [ ] Mettre en place Docker Compose (Postgres + serveur Node)
-- [ ] Script migrations init (`users`, `profiles`)
-- [ ] Config Tailwind (palette fournie)
-- [ ] Router côté FE : routes Register, Login, Discover, Search, Profile, Chat
-- [ ] Test `/health` affiché côté UI
+- [X] Mettre en place Docker Compose (Postgres + serveur Node)
+- [X] Script migrations init (`users`, `profiles`)
+- [X] Config Tailwind (palette fournie)
+- [X] Router côté FE : routes Register, Login, Discover, Search, Profile, Chat
+- [X] Test `/health` affiché côté UI
 
 ---
 
