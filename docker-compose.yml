@@ -25,6 +25,11 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: postgresql://matcha_user:matcha_password@db:5432/matcha_db
+      DB_USER: matcha_user
+      DB_PASSWORD: matcha_password
+      DB_NAME: matcha_db
+      DB_HOST: db
+      DB_PORT: 5432
       POSTGRES_USER: matcha_user
       POSTGRES_PASSWORD: matcha_password
       POSTGRES_DB: matcha_db

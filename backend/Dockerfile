@@ -1,9 +1,6 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
-
-# Install build dependencies for native modules
-RUN apk add --no-cache python3 make g++
 
 # Copy package files
 COPY package*.json ./
