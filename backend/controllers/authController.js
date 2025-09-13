@@ -419,7 +419,7 @@ const resendVerificationEmail = async (req, res) => {
 const sendPasswordResetEmail = async (user) => {
   try {
     const transporter = createTransporter();
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${user.passwordResetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${user.passwordResetToken}`;
     
     const mailOptions = {
       from: process.env.EMAIL_FROM || 'noreply@matcha.com',
@@ -593,6 +593,10 @@ const resetPassword = async (req, res) => {
     }
     
     const user = new User(result.rows[0]);
+    
+    // Note: We could check if the new password is different from the old one,
+    // but since the old password is hashed, we can't easily do this comparison.
+    // The frontend should inform users to choose a different password.
     
     // Hash the new password
     const saltRounds = 10;

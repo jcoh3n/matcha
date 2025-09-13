@@ -23,24 +23,32 @@ export function ResetPasswordPage() {
     }
   }, [searchParams]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (password !== confirmPassword) {
-      toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const validatePassword = (password: string, confirmPassword: string) => {
     if (password.length < 6) {
       toast({
         title: "Erreur",
         description: "Le mot de passe doit contenir au moins 6 caractères.",
         variant: "destructive"
       });
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Erreur",
+        description: "Les mots de passe ne correspondent pas.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validatePassword(password, confirmPassword)) {
       return;
     }
 
@@ -107,21 +115,31 @@ export function ResetPasswordPage() {
                 <Input
                   id="password"
                   type="password"
+                  placeholder="Au moins 6 caractères"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
                 />
+                <p className="text-sm text-muted-foreground">
+                  Le mot de passe doit contenir au moins 6 caractères
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
+                  placeholder="Confirmez votre mot de passe"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <p>
+                  Note : Pour des raisons de sécurité, votre nouveau mot de passe doit être différent de l'ancien.
+                </p>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">

@@ -62,7 +62,7 @@ export function VerifyEmailPendingPage() {
           <Button onClick={handleResendEmail} variant="outline" className="w-full">
             Renvoyer l'email de vérification
           </Button>
-          <Button onClick={() => navigate("/login")} className="w-full">
+          <Button onClick={() => navigate("/auth/login")} className="w-full">
             Aller à la page de connexion
           </Button>
         </CardFooter>
