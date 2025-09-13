@@ -7,7 +7,7 @@ class Profile {
     this.userId = data.user_id;
     this.bio = data.bio;
     this.gender = data.gender;
-    this.orientation = data.orientation;
+    this.orientation = data.sexual_orientation;  // Map sexual_orientation to orientation
     this.birthDate = data.birth_date;
     this.fameRating = data.fame_rating;
     this.createdAt = data.created_at || data.createdAt || new Date();
@@ -36,7 +36,7 @@ class Profile {
     const updatedAt = new Date();
     
     const query = `
-      INSERT INTO profiles (user_id, bio, gender, orientation, birth_date, created_at, updated_at)
+      INSERT INTO profiles (user_id, bio, gender, sexual_orientation, birth_date, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
@@ -59,7 +59,7 @@ class Profile {
     
     const query = `
       UPDATE profiles
-      SET bio = $1, gender = $2, orientation = $3, birth_date = $4, updated_at = $5
+      SET bio = $1, gender = $2, sexual_orientation = $3, birth_date = $4, updated_at = $5
       WHERE user_id = $6
       RETURNING *
     `;

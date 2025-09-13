@@ -17,18 +17,30 @@ export function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // In a real app, you would make an API call here
-      console.log("Password reset request for:", email);
-      
-      // Show success message
-      setIsSent(true);
-      toast({
-        title: "Email envoyé",
-        description: "Un email de réinitialisation a été envoyé à votre adresse."
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
+
+      if (response.ok) {
+        // Show success message
+        setIsSent(true);
+        toast({
+          title: "Email envoyé",
+          description: "Un email de réinitialisation a été envoyé à votre adresse."
+        });
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Erreur",
+          description: errorData.message || "Une erreur s'est produite. Veuillez réessayer.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       toast({
         title: "Erreur",

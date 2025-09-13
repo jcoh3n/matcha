@@ -23,7 +23,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
     try {
       // Make API call to backend
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      // Make API call to backend
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,7 +33,22 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // Handle non-JSON responses or errors
+        const errorText = await response.text();
+        console.error('Login error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Try to parse JSON, but handle case where response might be empty
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        data = {};
+      }
 
       if (response.ok) {
         // Store tokens in localStorage (in a real app, you might want to use secure cookies)
@@ -67,6 +84,47 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer votre adresse email.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      
+      toast({
+        title: "Succès",
+        description: data.message || "L'email de vérification a été renvoyé avec succès.",
+      });
+    } catch (error) {
+      console.error('Resend verification email error:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de l'envoi de l'email de vérification. Veuillez réessayer.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -112,6 +170,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <Link to="/auth/forgot-password" className="text-primary hover:underline">
                 Mot de passe oublié ?
               </Link>
+            </div>
+            <div className="text-sm text-center">
+              <button 
+                type="button" 
+                onClick={handleResendVerification}
+                className="text-primary hover:underline bg-transparent border-none cursor-pointer"
+              >
+                Renvoyer l'email de vérification
+              </button>
             </div>
             <div className="text-sm text-center">
               Pas encore de compte ?{" "}

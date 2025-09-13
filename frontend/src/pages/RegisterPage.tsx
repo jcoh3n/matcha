@@ -5,26 +5,75 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export function RegisterPage() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would be an API call
+    
     if (password !== confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
       return;
     }
-    console.log("Register attempt with:", { email, username, password });
-    // For now, we'll just navigate to discover
-    navigate("/discover");
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          username,
+          firstName,
+          lastName,
+          password
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: data.message || "Account created successfully. Please check your email for verification.",
+        });
+        // Navigate to verify email page or show message
+        navigate("/verify-email-pending");
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Registration failed",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred during registration",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,6 +98,30 @@ export function RegisterPage() {
                 required
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Prénom</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="Prénom"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Nom</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Nom"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="username">Nom d'utilisateur</Label>
               <Input
@@ -57,7 +130,6 @@ export function RegisterPage() {
                 placeholder="Votre nom d'utilisateur"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                required
               />
             </div>
             <div className="space-y-2">
@@ -110,8 +182,8 @@ export function RegisterPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full">
-              Créer un compte
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Création en cours..." : "Créer un compte"}
             </Button>
             <div className="text-center text-sm">
               <span className="text-muted-foreground">Déjà un compte ? </span>

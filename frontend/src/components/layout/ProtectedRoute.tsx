@@ -5,9 +5,13 @@ import { OnboardingPage } from "@/pages/OnboardingPage";
 
 interface ProtectedRouteProps {
   children: ReactNode;
+  requireOnboarding?: boolean; // New prop to control onboarding requirement
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
+export function ProtectedRoute({ 
+  children, 
+  requireOnboarding = true // By default, require onboarding
+}: ProtectedRouteProps) {
   const { isLoading, hasCompletedOnboarding } = useOnboardingStatus();
   const navigate = useNavigate();
 
@@ -15,7 +19,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
   }
 
-  if (!hasCompletedOnboarding) {
+  // If onboarding is required and not completed, show onboarding
+  if (requireOnboarding && !hasCompletedOnboarding) {
     return <OnboardingPage />;
   }
 

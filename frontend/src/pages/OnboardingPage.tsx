@@ -96,7 +96,7 @@ export function OnboardingPage() {
         location
       };
       
-      const response = await fetch('http://localhost:3000/api/onboarding/complete', {
+      let response = await fetch('http://localhost:3000/api/onboarding/complete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,6 +104,39 @@ export function OnboardingPage() {
         },
         body: JSON.stringify(onboardingData),
       });
+
+      // If the request failed due to token expiration, try to refresh the token
+      if (!response.ok && response.status === 401) {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const refreshResponse = await fetch('http://localhost:3000/api/auth/refresh', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ refreshToken }),
+          });
+
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            localStorage.setItem('accessToken', refreshData.accessToken);
+            
+            // Retry the onboarding request with the new token
+            response = await fetch('http://localhost:3000/api/onboarding/complete', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${refreshData.accessToken}`,
+              },
+              body: JSON.stringify(onboardingData),
+            });
+          } else {
+            throw new Error('Failed to refresh token');
+          }
+        } else {
+          throw new Error('No refresh token available');
+        }
+      }
 
       if (!response.ok) {
         throw new Error('Failed to complete onboarding');

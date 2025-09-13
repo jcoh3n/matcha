@@ -6,14 +6,19 @@ class User {
     this.id = data.id;
     this.email = data.email;
     this.username = data.username;
-    this.firstName = data.firstName;
-    this.lastName = data.lastName;
-    this.password = data.password;
+    this.firstName = data.first_name || data.firstName;
+    this.lastName = data.last_name || data.lastName;
+    this.password = data.password;  // This will be the hashed password
+    this.emailVerified = data.email_verified || data.emailVerified || false;
+    this.emailVerificationToken = data.email_verification_token || data.emailVerificationToken;
+    this.emailVerificationSentAt = data.email_verification_sent_at || data.emailVerificationSentAt;
+    this.passwordResetToken = data.password_reset_token || data.passwordResetToken;
+    this.passwordResetExpiresAt = data.password_reset_expires_at || data.passwordResetExpiresAt;
     this.createdAt = data.created_at || data.createdAt || new Date();
     this.updatedAt = data.updated_at || data.updatedAt || new Date();
   }
 
-  // Convert to JSON format (exclude password)
+  // Convert to JSON format (exclude password and sensitive fields)
   toJSON() {
     return {
       id: this.id,
@@ -21,6 +26,7 @@ class User {
       username: this.username,
       firstName: this.firstName,
       lastName: this.lastName,
+      emailVerified: this.emailVerified,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
@@ -61,13 +67,17 @@ class User {
     const createdAt = new Date();
     const updatedAt = new Date();
     
+    // Generate email verification token
+    const crypto = require('crypto');
+    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+    
     const query = `
-      INSERT INTO users (email, username, first_name, last_name, password, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO users (email, username, first_name, last_name, password, email_verification_token, email_verification_sent_at, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
     
-    const values = [email, username, firstName, lastName, password, createdAt, updatedAt];
+    const values = [email, username, firstName, lastName, password, emailVerificationToken, createdAt, createdAt, updatedAt];
     const result = await db.query(query, values);
     return new User(result.rows[0]);
   }
