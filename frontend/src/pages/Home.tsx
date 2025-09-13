@@ -12,22 +12,15 @@ export function Home({ onLogout }: HomeProps) {
   const { isLoading, hasCompletedOnboarding } = useOnboardingStatus();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isLoading && !hasCompletedOnboarding) {
-      // Redirect to onboarding if not completed
-      navigate("/onboarding");
-    }
-  }, [isLoading, hasCompletedOnboarding, navigate]);
+  // We're removing the automatic redirect to onboarding
+  // Users can access the home page even if onboarding is not complete
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
   }
 
-  if (!hasCompletedOnboarding) {
-    // This should not be reached due to the redirect, but just in case
-    return null;
-  }
-
+  // If onboarding is not complete, we still show the discover page
+  // but the user will be prompted to complete onboarding when they try to interact
   return (
     <AppShell current="discover" onLogout={onLogout} fullWidth>
       <DiscoverPage />

@@ -5,19 +5,59 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would be an API call
-    console.log("Login attempt with:", { email, password });
-    // For now, we'll just navigate to discover
-    navigate("/discover");
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Store tokens in localStorage or secure storage
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        
+        toast({
+          title: "Success",
+          description: "Logged in successfully!",
+        });
+        
+        // Navigate to main app
+        navigate("/discover");
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Login failed",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred during login",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -68,9 +108,14 @@ export function LoginPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full">
-              Se connecter
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Connexion en cours..." : "Se connecter"}
             </Button>
+            <div className="text-center text-sm">
+              <Link to="/forgot-password" className="text-primary hover:underline">
+                Mot de passe oublié ?
+              </Link>
+            </div>
             <div className="text-center text-sm">
               <span className="text-muted-foreground">Pas encore de compte ? </span>
               <Link to="/register" className="text-primary hover:underline">

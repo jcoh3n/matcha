@@ -9,4 +9,6 @@ export { ProfilePage } from "./ProfilePage";
 export { NotificationsPage } from "./NotificationsPage";
 export { SearchPage } from "./SearchPage";
 export { HealthPage } from "./HealthPage";
+export { VerifyEmailPage } from "./auth/VerifyEmailPage";
+export { VerifyEmailPendingPage } from "./auth/VerifyEmailPendingPage";
 export { default as NotFound } from "./NotFound";

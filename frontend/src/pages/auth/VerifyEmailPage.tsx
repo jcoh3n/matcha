@@ -1,99 +1,131 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
-  const [isVerifying, setIsVerifying] = useState(true);
-  const [isVerified, setIsVerified] = useState(false);
-  const [error, setError] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const verifyToken = async () => {
-      try {
-        // Get token from URL params
-        const token = searchParams.get('token');
-        
-        // In a real app, you would make an API call to verify the token
-        // For now, we'll simulate the verification process
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        if (token) {
-          // Simulate successful verification
-          setIsVerified(true);
-          toast({
-            title: "Email vérifié",
-            description: "Votre email a été vérifié avec succès."
-          });
-        } else {
-          // Simulate error - no token provided
-          setError("Lien de vérification invalide");
-        }
-      } catch (error) {
-        setError("Une erreur s'est produite lors de la vérification de votre email.");
-        toast({
-          title: "Erreur de vérification",
-          description: "Une erreur s'est produite. Veuillez réessayer.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsVerifying(false);
-      }
-    };
+    const token = searchParams.get('token');
+    if (token) {
+      verifyEmail(token);
+    }
+  }, [searchParams]);
 
-    verifyToken();
-  }, [searchParams, toast]);
+  const verifyEmail = async (token: string) => {
+    setVerificationStatus('verifying');
+    
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/auth/verify-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+      
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // Handle non-JSON responses or errors
+        const errorText = await response.text();
+        console.error('Email verification error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Try to parse JSON, but handle case where response might be empty
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        data = {};
+      }
+      
+      if (response.ok) {
+        setVerificationStatus('success');
+        toast({
+          title: "Success",
+          description: data.message || "Email verified successfully!",
+        });
+      } else {
+        setVerificationStatus('error');
+        toast({
+          title: "Error",
+          description: data.message || "Failed to verify email",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      setVerificationStatus('error');
+      toast({
+        title: "Error",
+        description: "An error occurred while verifying your email",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleResendEmail = async () => {
+    // In a real implementation, you would prompt for the user's email
+    // For now, we'll just show a message
+    toast({
+      title: "Info",
+      description: "In a real implementation, you would be prompted to enter your email to resend the verification.",
+    });
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Vérification d'email</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Verify Email</CardTitle>
           <CardDescription className="text-center">
-            {isVerifying ? "Vérification de votre email en cours..." : 
-             isVerified ? "Votre email a été vérifié avec succès !" : 
-             error || "Une erreur s'est produite"}
+            {verificationStatus === 'idle' && "Checking verification token..."}
+            {verificationStatus === 'verifying' && "Verifying your email..."}
+            {verificationStatus === 'success' && "Email verified successfully!"}
+            {verificationStatus === 'error' && "Failed to verify email"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center">
-          {isVerifying ? (
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              <p className="text-muted-foreground">Veuillez patienter...</p>
+        <CardContent className="space-y-4">
+          {verificationStatus === 'idle' && (
+            <div className="text-center">
+              <p>Checking your verification token...</p>
             </div>
-          ) : isVerified ? (
-            <div className="space-y-4">
-              <div className="text-5xl text-green-500">✓</div>
-              <p className="text-muted-foreground">
-                Merci d'avoir vérifié votre adresse email. Vous pouvez maintenant vous connecter à votre compte.
-              </p>
+          )}
+          
+          {verificationStatus === 'verifying' && (
+            <div className="text-center">
+              <p>Please wait while we verify your email address...</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="text-5xl text-red-500">✗</div>
-              <p className="text-muted-foreground">
-                {error || "Impossible de vérifier votre email. Le lien peut être expiré ou invalide."}
-              </p>
+          )}
+          
+          {verificationStatus === 'success' && (
+            <div className="text-center space-y-4">
+              <p>Your email has been successfully verified. You can now log in to your account.</p>
+              <Button onClick={() => navigate('/auth/login')} className="w-full">
+                Go to Login
+              </Button>
+            </div>
+          )}
+          
+          {verificationStatus === 'error' && (
+            <div className="text-center space-y-4">
+              <p>There was an error verifying your email. The verification link may have expired.</p>
+              <Button onClick={handleResendEmail} variant="outline" className="w-full">
+                Resend Verification Email
+              </Button>
+              <Button onClick={() => navigate('/auth/login')} className="w-full">
+                Go to Login
+              </Button>
             </div>
           )}
         </CardContent>
-        {!isVerifying && (
-          <CardFooter className="flex flex-col space-y-4">
-            <Link to="/auth/login" className="w-full">
-              <Button className="w-full">
-                {isVerified ? "Se connecter" : "Retenter la vérification"}
-              </Button>
-            </Link>
-            <div className="text-sm text-center">
-              <Link to="/auth/login" className="text-primary hover:underline">
-                Retour à la connexion
-              </Link>
-            </div>
-          </CardFooter>
-        )}
       </Card>
     </div>
   );

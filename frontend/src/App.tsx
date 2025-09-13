@@ -19,7 +19,9 @@ import { HealthTestPage } from "./pages/HealthTestPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
 import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
+import { VerifyEmailPendingPage } from "./pages/auth/VerifyEmailPendingPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { Home } from "./pages/Home";
 
@@ -102,14 +104,25 @@ const App = () => {
               path="/auth/forgot-password"
               element={<ForgotPasswordPage />}
             />
+            <Route
+              path="/auth/reset-password"
+              element={<ResetPasswordPage />}
+            />
             <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/auth/verify-email-pending" element={<VerifyEmailPendingPage />} />
             {/** discover route is handled below based on auth state */}
             {isAuthenticated ? (
               <>
                 <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route
                   path="/discover"
-                  element={<Home onLogout={handleLogout} />}
+                  element={
+                    <ProtectedRoute requireOnboarding={false}>
+                      <AppShell current="discover" onLogout={handleLogout} fullWidth>
+                        <DiscoverPage />
+                      </AppShell>
+                    </ProtectedRoute>
+                  }
                 />
                 <Route
                   path="/matches"

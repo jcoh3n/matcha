@@ -16,10 +16,43 @@ export function SignupPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Simple email validation function
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
+    if (!firstName.trim() || !lastName.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer votre prénom et nom.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!email.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer votre adresse email.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!isValidEmail(email)) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (password !== confirmPassword) {
       toast({
         title: "Erreur",
@@ -39,7 +72,12 @@ export function SignupPage() {
     }
 
     // Prepare the data to send
-    const userData = { firstName, lastName, email, password };
+    const userData = { 
+      firstName: firstName.trim(), 
+      lastName: lastName.trim(), 
+      email: email.trim(), 
+      password 
+    };
     
     // Log the data being sent for debugging
     console.log('Sending registration data:', userData);
@@ -48,7 +86,8 @@ export function SignupPage() {
 
     try {
       // Make API call to backend
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,18 +95,34 @@ export function SignupPage() {
         body: JSON.stringify(userData),
       });
 
-      const data = await response.json();
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        // Handle non-JSON responses or errors
+        const errorText = await response.text();
+        console.error('Registration error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Try to parse JSON, but handle case where response might be empty
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        data = {};
+      }
+      
       console.log('Registration response:', data);
 
       if (response.ok) {
         // Show success message
         toast({
           title: "Compte créé avec succès",
-          description: "Votre compte a été créé. Vous pouvez maintenant vous connecter."
+          description: data.message || "Votre compte a été créé. Veuillez vérifier votre email pour l'activer."
         });
         
-        // Redirect to login page
-        navigate("/auth/login");
+        // Redirect to verify email pending page
+        navigate("/auth/verify-email-pending", { state: { email: userData.email } });
       } else {
         toast({
           title: "Erreur d'inscription",
