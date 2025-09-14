@@ -19,6 +19,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -32,14 +44,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         },
         body: JSON.stringify({ email, password }),
       });
-
-      // Check if response is ok before trying to parse JSON
-      if (!response.ok) {
-        // Handle non-JSON responses or errors
-        const errorText = await response.text();
-        console.error('Login error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       // Try to parse JSON, but handle case where response might be empty
       let data;
@@ -96,6 +100,17 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       });
       return;
     }
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -107,17 +122,27 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         body: JSON.stringify({ email }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      // Try to parse JSON, but handle case where response might be empty
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        data = {};
       }
-
-      const data = await response.json();
       
-      toast({
-        title: "Succès",
-        description: data.message || "L'email de vérification a été renvoyé avec succès.",
-      });
+      if (response.ok) {
+        toast({
+          title: "Succès",
+          description: data.message || "L'email de vérification a été renvoyé avec succès.",
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: data.message || "Une erreur s'est produite lors de l'envoi de l'email de vérification. Veuillez réessayer.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error('Resend verification email error:', error);
       toast({

@@ -14,6 +14,18 @@ export function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -26,6 +38,15 @@ export function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
 
+      // Try to parse JSON, but handle case where response might be empty
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        data = {};
+      }
+      
       if (response.ok) {
         // Show success message
         setIsSent(true);
@@ -34,10 +55,9 @@ export function ForgotPasswordPage() {
           description: "Un email de réinitialisation a été envoyé à votre adresse."
         });
       } else {
-        const errorData = await response.json();
         toast({
           title: "Erreur",
-          description: errorData.message || "Une erreur s'est produite. Veuillez réessayer.",
+          description: data.message || "Une erreur s'est produite. Veuillez réessayer.",
           variant: "destructive"
         });
       }

@@ -64,6 +64,15 @@ export function ResetPasswordPage() {
         body: JSON.stringify({ token, newPassword: password }),
       });
 
+      // Try to parse JSON, but handle case where response might be empty
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        data = {};
+      }
+      
       if (response.ok) {
         setIsSuccess(true);
         toast({
@@ -71,10 +80,9 @@ export function ResetPasswordPage() {
           description: "Votre mot de passe a été réinitialisé avec succès."
         });
       } else {
-        const errorData = await response.json();
         toast({
           title: "Erreur",
-          description: errorData.message || "Une erreur s'est produite lors de la réinitialisation du mot de passe.",
+          description: data.message || "Une erreur s'est produite lors de la réinitialisation du mot de passe.",
           variant: "destructive"
         });
       }

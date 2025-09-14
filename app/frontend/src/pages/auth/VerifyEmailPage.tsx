@@ -30,14 +30,6 @@ export function VerifyEmailPage() {
         body: JSON.stringify({ token }),
       });
       
-      // Check if response is ok before trying to parse JSON
-      if (!response.ok) {
-        // Handle non-JSON responses or errors
-        const errorText = await response.text();
-        console.error('Email verification error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       // Try to parse JSON, but handle case where response might be empty
       let data;
       try {
@@ -50,22 +42,22 @@ export function VerifyEmailPage() {
       if (response.ok) {
         setVerificationStatus('success');
         toast({
-          title: "Success",
-          description: data.message || "Email verified successfully!",
+          title: "Succès",
+          description: data.message || "Votre email a été vérifié avec succès !",
         });
       } else {
         setVerificationStatus('error');
         toast({
-          title: "Error",
-          description: data.message || "Failed to verify email",
+          title: "Erreur",
+          description: data.message || "Échec de la vérification de l'email",
           variant: "destructive",
         });
       }
     } catch (error) {
       setVerificationStatus('error');
       toast({
-        title: "Error",
-        description: "An error occurred while verifying your email",
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la vérification de votre email",
         variant: "destructive",
       });
     }
@@ -75,8 +67,8 @@ export function VerifyEmailPage() {
     // In a real implementation, you would prompt for the user's email
     // For now, we'll just show a message
     toast({
-      title: "Info",
-      description: "In a real implementation, you would be prompted to enter your email to resend the verification.",
+      title: "Information",
+      description: "Veuillez utiliser le formulaire de connexion pour renvoyer un email de vérification.",
     });
   };
 
@@ -84,44 +76,44 @@ export function VerifyEmailPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Verify Email</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Vérification d'email</CardTitle>
           <CardDescription className="text-center">
-            {verificationStatus === 'idle' && "Checking verification token..."}
-            {verificationStatus === 'verifying' && "Verifying your email..."}
-            {verificationStatus === 'success' && "Email verified successfully!"}
-            {verificationStatus === 'error' && "Failed to verify email"}
+            {verificationStatus === 'idle' && "Vérification du jeton..."}
+            {verificationStatus === 'verifying' && "Vérification de votre email..."}
+            {verificationStatus === 'success' && "Email vérifié avec succès !"}
+            {verificationStatus === 'error' && "Échec de la vérification de l'email"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {verificationStatus === 'idle' && (
             <div className="text-center">
-              <p>Checking your verification token...</p>
+              <p>Vérification de votre jeton de vérification...</p>
             </div>
           )}
           
           {verificationStatus === 'verifying' && (
             <div className="text-center">
-              <p>Please wait while we verify your email address...</p>
+              <p>Veuillez patienter pendant que nous vérifions votre adresse email...</p>
             </div>
           )}
           
           {verificationStatus === 'success' && (
             <div className="text-center space-y-4">
-              <p>Your email has been successfully verified. You can now log in to your account.</p>
+              <p>Votre email a été vérifié avec succès. Vous pouvez maintenant vous connecter à votre compte.</p>
               <Button onClick={() => navigate('/auth/login')} className="w-full">
-                Go to Login
+                Aller à la connexion
               </Button>
             </div>
           )}
           
           {verificationStatus === 'error' && (
             <div className="text-center space-y-4">
-              <p>There was an error verifying your email. The verification link may have expired.</p>
+              <p>Une erreur s'est produite lors de la vérification de votre email. Le lien de vérification a peut-être expiré.</p>
               <Button onClick={handleResendEmail} variant="outline" className="w-full">
-                Resend Verification Email
+                Renvoyer l'email de vérification
               </Button>
               <Button onClick={() => navigate('/auth/login')} className="w-full">
-                Go to Login
+                Aller à la connexion
               </Button>
             </div>
           )}
