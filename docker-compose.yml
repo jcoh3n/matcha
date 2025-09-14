@@ -13,11 +13,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./app/backend/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   backend:
     build:
-      context: ./backend
+      context: ./app/backend
       dockerfile: Dockerfile
     container_name: matcha_backend
     restart: always
@@ -41,13 +41,13 @@ services:
     depends_on:
       - db
     volumes:
-      - ./backend:/app
+      - ./app/backend:/app
       - /app/node_modules
-      - ./backend/public:/app/public:ro
+      - ./app/backend/public:/app/public:ro
 
   frontend:
     build:
-      context: ./frontend
+      context: ./app/frontend
       dockerfile: Dockerfile
     container_name: matcha_frontend
     restart: always
@@ -56,7 +56,7 @@ services:
     environment:
       VITE_API_URL: http://localhost:3000
     volumes:
-      - ./frontend:/app
+      - ./app/frontend:/app
       - /app/node_modules
     depends_on:
       - backend

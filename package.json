@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Matcha dating app with separate frontend and backend",
   "scripts": {
-    "frontend": "cd frontend && npm run dev",
-    "backend": "cd backend && npm run dev",
+    "frontend": "cd app/frontend && npm run dev",
+    "backend": "cd app/backend && npm run dev",
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
     "dev:full": "docker-compose up -d && sleep 10 && concurrently \"npm run backend\" \"npm run frontend\"",
     "dev:stop": "docker-compose down",
-    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+    "install:all": "npm install && cd app/frontend && npm install && cd ../backend && npm install"
   },
   "devDependencies": {
     "concurrently": "^8.2.0"

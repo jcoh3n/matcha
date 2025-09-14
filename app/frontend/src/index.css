@@ -1,0 +1,252 @@
+/* Matcha Design System - Matcha Latte Theme */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Core Colors - Matcha Latte Palette */
+    --background: 48 14% 91%; /* cararra */
+    --foreground: 66 62% 13%; /* waiouru */
+
+    --card: 48 14% 94%;
+    --card-foreground: 66 62% 13%;
+
+    --popover: 48 14% 94%;
+    --popover-foreground: 66 62% 13%;
+
+    /* Primary - Flax Smoke (vert olive) */
+    --primary: 101 37% 56%;
+    --primary-foreground: 48 14% 91%;
+    --primary-muted: 75 15% 75%;
+
+    /* Secondary - Waiouru (vert très foncé) */
+    --secondary: 66 62% 13%;
+    --secondary-foreground: 48 14% 91%;
+    --secondary-muted: 80 18% 71%;
+
+    /* Accent - Vanilla (beige/vanille) */
+    --accent: 32 32% 73%;
+    --accent-foreground: 66 62% 13%;
+
+    --muted: 80 18% 71%; /* clay-ash */
+    --muted-foreground: 58 60% 17%; /* camouflage */
+
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 48 14% 91%;
+
+    --border: 80 18% 75%;
+    --input: 80 18% 80%;
+    --ring: 75 23% 45%;
+
+    /* Brutalism Doux Radii */
+    --radius: 1.5rem;
+    --radius-sm: 1rem;
+    --radius-lg: 2rem;
+    --radius-xl: 2.5rem;
+
+    /* Custom Gradients - Matcha Latte */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(75 23% 45%) 0%,
+      hsl(75 30% 50%) 100%
+    );
+    --gradient-secondary: linear-gradient(
+      135deg,
+      hsl(66 62% 13%) 0%,
+      hsl(58 60% 17%) 100%
+    );
+    --gradient-warm: linear-gradient(
+      135deg,
+      hsl(32 32% 73%) 0%,
+      hsl(48 14% 91%) 100%
+    );
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(var(--primary) / 0.15);
+    --shadow-brutal: 8px 8px 0px hsl(var(--secondary) / 0.8);
+    --shadow-card: 0 8px 32px -8px hsl(var(--foreground) / 0.1);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark Mode - Matcha Latte */
+    --background: 66 62% 8%; /* waiouru plus sombre */
+    --foreground: 48 14% 91%; /* cararra */
+
+    --card: 58 60% 12%; /* camouflage plus sombre */
+    --card-foreground: 48 14% 91%;
+
+    --popover: 58 60% 12%;
+    --popover-foreground: 48 14% 91%;
+
+    --primary: 75 23% 55%; /* flax-smoke plus clair */
+    --primary-foreground: 66 62% 8%;
+    --primary-muted: 75 15% 25%;
+
+    --secondary: 80 18% 80%; /* clay-ash plus clair */
+    --secondary-foreground: 66 62% 8%;
+    --secondary-muted: 80 18% 15%;
+
+    --accent: 32 32% 25%; /* vanilla plus sombre */
+    --accent-foreground: 48 14% 91%;
+
+    --muted: 66 40% 15%;
+    --muted-foreground: 80 18% 65%;
+
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 48 14% 91%;
+
+    --border: 66 40% 18%;
+    --input: 66 40% 18%;
+    --ring: 75 23% 55%;
+
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+    --shadow-brutal: 8px 8px 0px hsl(75 23% 35% / 0.4);
+    --shadow-card: 0 8px 32px -8px hsl(0 0% 0% / 0.4);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: "Montserrat", "Poppins", "Inter", system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Montserrat", "Poppins", "Inter", system-ui, sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+  .font-montserrat {
+    font-family: "Montserrat", "Poppins", "Inter", system-ui, sans-serif;
+  }
+  .font-poppins {
+    font-family: "Poppins", "Montserrat", "Inter", system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  /* Brutalism Doux Utilities */
+  .brutal-shadow {
+    box-shadow: var(--shadow-brutal);
+  }
+
+  .soft-shadow {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-shadow {
+    box-shadow: var(--shadow-card);
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+
+  /* Asymmetric Grid Helpers */
+  .grid-asymmetric {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr;
+    gap: 1.5rem;
+  }
+
+  .grid-asymmetric-mobile {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+
+  /* Interactive Elements */
+  .interactive-card {
+    @apply transition-smooth cursor-pointer;
+  }
+
+  .interactive-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .brutal-button {
+    @apply font-semibold px-6 py-3 rounded-full transition-smooth;
+    background: linear-gradient(
+      120deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary) / 0.65) 90%
+    );
+    box-shadow: 0 4px 14px -4px hsl(var(--primary) / 0.45);
+  }
+
+  .brutal-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px -6px hsl(var(--primary) / 0.5);
+  }
+
+  .brutal-button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 10px -2px hsl(var(--primary) / 0.5);
+  }
+
+  .bg-matcha-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary) / 0.6) 100%
+    );
+  }
+
+  .surface {
+    @apply rounded-3xl bg-card/60 backdrop-blur-xl border border-border/40 shadow-soft;
+  }
+  .surface-solid {
+    @apply rounded-3xl bg-card border border-border/50 shadow-card;
+  }
+  .tag-pill {
+    @apply rounded-full px-3 py-1 text-[11px] font-medium bg-primary/10 text-primary hover:bg-primary/15 transition-smooth border border-primary/20;
+  }
+}

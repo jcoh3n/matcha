@@ -1,0 +1,255 @@
+/* Matcha Redesign Styles - Respect existing palette */
+
+/* Hero Section */
+.hero-overlay {
+  background: linear-gradient(to bottom, hsl(101 37% 56% / 0.7), transparent);
+}
+
+.hero-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.hero-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Buttons */
+.btn-matcha {
+  background: linear-gradient(135deg, hsl(101 37% 56%) 0%, hsl(75 23% 45%) 100%);
+  color: hsl(48 14% 91%);
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px hsl(101 37% 56% / 0.3);
+}
+
+.btn-matcha:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px hsl(101 37% 56% / 0.4);
+}
+
+.btn-matcha:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px hsl(101 37% 56% / 0.3);
+}
+
+/* Cards */
+.profile-card {
+  border-radius: 2.5rem;
+  overflow: hidden;
+  box-shadow: 0 10px 30px hsl(66 62% 13% / 0.08);
+  transition: all 0.3s ease;
+  background: hsl(48 14% 94%);
+}
+
+.profile-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px hsl(66 62% 13% / 0.12);
+}
+
+.profile-image {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+}
+
+.profile-content {
+  padding: 24px;
+}
+
+.profile-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 4px;
+  color: hsl(66 62% 13%);
+}
+
+.profile-location {
+  display: flex;
+  align-items: center;
+  color: hsl(80 18% 71%);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.profile-bio {
+  color: hsl(80 18% 71%);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* Tags */
+.tag-interest {
+  background: hsl(32 32% 85%);
+  color: hsl(66 62% 13%);
+  border-radius: 50px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.tag-match {
+  background: hsl(75 23% 80%);
+  color: hsl(66 62% 13%);
+  border-radius: 50px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+/* Match Buttons */
+.match-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.match-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px hsl(66 62% 13% / 0.15);
+  border: none;
+  outline: none;
+}
+
+.btn-pass {
+  background: hsl(0 72% 85%);
+  color: hsl(0 72% 40%);
+}
+
+.btn-smash {
+  background: hsl(101 37% 56%);
+  color: hsl(48 14% 91%);
+}
+
+.match-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px hsl(66 62% 13% / 0.2);
+}
+
+.match-btn:active {
+  transform: scale(0.95);
+}
+
+/* Footer */
+.footer {
+  background: hsl(0 0% 100%);
+  padding: 48px 24px;
+  text-align: center;
+  margin-top: 64px;
+  border-top: 1px solid hsl(80 18% 75%);
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.footer-link {
+  color: hsl(80 18% 71%);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: hsl(101 37% 56%);
+}
+
+.footer-social {
+  display: flex;
+  gap: 16px;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: hsl(80 18% 80%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: hsl(80 18% 71%);
+}
+
+.social-icon:hover {
+  background: hsl(101 37% 56%);
+  color: hsl(48 14% 91%);
+  transform: translateY(-3px);
+}
+
+.footer-copyright {
+  color: hsl(80 18% 75%);
+  font-size: 14px;
+  margin-top: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 48px;
+  }
+  
+  .hero-subtitle {
+    font-size: 18px;
+  }
+  
+  .match-buttons {
+    gap: 16px;
+    margin-top: 24px;
+  }
+  
+  .match-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
+  
+  .profile-image {
+    height: 300px;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

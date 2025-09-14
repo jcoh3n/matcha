@@ -6,8 +6,8 @@ L’application couvre l’ensemble du parcours utilisateur : de l’inscription
 
 ## Architecture
 Le projet est organisé en deux parties distinctes :
-- `frontend/` : Application React avec Vite
-- `backend/` : API REST avec Node.js/Express
+- `app/frontend/` : Application React avec Vite
+- `app/backend/` : API REST avec Node.js/Express
 
 ## Stack utilisée
 - **Backend** : Node.js, Express  
@@ -28,7 +28,7 @@ Le projet est organisé en deux parties distinctes :
    ```bash
    npm run install:all
    ```
-3. Configurer les variables d’environnement dans `backend/.env`.  
+3. Configurer les variables d'environnement dans `app/backend/.env`.  
 
 ## Lancement du projet
 

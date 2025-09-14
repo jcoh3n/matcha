@@ -89,7 +89,7 @@ When using `npm run dev`, the PostgreSQL database does not start automatically. 
 #### Option 2: Local PostgreSQL Installation
 
 1. Install PostgreSQL locally on your machine
-2. Create the database and user according to the configuration in `backend/.env`
+2. Create the database and user according to the configuration in `app/backend/.env`
 3. Start the backend and frontend as described in Option 1
 
 ## Troubleshooting
