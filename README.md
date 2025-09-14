@@ -83,6 +83,22 @@ Le projet est organisé en deux parties distinctes :
 
 4. Arrêter les services : utiliser `Ctrl+C` dans chaque terminal
 
+## Initialisation de la base de données
+
+Lors du premier lancement du projet, la base de données doit être initialisée avec les tables et les données de test :
+
+### Via Docker :
+L'initialisation est automatique lors du premier lancement. Les scripts de migration et de seeding sont exécutés automatiquement.
+
+### Manuellement (en développement) :
+```bash
+# Lancer les migrations
+npm run migrate
+
+# Insérer les données de test
+npm run seed
+```
+
 ## Configuration du développement
 Pour plus d'informations sur la configuration du développement, y compris la résolution des problèmes courants, consultez [SETUP.md](SETUP.md).
 
