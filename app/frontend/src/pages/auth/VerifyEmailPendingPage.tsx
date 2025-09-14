@@ -10,6 +10,26 @@ export function VerifyEmailPendingPage() {
   const email = location.state?.email || "your email address";
 
   const handleResendEmail = async () => {
+    if (!email) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer votre adresse email.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await fetch(`${apiUrl}/api/auth/resend-verification`, {
@@ -20,17 +40,27 @@ export function VerifyEmailPendingPage() {
         body: JSON.stringify({ email }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      // Try to parse JSON, but handle case where response might be empty
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        data = {};
       }
-
-      const data = await response.json();
       
-      toast({
-        title: "Succès",
-        description: data.message || "L'email de vérification a été renvoyé avec succès.",
-      });
+      if (response.ok) {
+        toast({
+          title: "Succès",
+          description: data.message || "L'email de vérification a été renvoyé avec succès.",
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: data.message || "Une erreur s'est produite lors de l'envoi de l'email de vérification. Veuillez réessayer.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error('Resend verification email error:', error);
       toast({

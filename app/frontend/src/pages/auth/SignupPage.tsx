@@ -95,14 +95,6 @@ export function SignupPage() {
         body: JSON.stringify(userData),
       });
 
-      // Check if response is ok before trying to parse JSON
-      if (!response.ok) {
-        // Handle non-JSON responses or errors
-        const errorText = await response.text();
-        console.error('Registration error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       // Try to parse JSON, but handle case where response might be empty
       let data;
       try {

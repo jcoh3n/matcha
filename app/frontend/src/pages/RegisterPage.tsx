@@ -23,10 +23,49 @@ export function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Basic validation
+    if (!firstName.trim() || !lastName.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer votre prénom et nom.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!email.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer votre adresse email.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (password !== confirmPassword) {
       toast({
-        title: "Error",
-        description: "Passwords do not match",
+        title: "Erreur",
+        description: "Les mots de passe ne correspondent pas",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (password.length < 6) {
+      toast({
+        title: "Erreur",
+        description: "Le mot de passe doit contenir au moins 6 caractères.",
         variant: "destructive",
       });
       return;
@@ -35,7 +74,8 @@ export function RegisterPage() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('/api/auth/register', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,26 +89,33 @@ export function RegisterPage() {
         }),
       });
       
-      const data = await response.json();
+      // Try to parse JSON, but handle case where response might be empty
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        data = {};
+      }
       
       if (response.ok) {
         toast({
-          title: "Success",
-          description: data.message || "Account created successfully. Please check your email for verification.",
+          title: "Succès",
+          description: data.message || "Compte créé avec succès. Veuillez vérifier votre email pour la vérification.",
         });
         // Navigate to verify email page or show message
         navigate("/verify-email-pending");
       } else {
         toast({
-          title: "Error",
-          description: data.message || "Registration failed",
+          title: "Erreur",
+          description: data.message || "Échec de l'inscription",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "An error occurred during registration",
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de l'inscription",
         variant: "destructive",
       });
     } finally {
