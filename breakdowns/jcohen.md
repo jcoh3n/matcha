@@ -2,14 +2,14 @@
 
 ## État actuel
 - [x] Sprint 0 – Socle (React/Tailwind + Express/Postgres + `/health`)
-- [ ] Sprint 1 – Auth (reste à finir)
+- [X] Sprint 1 – Auth
 
 ---
 
 ## Sprint 1 – Auth (à terminer)
-- [ ] FE : Forgot/Reset password, guard routes privées, gestion refresh token
-- [ ] BE : `POST /auth/logout`, erreurs normalisées (si manquant)
-- [ ] DoD : Auth E2E complet (register/login/verify/reset/logout)
+- [X] FE : Forgot/Reset password, guard routes privées, gestion refresh token
+- [X] BE : `POST /auth/logout`, erreurs normalisées (si manquant)
+- [X] DoD : Auth E2E complet (register/login/verify/reset/logout)
 
 ---
 
@@ -51,3 +51,4 @@
 - [ ] Vérification contrats JSON avec mdembele
 - [ ] Tests E2E : Register → Profil public → Like ↔ Like → Notifs
 - [ ] Accessibilité (focus, contrastes)
+- [ ] Design upgrade

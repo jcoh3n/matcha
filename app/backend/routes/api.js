@@ -18,7 +18,7 @@ router.delete('/users/:id', deleteUser);
 router.get('/me', authJWT, getCurrentUser);
 
 // Profile routes
-router.use('/', profileRoutes);
+router.use('/profiles', profileRoutes);
 
 // Auth routes
 router.use('/auth', authRoutes);
