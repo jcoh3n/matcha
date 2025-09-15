@@ -12,4 +12,8 @@ echo "PostgreSQL is ready. Running migrations..."
 # Run migrations
 docker exec matcha_backend npm run migrate
 
-echo "Migrations completed."
+# Run seed script
+echo "Seeding database with initial data..."
+docker exec matcha_backend npm run seed
+
+echo "Migrations and seeding completed."

@@ -19,7 +19,6 @@ import {
 import { ProfileCard } from "@/components/ui/profile-card";
 import { BrutalButton } from "@/components/ui/brutal-button";
 import { Header } from "@/components/layout/Header";
-import { getRandomProfiles, type MockProfile } from "@/data/mockProfiles";
 import {
   Sheet,
   SheetContent,
@@ -27,6 +26,27 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { api } from "@/lib/api";
+
+interface UserProfile {
+  id: string;
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  profilePhotoUrl?: string;
+  profile: {
+    birthDate?: string;
+    gender?: string;
+    orientation?: string;
+    bio?: string;
+    fameRating?: number;
+  };
+  location?: {
+    city?: string;
+    country?: string;
+  };
+}
 
 interface Filters {
   ageRange: [number, number];
@@ -56,20 +76,85 @@ const availableTags = [
   "Science",
 ];
 
-// Removed emoji mapping for cleaner design
+// Calculate age from birth date
+const calculateAge = (birthDate?: string) => {
+  if (!birthDate) return 0;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+// Transform API user data to match ProfileCard expectations
+const transformUserForProfileCard = (user: UserProfile) => {
+  return {
+    id: user.id,
+    name: `${user.firstName} ${user.lastName}`,
+    age: calculateAge(user.profile?.birthDate),
+    images: user.profilePhotoUrl ? [user.profilePhotoUrl] : [],
+    bio: user.profile?.bio || "",
+    location: user.location ? `${user.location.city}, ${user.location.country}` : "",
+    distance: Math.floor(Math.random() * 20) + 1, // Placeholder - would be calculated based on user location
+    tags: [], // Would be populated with user tags
+    fame: user.profile?.fameRating || 0,
+    isOnline: Math.random() > 0.5, // Placeholder
+    orientation: user.profile?.orientation || "straight",
+    gender: user.profile?.gender || "female",
+    matchPercent: Math.floor(Math.random() * 60) + 20 // Placeholder match percentage
+  };
+};
 
 export function DiscoverPage() {
-  const [profiles, setProfiles] = useState<MockProfile[]>(getRandomProfiles(8));
+  const [profiles, setProfiles] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [filters, setFilters] = useState<Filters>({
     ageRange: [18, 35],
     distance: 50,
     tags: [],
   });
-  // Chat/matches sidebar data
-  const [peers] = useState<MockProfile[]>(getRandomProfiles(8));
-  const [activePeerId, setActivePeerId] = useState<string>(peers[0]?.id || "");
+  const [peers, setPeers] = useState<any[]>([]);
+  const [activePeerId, setActivePeerId] = useState<string>("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Fetch users for discovery
+  const fetchDiscoveryUsers = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        console.error("No access token found");
+        return;
+      }
+
+      console.log("Fetching discovery users...");
+      const response = await api.getRandomUsers(token, 8);
+      
+      if (response.ok) {
+        const users: UserProfile[] = await response.json();
+        console.log("Received users:", users);
+        const transformedUsers = users.map(transformUserForProfileCard);
+        console.log("Transformed users:", transformedUsers);
+        setProfiles(transformedUsers);
+        setPeers(transformedUsers);
+        if (transformedUsers.length > 0) {
+          setActivePeerId(transformedUsers[0].id);
+        } else {
+          console.log("No users found for discovery");
+        }
+      } else {
+        console.error("Failed to fetch discovery users", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching discovery users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Check if profile is complete
   useEffect(() => {
@@ -107,17 +192,25 @@ export function DiscoverPage() {
     checkProfileCompletion();
   }, [navigate]);
 
+  // Load initial profiles
+  useEffect(() => {
+    fetchDiscoveryUsers();
+  }, []);
+
   const currentProfile = profiles[currentIndex];
 
   const handleLike = (userId: string) => {
     console.log(`Liked user: ${userId}`);
+    console.log(`Current index: ${currentIndex}, Profiles length: ${profiles.length}`);
     // Add like animation and move to next profile
     setTimeout(() => {
       if (currentIndex < profiles.length - 1) {
         setCurrentIndex(currentIndex + 1);
+        console.log(`Moved to next profile, new index: ${currentIndex + 1}`);
       } else {
-        // Load more profiles or show no more profiles message
-        setProfiles(getRandomProfiles(8));
+        // Load more profiles
+        console.log("No more profiles, fetching new ones");
+        fetchDiscoveryUsers();
         setCurrentIndex(0);
       }
     }, 300);
@@ -125,13 +218,16 @@ export function DiscoverPage() {
 
   const handlePass = (userId: string) => {
     console.log(`Passed user: ${userId}`);
+    console.log(`Current index: ${currentIndex}, Profiles length: ${profiles.length}`);
     // Add pass animation and move to next profile
     setTimeout(() => {
       if (currentIndex < profiles.length - 1) {
         setCurrentIndex(currentIndex + 1);
+        console.log(`Moved to next profile, new index: ${currentIndex + 1}`);
       } else {
         // Load more profiles
-        setProfiles(getRandomProfiles(8));
+        console.log("No more profiles, fetching new ones");
+        fetchDiscoveryUsers();
         setCurrentIndex(0);
       }
     }, 300);
@@ -148,9 +244,13 @@ export function DiscoverPage() {
 
   const applyFilters = () => {
     // In a real app, this would filter profiles from the backend
-    setProfiles(getRandomProfiles(8));
+    fetchDiscoveryUsers();
     setCurrentIndex(0);
   };
+
+  if (loading) {
+    return <div className="w-full min-h-screen flex items-center justify-center">Loading profiles...</div>;
+  }
 
   return (
     <div className="w-full min-h-screen font-poppins">
@@ -180,7 +280,7 @@ export function DiscoverPage() {
                     >
                       <span className="relative inline-flex">
                         <img
-                          src={p.images[0]}
+                          src={p.images[0] || "https://randomuser.me/api/portraits/women/1.jpg"}
                           alt={""}
                           className="w-16 h-16 rounded-full object-cover"
                         />
@@ -207,7 +307,7 @@ export function DiscoverPage() {
               <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300">
                 <div className="relative w-full lg:w-1/2 h-[520px] lg:h-[700px] shrink-0">
                   <img
-                    src={currentProfile.images[0]}
+                    src={currentProfile.images[0] || "https://randomuser.me/api/portraits/women/2.jpg"}
                     alt={currentProfile.name}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -225,7 +325,7 @@ export function DiscoverPage() {
                       </span>
                     </p>
                     <div className="flex flex-wrap gap-2 pt-10">
-                      {currentProfile.tags.slice(0, 4).map((t) => (
+                      {currentProfile.tags.slice(0, 4).map((t: string) => (
                         <span
                           key={t}
                           className="px-3 py-1.5 font-poppins rounded-full bg-white/15 backdrop-blur-sm text-black/80 text-[14px] font-inter font-bold transition-colors hover:bg-white/20"
@@ -305,7 +405,7 @@ export function DiscoverPage() {
             <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col transition-all duration-300">
               <div className="relative w-full h-[420px]">
                 <img
-                  src={currentProfile.images[1]}
+                  src={currentProfile.images[1] || "https://randomuser.me/api/portraits/women/3.jpg"}
                   alt={currentProfile.name}
                   className="absolute inset-0 w-full h-full object-cover"
                 />

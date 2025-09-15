@@ -16,6 +16,10 @@ sleep 10
 echo "Running database migrations..."
 docker exec matcha_db psql -U matcha_user -d matcha_db -f /docker-entrypoint-initdb.d/init.sql
 
+# Run migrations and seed
+echo "Running migrations and seeding..."
+./scripts/run-migrations.sh
+
 # Start backend and frontend
 echo "Starting backend and frontend..."
 concurrently "npm run backend" "npm run frontend"
