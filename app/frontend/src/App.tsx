@@ -11,6 +11,8 @@ import NotFound from "./pages/NotFound";
 import { MatchesPage } from "./pages/MatchesPage";
 import { MessagesPage } from "./pages/MessagesPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { PublicProfilePage } from "./pages/PublicProfilePage";
+import { PrivateProfilePage } from "./pages/PrivateProfilePage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { SearchPage } from "./pages/SearchPage";
 import { HealthPage } from "./pages/HealthPage";
@@ -155,6 +157,26 @@ const App = () => {
                   }
                 />
                 <Route
+                  path="/profile/edit"
+                  element={
+                    <ProtectedRoute>
+                      <AppShell current="profile" onLogout={handleLogout}>
+                        <PrivateProfilePage />
+                      </AppShell>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profiles/:id"
+                  element={
+                    <ProtectedRoute>
+                      <AppShell current="discover" onLogout={handleLogout}>
+                        <PublicProfilePage />
+                      </AppShell>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/notifications"
                   element={
                     <ProtectedRoute>
@@ -183,6 +205,8 @@ const App = () => {
                 <Route path="/matches" element={<LandingPage />} />
                 <Route path="/messages" element={<LandingPage />} />
                 <Route path="/profile" element={<LandingPage />} />
+                <Route path="/profile/edit" element={<LandingPage />} />
+                <Route path="/profiles/:id" element={<LandingPage />} />
                 <Route path="/notifications" element={<LandingPage />} />
                 <Route path="/search" element={<LandingPage />} />
               </>
@@ -196,4 +220,6 @@ const App = () => {
 };
 
 export default App;
+
+
 

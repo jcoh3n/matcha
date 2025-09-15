@@ -14,9 +14,9 @@
 ---
 
 ## Sprint 2 – Vue Profil & Actions Sociales
-- [ ] API : `GET /profiles/:id` (infos publiques sans email/mdp), log visites
-- [ ] API : `POST/DELETE /likes/:id` (refus si pas de photo profil)
-- [ ] API : `POST /profiles/:id/block`, `POST /profiles/:id/report`
+- [X] API : `GET /profiles/:id` (infos publiques sans email/mdp), log visites
+- [X] API : `POST/DELETE /likes/:id` (refus si pas de photo profil)
+- [X] API : `POST /profiles/:id/block`, `POST /profiles/:id/report`
 - [ ] FE : page Profil (galerie photos, bio, tags, fame, distance, online/last seen)
 - [ ] FE : actions Like/Unlike, Block, Report, badges “vous a liké” / “match”
 - [ ] DoD : visite enregistrée, règles like/unlike/blocked respectées

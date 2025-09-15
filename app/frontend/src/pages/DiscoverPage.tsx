@@ -16,7 +16,7 @@ import {
   Heart,
   ThumbsDown,
 } from "lucide-react";
-import { ProfileCard } from "@/components/ui/profile-card";
+import { ProfileListItem } from "@/components/profile/ProfileListItem";
 import { BrutalButton } from "@/components/ui/brutal-button";
 import { Header } from "@/components/layout/Header";
 import { getRandomProfiles, type MockProfile } from "@/data/mockProfiles";
@@ -55,8 +55,6 @@ const availableTags = [
   "Adventure",
   "Science",
 ];
-
-// Removed emoji mapping for cleaner design
 
 export function DiscoverPage() {
   const [profiles, setProfiles] = useState<MockProfile[]>(getRandomProfiles(8));
@@ -152,6 +150,11 @@ export function DiscoverPage() {
     setCurrentIndex(0);
   };
 
+  // Function to handle profile click
+  const handleProfileClick = (profileId: string) => {
+    navigate(`/profiles/${profileId}`);
+  };
+
   return (
     <div className="w-full min-h-screen font-poppins">
       {/* Desktop / large screens: split screen */}
@@ -204,7 +207,11 @@ export function DiscoverPage() {
         <div className="ml-auto w-[90%] flex flex-col justify-center p-8 ">
           {currentProfile ? (
             <div className="w-[100%] ml-auto">
-              <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300">
+              {/* Make the profile card clickable */}
+              <div 
+                className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300 cursor-pointer hover:shadow-lg"
+                onClick={() => handleProfileClick(currentProfile.id)}
+              >
                 <div className="relative w-full lg:w-1/2 h-[520px] lg:h-[700px] shrink-0">
                   <img
                     src={currentProfile.images[0]}
@@ -302,7 +309,11 @@ export function DiscoverPage() {
         </header>
         {currentProfile && (
           <div>
-            <div className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col transition-all duration-300">
+            {/* Make the profile card clickable */}
+            <div 
+              className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col transition-all duration-300 cursor-pointer hover:shadow-lg"
+              onClick={() => handleProfileClick(currentProfile.id)}
+            >
               <div className="relative w-full h-[420px]">
                 <img
                   src={currentProfile.images[1]}

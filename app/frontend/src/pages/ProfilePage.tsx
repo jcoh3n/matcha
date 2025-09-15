@@ -1,195 +1,158 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BrutalButton } from "@/components/ui/brutal-button";
+import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
 import { MatchPercentage } from "@/components/ui/match-percentage";
 import { OrientationBadge } from "@/components/ui/orientation-badge";
 import { OnlineStatus } from "@/components/ui/online-status";
+import { useProfile } from "@/hooks/useProfile";
 
-interface ProfilePageProps {
-  onLogout?: () => void;
-}
-
-interface UserProfile {
-  id: number;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  createdAt: string;
-  updatedAt: string;
-  profile?: {
-    bio: string;
-    gender: string;
-    orientation: string;
-    birthDate: string;
-  };
-}
-
-export function ProfilePage({ onLogout }: ProfilePageProps) {
-  console.log("ProfilePage rendered with onLogout:", onLogout);
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
   const navigate = useNavigate();
+  const accessToken = localStorage.getItem('accessToken');
+  const {
+    profile,
+    loading,
+    fetchProfile
+  } = useProfile(accessToken);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-          console.log("No access token found, calling onLogout");
-          onLogout?.();
-          return;
-        }
+    if (!accessToken) {
+      console.log("No access token found, calling onLogout");
+      onLogout?.();
+    }
+  }, [accessToken, onLogout]);
 
-        const response = await fetch('http://localhost:3000/api/me', {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-          
-          // Check if profile is complete
-          if (!userData.profile || !userData.profile.bio || !userData.profile.gender || 
-              !userData.profile.orientation || !userData.profile.birthDate) {
-            navigate("/onboarding");
-            return;
-          }
-        } else {
-          // Token might be expired, try to refresh
-          const refreshToken = localStorage.getItem('refreshToken');
-          if (refreshToken) {
-            const refreshResponse = await fetch('http://localhost:3000/api/auth/refresh', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ refreshToken }),
-            });
-
-            if (refreshResponse.ok) {
-              const refreshData = await refreshResponse.json();
-              localStorage.setItem('accessToken', refreshData.accessToken);
-              
-              // Retry fetching user profile
-              const retryResponse = await fetch('http://localhost:3000/api/me', {
-                headers: {
-                  'Authorization': `Bearer ${refreshData.accessToken}`,
-                },
-              });
-
-              if (retryResponse.ok) {
-                const userData = await retryResponse.json();
-                setUser(userData);
-                
-                // Check if profile is complete
-                if (!userData.profile || !userData.profile.bio || !userData.profile.gender || 
-                    !userData.profile.orientation || !userData.profile.birthDate) {
-                  navigate("/onboarding");
-                  return;
-                }
-              } else {
-                console.log("Retry failed, calling onLogout");
-                onLogout?.();
-              }
-            } else {
-              console.log("Refresh failed, calling onLogout");
-              onLogout?.();
-            }
-          } else {
-            console.log("No refresh token found, calling onLogout");
-            onLogout?.();
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-        console.log("Error occurred, calling onLogout");
-        onLogout?.();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [onLogout, navigate]);
+  // Load profile when component mounts
+  useEffect(() => {
+    if (accessToken) {
+      fetchProfile();
+    }
+  }, [accessToken, fetchProfile]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
-  if (!user) {
+  if (!profile) {
     return <div className="flex justify-center items-center h-64">Error loading profile</div>;
   }
 
-  // For now, we'll use mock data for the profile images and other details
-  // In a real app, this would come from the backend
-  const mockImages = [
-    "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face",
-    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=600&fit=crop&crop=face",
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop&crop=face"
-  ];
+  // Get profile photo or use a placeholder
+  const profilePhoto = profile.photos?.find((photo: any) => photo.isProfile) || 
+                      profile.photos?.[0] || 
+                      null;
+  const otherPhotos = profile.photos?.filter((photo: any) => photo !== profilePhoto) || [];
 
-  const mockBio = user.profile?.bio || "Art student who loves coffee shops and weekend hikes. Always up for trying new restaurants! 🎨☕";
-  const mockTags = ["Art", "Coffee", "Hiking", "Foodie", "Photography"];
-  const mockLocation = "Paris, France";
-  const mockAge = 24;
-  const mockOrientation = user.profile?.orientation || "straight";
-  const mockIsOnline = true;
-  const mockMatchPercent = 100;
+  // Calculate age from birth date
+  const calculateAge = (birthDate: string) => {
+    if (!birthDate) return null;
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  const age = profile.profile?.birthDate ? calculateAge(profile.profile.birthDate) : null;
+  const bio = profile.profile?.bio || "No bio available";
+  const tags = profile.tags?.map((tag: any) => tag.name) || [];
+  const location = profile.location ? 
+    `${profile.location.city || 'Unknown City'}, ${profile.location.country || 'Unknown Country'}` : 
+    "Location not set";
+  const orientation = profile.profile?.orientation || "Not specified";
+  const isOnline = true; // This would come from the backend in a real implementation
+  const matchPercent = profile.profile?.fameRating || Math.floor(Math.random() * 40) + 60;
+
+  // Function to handle image URLs - use placeholder if blob URL is not accessible
+  const getImageUrl = (url: string) => {
+    if (!url) return "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face";
+    
+    // If it's a blob URL, use a placeholder instead
+    if (url.startsWith('blob:')) {
+      return "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face";
+    }
+    
+    return url;
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
+      <div className="flex justify-end mb-4">
+        <Button 
+          variant="outline" 
+          onClick={() => navigate("/profile/edit")}
+          className="flex items-center gap-2"
+        >
+          <Pencil className="w-4 h-4" />
+          Modifier le profil
+        </Button>
+      </div>
+      
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-1 space-y-4">
-          <div className="surface-solid overflow-hidden">
-            <img
-              src={mockImages[0]}
-              alt={user.firstName}
-              className="w-full h-72 object-cover"
-            />
-          </div>
-          <div className="flex gap-2">
-            {mockImages.slice(1).map((img, i) => (
+          <div className="surface-solid overflow-hidden rounded-2xl">
+            {profilePhoto ? (
               <img
-                key={i}
-                src={img}
-                className="w-20 h-20 object-cover rounded-2xl border border-border/40"
+                src={getImageUrl(profilePhoto.url)}
+                alt={profile.username}
+                className="w-full h-72 object-cover"
               />
-            ))}
+            ) : (
+              <div className="w-full h-72 bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500">No profile photo</span>
+              </div>
+            )}
           </div>
+          {otherPhotos.length > 0 && (
+            <div className="flex gap-2">
+              {otherPhotos.map((photo: any, i: number) => (
+                <img
+                  key={photo.id}
+                  src={getImageUrl(photo.url)}
+                  className="w-20 h-20 object-cover rounded-2xl border border-border/40"
+                />
+              ))}
+            </div>
+          )}
         </div>
         <div className="md:col-span-2 space-y-6">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="font-montserrat text-4xl font-extrabold tracking-tight">
-                {user.firstName} {user.lastName}, {mockAge}
+                {profile.username}{age && `, ${age}`}
               </h1>
-              <p className="text-muted-foreground mt-1">{mockLocation}</p>
+              <p className="text-muted-foreground mt-1">{location}</p>
               <div className="mt-2 flex items-center gap-3">
-                <OrientationBadge value={mockOrientation} />
-                <OnlineStatus online={mockIsOnline} lastSeen={null} />
+                <OrientationBadge value={orientation} />
+                <OnlineStatus online={isOnline} lastSeen={null} />
               </div>
             </div>
-            <MatchPercentage value={mockMatchPercent} />
+            <MatchPercentage value={matchPercent} />
           </div>
           <section>
             <h2 className="font-montserrat text-xl font-semibold mb-2">Bio</h2>
-            <p className="text-sm leading-relaxed surface p-4">{mockBio}</p>
+            <p className="text-sm leading-relaxed surface p-4">{bio}</p>
           </section>
-          <section>
-            <h2 className="font-montserrat text-xl font-semibold mb-2">
-              Interests
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {mockTags.map((t) => (
-                <span key={t} className="tag-pill">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </section>
+          {tags.length > 0 && (
+            <section>
+              <h2 className="font-montserrat text-xl font-semibold mb-2">
+                Interests
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag: string) => (
+                  <span key={tag} className="tag-pill">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

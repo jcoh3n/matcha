@@ -62,6 +62,21 @@ export function Header({
         <li>
           <button
             onClick={() => {
+              if (onNavigate) onNavigate("profile");
+              else navigate("/profile");
+            }}
+            className={cn(
+              "flex items-center gap-2 hover:opacity-80 transition",
+              currentPage === "profile" && "font-bold"
+            )}
+          >
+            <User className="w-5 h-5" />
+            <span>Profil</span>
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => {
               if (onNavigate) onNavigate("messages");
               else navigate("/messages");
             }}
@@ -106,6 +121,19 @@ export function Header({
       </ul>
       {/* Mobile: icons only */}
       <div className="md:hidden flex items-center gap-4">
+        <button
+          onClick={() => {
+            if (onNavigate) onNavigate("profile");
+            else navigate("/profile");
+          }}
+          className={cn(
+            "p-2 rounded-full border border-white/30 hover:bg-white/10 transition",
+            currentPage === "profile" && "bg-white/20"
+          )}
+          aria-label="Profil"
+        >
+          <User className="w-5 h-5" />
+        </button>
         <button
           onClick={() =>
             onNavigate ? onNavigate("messages") : navigate("/messages")
