@@ -52,6 +52,9 @@ interface Filters {
   ageRange: [number, number];
   distance: number;
   tags: string[];
+  sortBy?: 'fame' | 'distance' | 'age' | 'tags';
+  sortOrder?: 'asc' | 'desc';
+  fameRating?: number;
 }
 
 const availableTags = [
@@ -115,6 +118,7 @@ export function DiscoverPage() {
     ageRange: [18, 35],
     distance: 50,
     tags: [],
+    fameRating: 0
   });
   const [peers, setPeers] = useState<any[]>([]);
   const [activePeerId, setActivePeerId] = useState<string>("");
@@ -174,6 +178,8 @@ export function DiscoverPage() {
         if (response.ok) {
           const userData = await response.json();
           // Check if essential profile fields are filled
+          console.log("User data:", userData);
+          console.log("Profile data:", userData.profile);
           if (
             !userData.profile ||
             !userData.profile.bio ||
@@ -242,10 +248,51 @@ export function DiscoverPage() {
     }));
   };
 
-  const applyFilters = () => {
-    // In a real app, this would filter profiles from the backend
-    fetchDiscoveryUsers();
-    setCurrentIndex(0);
+  const applyFilters = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        console.error("No access token found");
+        return;
+      }
+
+      console.log("Fetching filtered users with filters:", filters);
+      const response = await api.getFilteredUsers(
+        token,
+        {
+          ageMin: filters.ageRange[0],
+          ageMax: filters.ageRange[1],
+          distance: filters.distance,
+          tags: filters.tags,
+          sortBy: filters.sortBy,
+          sortOrder: filters.sortOrder,
+          fameRating: filters.fameRating
+        },
+        8
+      );
+      
+      if (response.ok) {
+        const users: UserProfile[] = await response.json();
+        console.log("Received filtered users:", users);
+        const transformedUsers = users.map(transformUserForProfileCard);
+        console.log("Transformed filtered users:", transformedUsers);
+        setProfiles(transformedUsers);
+        setPeers(transformedUsers);
+        if (transformedUsers.length > 0) {
+          setActivePeerId(transformedUsers[0].id);
+        } else {
+          console.log("No users found for discovery with applied filters");
+        }
+      } else {
+        console.error("Failed to fetch filtered users", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching filtered users:", error);
+    } finally {
+      setLoading(false);
+      setCurrentIndex(0);
+    }
   };
 
   if (loading) {
@@ -259,44 +306,221 @@ export function DiscoverPage() {
         {/* Central vertical divider */}
         <div className="absolute inset-y-0 left-[40%] -translate-x-1/2 w-[3px] bg-gradient-to-b from-transparent via-black/60 to-transparent rounded-full pointer-events-none" />
         {/* LEFT HALF: Chat / Matches sidebar */}
-        <div className="w-3/5 flex flex-col p-8 ">
-          <div className="w-[90%] mr-auto  min-h-full">
-            {/* Top identity */}
+         <div className="w-3/5 flex flex-col p-8 flex items-center justify-center ">
+          <div className="w-[50%] mt-20 min-h-full">
+            {/* Filter Header */}
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <Filter className="w-6 h-6 text-[#7FB77E]" />
+                Match With:
+              </h2>
+            </div>
 
-            {/* Tabs */}
-
-            {/* List */}
-            <div className="rounded-3xl bg-white border min-h-full border-gray-200 shadow-xl overflow-hidden">
-              <ul className="max-h-[100vh] overflow-y-auto divide-y divide-gray-100">
-                {peers.map((p) => (
-                  <li key={p.id}>
-                    <button
-                      onClick={() => setActivePeerId(p.id)}
-                      className={`w-full flex items-center gap-4 p-4 text-left transition ${
-                        activePeerId === p.id
-                          ? "bg-gray-50"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <span className="relative inline-flex">
-                        <img
-                          src={p.images[0] || "https://randomuser.me/api/portraits/women/1.jpg"}
-                          alt={""}
-                          className="w-16 h-16 rounded-full object-cover"
-                        />
-                        <span className="absolute inset-0 rounded-full ring-4 ring-yellow-300/70"></span>
+            {/* Filter Card */}
+            <div className="min-h-full overflow-hidden font-poppins">
+              <div className="p-6 border-b border-gray-100">
+                <div className="space-y-6">
+                  {/* Age Range Filter */}
+                  <div >
+                    <div className="flex justify-between items-center mb-3">
+                      <label className="text-2xl  font-semibold text-gray-700 flex items-center gap-2">
+                        Age
+                      </label>
+                      <span className="text-2xl font-semibold text-gray-600 px-2 py-1 rounded">
+                        {filters.ageRange[0]} - {filters.ageRange[1]} ans
                       </span>
-                      <div>
-                        <p className="font-semibold leading-tight">{p.name}</p>
-                        <p className="text-[22px] text-gray-500">
-                          Expires in {Math.round(Math.random() * 48) + 1}{" "}
-                          {Math.random() > 0.5 ? "hours" : "days"}
-                        </p>
+                    </div>
+                    <div className="px-2 flex flex-row items-center gap-6">
+                      <span className="text-xl font-semibold underline">18</span>
+                      <div className="flex-1">
+                        <input
+                          type="range"
+                          min={18}
+                          max={99}
+                          value={filters.ageRange[0]}
+                          onChange={e =>
+                            setFilters(f => ({
+                              ...f,
+                              ageRange: [Number(e.target.value), f.ageRange[1]],
+                            }))
+                          }
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#7FB77E] [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#7FB77E] [&::-webkit-slider-runnable-track]:bg-[#7FB77E] [&::-moz-range-track]:bg-[#7FB77E]"
+                        />
+                        <input
+                          type="range"
+                          min={filters.ageRange[0]}
+                          max={99}
+                          value={filters.ageRange[1]}
+                          onChange={e =>
+                            setFilters(f => ({
+                              ...f,
+                              ageRange: [f.ageRange[0], Number(e.target.value)],
+                            }))
+                          }
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#7FB77E] [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#7FB77E] [&::-webkit-slider-runnable-track]:bg-[#7FB77E] [&::-moz-range-track]:bg-[#7FB77E]"
+                        />
                       </div>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                      <span className="text-xl font-semibold underline">99</span>
+                    </div>
+                  </div>
+                  
+                  {/* Distance Filter */}
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <label className="text-2xl font-semibold text-gray-700 flex items-center gap-2">
+                        Distance
+                      </label>
+                      <span className="text-2xl font-semibold text-gray-600 px-2 py-1 rounded">
+                        {filters.distance} km
+                      </span>
+                    </div>
+                    <div className="px-2 flex flex-row items-center gap-6">
+                      <span className="text-xl font-semibold underline">1 km</span>
+                      <div className="flex-1">
+                        <input
+                          type="range"
+                          min={1}
+                          max={100}
+                          value={filters.distance}
+                          onChange={e =>
+                            setFilters(f => ({
+                              ...f,
+                              distance: Number(e.target.value),
+                            }))
+                          }
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#7FB77E] [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#7FB77E] [&::-webkit-slider-runnable-track]:bg-[#7FB77E] [&::-moz-range-track]:bg-[#7FB77E]"
+                        />
+                      </div>
+                      <span className="text-xl font-semibold underline">100 km</span>
+                    </div>
+                  </div>
+                  
+                  {/* Fame Rating Filter */}
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <label className="text-2xl font-semibold text-gray-700 flex items-center gap-2">
+                        Fame Rating
+                      </label>
+                      <span className="text-2xl font-semibold text-gray-600 px-2 py-1 rounded">
+                        {filters.fameRating ?? 0}%
+                      </span>
+                    </div>
+                    <div className="px-2 flex flex-row items-center gap-6">
+                      <span className="text-xl font-semibold underline">0%</span>
+                      <div className="flex-1">
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={filters.fameRating ?? 0}
+                          onChange={e =>
+                            setFilters(f => ({
+                              ...f,
+                              fameRating: Number(e.target.value),
+                            }))
+                          }
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#7FB77E] [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#7FB77E] [&::-webkit-slider-runnable-track]:bg-[#7FB77E] [&::-moz-range-track]:bg-[#7FB77E]"
+                        />
+                      </div>
+                        <span className="text-xl font-semibold underline ml-2">100%</span>
+                    </div>
+                  </div>
+                  
+                  {/* Tags Filter */}
+                  <div>
+                    <label className="text-2xl font-semibold text-gray-700 flex items-center gap-2 mb-3">
+                      Centres d'intérêt
+                      {filters.tags.length > 0 && (
+                        <span className="text-xs font-medium text-white bg-[#7FB77E] px-2 py-0.5 rounded-full">
+                          {filters.tags.length} sélectionné{filters.tags.length > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </label>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-lg">
+                      {availableTags.map(tag => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleTag(tag)}
+                          className={`px-3 py-1.5 rounded-full border text-sm transition-all duration-200 flex items-center gap-1 ${
+                            filters.tags.includes(tag)
+                              ? "bg-[#7FB77E] text-white border-[#7FB77E] shadow-inner"
+                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                          }`}
+                        >
+                          {filters.tags.includes(tag) ? (
+                            <Check className="w-3 h-3" />
+                          ) : (
+                            <span className="w-3 h-3 rounded-full border border-gray-400"></span>
+                          )}
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Sorting Options */}
+                  <div>
+                    <label className="text-2xl font-semibold text-gray-700 flex items-center gap-2 mb-3">
+                      Trier par
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setFilters(f => ({ ...f, sortBy: 'fame', sortOrder: 'desc' }))}
+                        className={`px-4 py-3 rounded-xl border transition-all duration-200 text-left ${
+                          filters.sortBy === 'fame'
+                            ? "bg-[#7FB77E] text-white border-[#7FB77E]"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="font-medium">Popularité</div>
+                        <div className="text-sm opacity-80">Note de célébrité</div>
+                      </button>
+                      <button
+                        onClick={() => setFilters(f => ({ ...f, sortBy: 'distance', sortOrder: 'asc' }))}
+                        className={`px-4 py-3 rounded-xl border transition-all duration-200 text-left ${
+                          filters.sortBy === 'distance'
+                            ? "bg-[#7FB77E] text-white border-[#7FB77E]"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="font-medium">Distance</div>
+                        <div className="text-sm opacity-80">Plus proche d'abord</div>
+                      </button>
+                      <button
+                        onClick={() => setFilters(f => ({ ...f, sortBy: 'age', sortOrder: 'asc' }))}
+                        className={`px-4 py-3 rounded-xl border transition-all duration-200 text-left ${
+                          filters.sortBy === 'age'
+                            ? "bg-[#7FB77E] text-white border-[#7FB77E]"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="font-medium">Âge</div>
+                        <div className="text-sm opacity-80">Plus jeune d'abord</div>
+                      </button>
+                      <button
+                        onClick={() => setFilters(f => ({ ...f, sortBy: 'tags', sortOrder: 'desc' }))}
+                        className={`px-4 py-3 rounded-xl border transition-all duration-200 text-left ${
+                          filters.sortBy === 'tags'
+                            ? "bg-[#7FB77E] text-white border-[#7FB77E]"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="font-medium">Intérêts</div>
+                        <div className="text-sm opacity-80">Plus d'intérêts communs</div>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={applyFilters}
+                    className="w-full py-3 rounded-xl bg-[#7FB77E] text-white font-semibold shadow-lg hover:bg-[#6FA76E] transition-all duration-300 flex items-center justify-center gap-2 mt-4"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    Appliquer les filtres
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

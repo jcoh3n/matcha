@@ -255,8 +255,148 @@ const searchUsers = async (req, res) => {
   }
 };
 
+// Get filtered users for discovery
+const getFilteredUsers = async (req, res) => {
+  try {
+    const { limit = 20, offset = 0 } = req.query;
+    const { ageMin, ageMax, distance, tags, sortBy, sortOrder, fameRating } = req.query;
+
+    console.log('Current user (filtered):', req.user);
+    console.log('Filters:', { ageMin, ageMax, distance, tags, sortBy, sortOrder, fameRating });
+
+    let query = `
+      SELECT 
+        u.id,
+        u.email,
+        u.username,
+        u.first_name,
+        u.last_name,
+        u.created_at,
+        u.updated_at,
+        p.birth_date,
+        p.gender,
+        p.sexual_orientation,
+        p.bio,
+        p.fame_rating,
+        p.is_verified,
+        p.last_active,
+        ph.url as profile_photo_url,
+        l.latitude,
+        l.longitude,
+        l.city,
+        l.country
+      FROM users u
+      LEFT JOIN profiles p ON u.id = p.user_id
+      LEFT JOIN photos ph ON u.id = ph.user_id AND ph.is_profile = true
+      LEFT JOIN locations l ON u.id = l.user_id
+      WHERE u.email_verified = true AND u.id != $1
+    `;
+
+    const params = [req.user.id];
+    let paramIndex = 1;
+
+    // Age filters (convert ages to birth_date bounds)
+    if (ageMax || ageMin) {
+      const today = new Date();
+      if (ageMax) {
+        // Plus vieilles dates (ex: 35 ans -> 1990)
+        const minBirthDate = new Date(today.getFullYear() - parseInt(ageMax), today.getMonth(), today.getDate());
+        query += ` AND p.birth_date >= $${++paramIndex}`;
+        params.push(minBirthDate.toISOString().split('T')[0]);
+      }
+      if (ageMin) {
+        // Plus récentes dates (ex: 18 ans -> 2007)
+        const maxBirthDate = new Date(today.getFullYear() - parseInt(ageMin), today.getMonth(), today.getDate());
+        query += ` AND p.birth_date <= $${++paramIndex}`;
+        params.push(maxBirthDate.toISOString().split('T')[0]);
+      }
+    }
+
+    // Fame rating
+    if (fameRating !== undefined && fameRating !== '' && !isNaN(parseInt(fameRating))) {
+      query += ` AND p.fame_rating >= $${++paramIndex}`;
+      params.push(parseInt(fameRating));
+    }
+
+    if (distance) {
+      console.log(`Distance filter requested (placeholder only): ${distance} km`);
+    }
+    if (tags) {
+      console.log(`Tags filter requested (placeholder only): ${tags}`);
+    }
+
+    // Tri
+    query += ' ORDER BY ';
+    switch (sortBy) {
+      case 'distance':
+        query += 'u.created_at ';
+        break;
+      case 'age':
+        query += 'p.birth_date ';
+        // Inversion logique: pour âge asc (plus jeune d'abord) => birth_date DESC
+        if (sortOrder === 'asc') {
+          query += 'DESC ';
+        } else {
+          query += 'ASC ';
+        }
+        break;
+      case 'tags':
+        query += 'u.created_at ';
+        break;
+      case 'fame':
+      default:
+        query += 'p.fame_rating ';
+        query += (sortOrder === 'asc' ? 'ASC ' : 'DESC ');
+        break;
+    }
+    // (Pas de double ajout de ASC/DESC pour 'age' grâce au bloc ci-dessus)
+
+    // LIMIT / OFFSET
+    query += `LIMIT $${++paramIndex} OFFSET $${++paramIndex}`;
+    params.push(parseInt(limit), parseInt(offset));
+
+    console.log('Final query:', query);
+    console.log('Parameters:', params);
+
+    const result = await db.query(query, params);
+
+    const users = result.rows.map(row => ({
+      id: row.id,
+      email: row.email,
+      username: row.username,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      profile: {
+        birthDate: row.birth_date,
+        gender: row.gender,
+        orientation: row.sexual_orientation,
+        bio: row.bio,
+        fameRating: row.fame_rating,
+        isVerified: row.is_verified,
+        lastActive: row.last_active
+      },
+      profilePhotoUrl: row.profile_photo_url,
+      location: {
+        latitude: row.latitude,
+        longitude: row.longitude,
+        city: row.city,
+        country: row.country
+      }
+    }));
+
+    console.log('Transformed filtered users:', users);
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching filtered users:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   getDiscoveryUsers,
   getRandomUsers,
-  searchUsers
+  searchUsers,
+  getFilteredUsers
 };
