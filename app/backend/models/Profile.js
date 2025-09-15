@@ -6,8 +6,11 @@ class Profile {
     this.id = data.id;
     this.userId = data.user_id;
     this.bio = data.bio;
-    this.gender = data.gender;
-    this.orientation = data.sexual_orientation;  // Map sexual_orientation to orientation
+  // Normalize & fallback
+  this.gender = data.gender ? data.gender.toLowerCase() : null;
+  this.orientation = (data.sexual_orientation || data.orientation || null);
+  if (this.orientation) this.orientation = this.orientation.toLowerCase();
+  if (this.gender === 'other') this.gender = 'non-binary';
     this.birthDate = data.birth_date;
     this.fameRating = data.fame_rating;
     this.createdAt = data.created_at || data.createdAt || new Date();
