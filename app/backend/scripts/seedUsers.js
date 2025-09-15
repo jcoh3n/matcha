@@ -14,6 +14,34 @@ const pool = new Pool({
   port: process.env.POSTGRES_PORT || process.env.DB_PORT || 5432,
 });
 
+// Function to check if seeding has already been completed
+async function isSeedingCompleted(client) {
+  try {
+    const result = await client.query(
+      'SELECT completed FROM seed_tracking WHERE name = $1',
+      ['user_seeding']
+    );
+    
+    return result.rows.length > 0 && result.rows[0].completed;
+  } catch (error) {
+    console.log('Seed tracking table not found or error checking seed status, proceeding with seeding...');
+    return false;
+  }
+}
+
+// Function to mark seeding as completed
+async function markSeedingAsCompleted(client) {
+  try {
+    await client.query(
+      'UPDATE seed_tracking SET completed = TRUE, completed_at = NOW(), updated_at = NOW() WHERE name = $1',
+      ['user_seeding']
+    );
+    console.log('Marked seeding as completed in seed_tracking table');
+  } catch (error) {
+    console.error('Error marking seeding as completed:', error);
+  }
+}
+
 // Function to fetch users from randomuser.me API
 function fetchUsers(count = 500) {
   return new Promise((resolve, reject) => {
@@ -207,6 +235,15 @@ async function seedDatabase() {
     
     console.log('Connected to database successfully');
     
+    // Check if seeding has already been completed
+    const seedingCompleted = await isSeedingCompleted(client);
+    if (seedingCompleted) {
+      console.log('Database seeding has already been completed. Skipping...');
+      return;
+    }
+    
+    console.log('Database seeding not yet completed. Proceeding with seeding...');
+    
     // Begin transaction
     await client.query('BEGIN');
     console.log('Started database transaction');
@@ -253,6 +290,9 @@ async function seedDatabase() {
         // Continue with next user instead of aborting transaction
       }
     }
+    
+    // Mark seeding as completed
+    await markSeedingAsCompleted(client);
     
     // Commit transaction
     await client.query('COMMIT');
