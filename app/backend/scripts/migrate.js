@@ -6,11 +6,11 @@ const path = require('path');
 
 // Database connection configuration
 const dbConfig = {
-  user: process.env.POSTGRES_USER || 'matcha_user',
-  host: process.env.POSTGRES_HOST || 'localhost',
-  database: process.env.POSTGRES_DB || 'matcha_db',
-  password: process.env.POSTGRES_PASSWORD || 'matcha_password',
-  port: process.env.POSTGRES_PORT || 5432,
+  user: process.env.POSTGRES_USER || process.env.DB_USER || 'matcha_user',
+  host: process.env.POSTGRES_HOST || process.env.DB_HOST || 'localhost',
+  database: process.env.POSTGRES_DB || process.env.DB_NAME || 'matcha_db',
+  password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || 'matcha_password',
+  port: process.env.POSTGRES_PORT || process.env.DB_PORT || 5432,
 };
 
 // If running in Docker, use the 'db' service name as host
