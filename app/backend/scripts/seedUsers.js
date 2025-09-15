@@ -15,7 +15,10 @@ const pool = new Pool({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> mdembele_sprint_03-ramdom_seed
 // Function to check if seeding has already been completed
 async function isSeedingCompleted(client) {
   try {
@@ -44,6 +47,9 @@ async function markSeedingAsCompleted(client) {
   }
 }
 
+<<<<<<< HEAD
+>>>>>>> mdembele_sprint_03-ramdom_seed
+=======
 >>>>>>> mdembele_sprint_03-ramdom_seed
 // Function to fetch users from randomuser.me API
 function fetchUsers(count = 500) {
@@ -239,7 +245,10 @@ async function seedDatabase() {
     console.log('Connected to database successfully');
     
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> mdembele_sprint_03-ramdom_seed
     // Check if seeding has already been completed
     const seedingCompleted = await isSeedingCompleted(client);
     if (seedingCompleted) {
@@ -249,6 +258,9 @@ async function seedDatabase() {
     
     console.log('Database seeding not yet completed. Proceeding with seeding...');
     
+<<<<<<< HEAD
+>>>>>>> mdembele_sprint_03-ramdom_seed
+=======
 >>>>>>> mdembele_sprint_03-ramdom_seed
     // Begin transaction
     await client.query('BEGIN');
@@ -298,6 +310,12 @@ async function seedDatabase() {
     }
     
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    // Mark seeding as completed
+    await markSeedingAsCompleted(client);
+    
+>>>>>>> mdembele_sprint_03-ramdom_seed
 =======
     // Mark seeding as completed
     await markSeedingAsCompleted(client);
