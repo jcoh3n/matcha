@@ -108,16 +108,30 @@ const getPublicProfile = async (req, res) => {
       viewedUserId: profileUserId
     });
     
+    // Get profile view count
+    const viewsCount = await ProfileView.findByViewedUserId(profileUserId);
+    
+    // Get liked count
+    const likedCount = await Like.findLikesForUser(profileUserId);
+    
     // Combine all profile data
     const profileData = {
       id: profileUser.id,
       username: profileUser.username,
+      firstName: profileUser.firstName,
+      lastName: profileUser.lastName,
       age: profile.birthDate ? calculateAge(profile.birthDate) : null,
       bio: profile.bio,
       tags,
       photos,
       fameRating: profile.fameRating,
       distance,
+      location: location ? {
+        city: location.city,
+        country: location.country
+      } : null,
+      viewsCount: viewsCount.length,
+      likedCount: likedCount.length,
       isOnline: false, // Will be implemented later
       lastSeen: profileUser.updatedAt, // Will be improved later
       isLiked,

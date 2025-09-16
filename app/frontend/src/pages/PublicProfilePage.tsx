@@ -2,7 +2,23 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, UserX, Flag, MessageCircle } from "lucide-react";
+import { 
+  Heart, 
+  MapPin, 
+  UserX, 
+  Flag, 
+  MessageCircle, 
+  Calendar, 
+  Users, 
+  Eye,
+  Star,
+  Clock,
+  Briefcase,
+  GraduationCap,
+  Wine,
+  Smile,
+  Globe
+} from "lucide-react";
 import { OnlineStatus } from "@/components/ui/online-status";
 import { OrientationBadge } from "@/components/ui/orientation-badge";
 import { Tag } from "@/components/ui/tag";
@@ -12,6 +28,8 @@ import { useSocialInteractions } from "@/hooks/useSocialInteractions";
 interface PublicProfile {
   id: number;
   username: string;
+  firstName?: string;
+  lastName?: string;
   age: number | null;
   bio: string;
   tags: { id: number; name: string }[];
@@ -24,6 +42,26 @@ interface PublicProfile {
   isLikedByUser: boolean;
   isMatch: boolean;
   isBlocked: boolean;
+  profile: {
+    birthDate?: string;
+    gender?: string;
+    orientation?: string;
+    bio?: string;
+    fameRating?: number;
+  };
+  location?: {
+    city?: string;
+    country?: string;
+  };
+  interests?: string[];
+  occupation?: string;
+  education?: string;
+  drinking?: string;
+  smoking?: string;
+  children?: string;
+  lastConnection?: string;
+  viewsCount?: number;
+  likedCount?: number;
 }
 
 export function PublicProfilePage() {
@@ -48,6 +86,7 @@ export function PublicProfilePage() {
       try {
         setLoading(true);
         const profileData = await getPublicProfile(parseInt(id), accessToken);
+        console.log("Profile data received:", profileData); // Debug log
         setProfile(profileData);
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -140,6 +179,21 @@ export function PublicProfilePage() {
     return url;
   };
 
+  // Calculate age from birth date
+  const calculateAge = (birthDate?: string) => {
+    if (!birthDate) return null;
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -162,53 +216,111 @@ export function PublicProfilePage() {
   // Get profile photo or use a placeholder
   const profilePhoto = profile.photos.find(photo => photo.isProfile) || profile.photos[0] || null;
   const otherPhotos = profile.photos.filter(photo => photo !== profilePhoto);
+  
+  // Debug log to see what fields are available
+  console.log("Profile fields:", Object.keys(profile));
+  
+  // Calculate age from birth date
+  const age = calculateAge(profile.profile?.birthDate);
+  
+  // Format location
+  const locationString = profile.location 
+    ? `${profile.location.city || 'Unknown City'}, ${profile.location.country || 'Unknown Country'}`
+    : "Location not set";
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="grid md:grid-cols-3 gap-8">
-        {/* Profile Photos */}
-        <div className="md:col-span-1 space-y-4">
+    <div className="max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Profile Photos - Left Column */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Main Profile Photo */}
           <div className="surface-solid overflow-hidden rounded-2xl">
             {profilePhoto ? (
               <img
                 src={getImageUrl(profilePhoto.url)}
                 alt={`${profile.username}'s profile`}
-                className="w-full h-72 object-cover"
+                className="w-full h-96 object-cover"
               />
             ) : (
-              <div className="w-full h-72 bg-gray-200 flex items-center justify-center">
-                <UserX className="w-12 h-12 text-gray-400" />
+              <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
+                <UserX className="w-16 h-16 text-gray-400" />
               </div>
             )}
           </div>
           
+          {/* Additional Photos */}
           {otherPhotos.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto">
-              {otherPhotos.map((photo) => (
+            <div className="grid grid-cols-3 gap-2">
+              {otherPhotos.slice(0, 6).map((photo) => (
                 <img
                   key={photo.id}
                   src={getImageUrl(photo.url)}
-                  className="w-20 h-20 object-cover rounded-2xl border border-border/40 flex-shrink-0"
+                  className="w-full h-24 object-cover rounded-2xl border border-border/40"
                 />
               ))}
+              {otherPhotos.length > 6 && (
+                <div className="relative">
+                  <img
+                    src={getImageUrl(otherPhotos[6].url)}
+                    className="w-full h-24 object-cover rounded-2xl border border-border/40"
+                  />
+                  <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">+{otherPhotos.length - 6}</span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+          
+          {/* Profile Stats */}
+          <div className="surface p-4 rounded-2xl">
+            <h3 className="font-montserrat text-lg font-semibold mb-3">Profile Stats</h3>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Views
+                </span>
+                <span className="font-medium">{profile.viewsCount || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center">
+                  <Heart className="w-4 h-4 mr-2" />
+                  Likes
+                </span>
+                <span className="font-medium">{profile.likedCount || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center">
+                  <Star className="w-4 h-4 mr-2" />
+                  Fame Rating
+                </span>
+                <span className="font-medium">{profile.fameRating || 0}%</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Profile Details */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="flex items-start justify-between">
+        {/* Profile Details - Center Column */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Header with Name, Age, Location */}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="font-montserrat text-4xl font-extrabold tracking-tight">
-                {profile.username}{profile.age && `, ${profile.age}`}
+                {profile.firstName && profile.lastName 
+                  ? `${profile.firstName} ${profile.lastName}` 
+                  : profile.firstName 
+                    ? profile.firstName 
+                    : profile.lastName 
+                      ? profile.lastName 
+                      : profile.username || 'User'}
+                {age && `, ${age}`}
               </h1>
-              {profile.distance !== null && (
-                <p className="text-muted-foreground mt-1 flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {profile.distance} km away
-                </p>
-              )}
-              <div className="mt-2 flex items-center gap-3">
+              <p className="text-muted-foreground mt-1 flex items-center">
+                <MapPin className="w-4 h-4 mr-1" />
+                {locationString}
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
                 {profile.profile?.orientation && (
                   <OrientationBadge value={profile.profile.orientation} />
                 )}
@@ -216,30 +328,109 @@ export function PublicProfilePage() {
               </div>
             </div>
             
-            {profile.fameRating !== undefined && (
-              <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full font-bold">
-                {profile.fameRating}% match
-              </div>
-            )}
+            <div className="flex flex-col items-end">
+              {profile.fameRating !== undefined && (
+                <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full font-bold text-lg">
+                  {profile.fameRating}% match
+                </div>
+              )}
+              {profile.distance !== null && (
+                <div className="mt-2 text-muted-foreground flex items-center">
+                  <Globe className="w-4 h-4 mr-1" />
+                  {profile.distance} km away
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Bio */}
-          <section>
-            <h2 className="font-montserrat text-xl font-semibold mb-2">Bio</h2>
-            <p className="text-sm leading-relaxed surface p-4">
+          <section className="surface p-6 rounded-2xl">
+            <h2 className="font-montserrat text-xl font-semibold mb-3 flex items-center">
+              <Smile className="w-5 h-5 mr-2" />
+              About Me
+            </h2>
+            <p className="text-sm leading-relaxed">
               {profile.bio || "No bio available"}
             </p>
           </section>
 
-          {/* Tags */}
+          {/* Personal Information */}
+          <section className="surface p-6 rounded-2xl">
+            <h2 className="font-montserrat text-xl font-semibold mb-4">Personal Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {profile.profile?.gender && (
+                <div className="flex items-center">
+                  <Users className="w-5 h-5 mr-3 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Gender</p>
+                    <p className="font-medium capitalize">{profile.profile.gender}</p>
+                  </div>
+                </div>
+              )}
+              
+              {profile.profile?.birthDate && (
+                <div className="flex items-center">
+                  <Calendar className="w-5 h-5 mr-3 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Birth Date</p>
+                    <p className="font-medium">
+                      {new Date(profile.profile.birthDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {profile.occupation && (
+                <div className="flex items-center">
+                  <Briefcase className="w-5 h-5 mr-3 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Occupation</p>
+                    <p className="font-medium">{profile.occupation}</p>
+                  </div>
+                </div>
+              )}
+              
+              {profile.education && (
+                <div className="flex items-center">
+                  <GraduationCap className="w-5 h-5 mr-3 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Education</p>
+                    <p className="font-medium">{profile.education}</p>
+                  </div>
+                </div>
+              )}
+              
+              {profile.drinking && (
+                <div className="flex items-center">
+                  <Wine className="w-5 h-5 mr-3 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Drinking</p>
+                    <p className="font-medium capitalize">{profile.drinking}</p>
+                  </div>
+                </div>
+              )}
+              
+              {profile.profile?.orientation && (
+                <div className="flex items-center">
+                  <Heart className="w-5 h-5 mr-3 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Orientation</p>
+                    <p className="font-medium capitalize">{profile.profile.orientation}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Interests */}
           {profile.tags.length > 0 && (
-            <section>
-              <h2 className="font-montserrat text-xl font-semibold mb-2">
-                Interests
+            <section className="surface p-6 rounded-2xl">
+              <h2 className="font-montserrat text-xl font-semibold mb-3">
+                Interests & Hobbies
               </h2>
               <div className="flex flex-wrap gap-2">
                 {profile.tags.map((tag) => (
-                  <Tag key={tag.id} variant="interest">
+                  <Tag key={tag.id} variant="interest" className="text-base px-3 py-1.5">
                     {tag.name}
                   </Tag>
                 ))}

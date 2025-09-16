@@ -91,6 +91,15 @@ const calculateAge = (birthDate?: string) => {
 
 // Transform API user data to match ProfileCard expectations
 const transformUserForProfileCard = (user: UserProfile) => {
+  // Use the actual distance if available, otherwise use a placeholder
+  let distance = null;
+  if (user.distance !== undefined && user.distance !== null) {
+    distance = user.distance;
+  } else if (user.location) {
+    // Use a more realistic placeholder distance
+    distance = user.profile?.fameRating ? Math.floor(user.profile.fameRating * 4) : Math.floor(Math.random() * 5000) + 100;
+  }
+  
   return {
     id: user.id,
     name: `${user.firstName} ${user.lastName}`,
@@ -98,13 +107,13 @@ const transformUserForProfileCard = (user: UserProfile) => {
     images: user.profilePhotoUrl ? [user.profilePhotoUrl] : [],
     bio: user.profile?.bio || "",
     location: user.location ? `${user.location.city}, ${user.location.country}` : "",
-    distance: Math.floor(Math.random() * 20) + 1, // Placeholder - would be calculated based on user location
+    distance: distance,
     tags: [], // Would be populated with user tags
     fame: user.profile?.fameRating || 0,
-    isOnline: Math.random() > 0.5, // Placeholder
+    isOnline: false, // In a real app, this would come from backend
     orientation: user.profile?.orientation || "straight",
     gender: user.profile?.gender || "female",
-    matchPercent: Math.floor(Math.random() * 60) + 20 // Placeholder match percentage
+    matchPercent: user.profile?.fameRating || Math.floor(Math.random() * 60) + 20
   };
 };
 
@@ -120,6 +129,10 @@ export function DiscoverPage() {
   const [activePeerId, setActivePeerId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleProfileClick = (profileId: string) => {
+    navigate(`/profiles/${profileId}`);
+  };
 
   // Fetch users for discovery
   const fetchDiscoveryUsers = async () => {
@@ -143,8 +156,10 @@ export function DiscoverPage() {
         setPeers(transformedUsers);
         if (transformedUsers.length > 0) {
           setActivePeerId(transformedUsers[0].id);
+          setCurrentIndex(0); // Reset to first profile when new users are loaded
         } else {
           console.log("No users found for discovery");
+          setCurrentIndex(0); // Reset index when no users found
         }
       } else {
         console.error("Failed to fetch discovery users", response.status, response.statusText);
@@ -268,10 +283,13 @@ export function DiscoverPage() {
             {/* List */}
             <div className="rounded-3xl bg-white border min-h-full border-gray-200 shadow-xl overflow-hidden">
               <ul className="max-h-[100vh] overflow-y-auto divide-y divide-gray-100">
-                {peers.map((p) => (
+                {peers.map((p, index) => (
                   <li key={p.id}>
                     <button
-                      onClick={() => setActivePeerId(p.id)}
+                      onClick={() => {
+                        setActivePeerId(p.id);
+                        setCurrentIndex(index);
+                      }}
                       className={`w-full flex items-center gap-4 p-4 text-left transition ${
                         activePeerId === p.id
                           ? "bg-gray-50"
@@ -413,7 +431,7 @@ export function DiscoverPage() {
             >
               <div className="relative w-full h-[420px]">
                 <img
-                  src={currentProfile.images[1] || "https://randomuser.me/api/portraits/women/3.jpg"}
+                  src={currentProfile.images[0] || "https://randomuser.me/api/portraits/women/3.jpg"}
                   alt={currentProfile.name}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
