@@ -27,6 +27,8 @@ export function SearchPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   // Calculate age from birth date
   const calculateAge = (birthDate?: string) => {
@@ -60,7 +62,7 @@ export function SearchPage() {
     };
   };
 
-  const fetchUsers = async (searchQuery = "") => {
+  const fetchUsers = async (searchQuery = "", fetchOffset = 0) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
@@ -70,12 +72,18 @@ export function SearchPage() {
       }
 
       const response = searchQuery 
-        ? await api.searchUsers(token, searchQuery)
-        : await api.getRandomUsers(token);
+        ? await api.searchUsers(token, searchQuery, 20, fetchOffset)
+        : await api.getRandomUsers(token, 20);
       
       if (response.ok) {
         const users: UserProfile[] = await response.json();
-        setResults(users);
+        if (fetchOffset === 0) {
+          setResults(users);
+        } else {
+          setResults(prev => [...prev, ...users]);
+        }
+        setHasMore(users.length === 20); // If we got less than 20 results, there are no more
+        setOffset(fetchOffset + users.length);
       } else {
         console.error("Failed to fetch users");
       }
@@ -88,13 +96,34 @@ export function SearchPage() {
 
   const onSearch = (q: string) => {
     setQuery(q);
-    fetchUsers(q);
+    setOffset(0);
+    setHasMore(true);
+    fetchUsers(q, 0);
+  };
+
+  const loadMore = () => {
+    if (hasMore && !loading) {
+      fetchUsers(query, offset);
+    }
   };
 
   // Load initial users
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Infinite scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || !hasMore || loading) {
+        return;
+      }
+      loadMore();
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loading, offset, query]);
 
   return (
     <div>

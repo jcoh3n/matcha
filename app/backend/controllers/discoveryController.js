@@ -396,17 +396,24 @@ const getFilteredUsers = async (req, res) => {
     // Age filters (convert ages to birth_date bounds)
     if (ageMax || ageMin) {
       const today = new Date();
-      if (ageMax) {
-        // Plus vieilles dates (ex: 35 ans -> 1990)
-        const minBirthDate = new Date(today.getFullYear() - parseInt(ageMax), today.getMonth(), today.getDate());
+      const aMin = Number.isFinite(parseInt(ageMin)) ? parseInt(ageMin) : undefined;
+      const aMax = Number.isFinite(parseInt(ageMax)) ? parseInt(ageMax) : undefined;
+
+      // Oldest acceptable birthdate (lower bound): today - (aMax + 1) years + 1 day
+      if (aMax !== undefined) {
+        const lower = new Date(today);
+        lower.setFullYear(today.getFullYear() - (aMax + 1));
+        lower.setDate(lower.getDate() + 1);
         query += ` AND p.birth_date >= $${++paramIndex}`;
-        params.push(minBirthDate.toISOString().split('T')[0]);
+        params.push(lower.toISOString().split('T')[0]);
       }
-      if (ageMin) {
-        // Plus récentes dates (ex: 18 ans -> 2007)
-        const maxBirthDate = new Date(today.getFullYear() - parseInt(ageMin), today.getMonth(), today.getDate());
+
+      // Youngest acceptable birthdate (upper bound): today - aMin years
+      if (aMin !== undefined) {
+        const upper = new Date(today);
+        upper.setFullYear(today.getFullYear() - aMin);
         query += ` AND p.birth_date <= $${++paramIndex}`;
-        params.push(maxBirthDate.toISOString().split('T')[0]);
+        params.push(upper.toISOString().split('T')[0]);
       }
     }
 

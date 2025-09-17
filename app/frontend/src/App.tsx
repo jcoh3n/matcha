@@ -24,6 +24,8 @@ import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
 import { VerifyEmailPendingPage } from "./pages/auth/VerifyEmailPendingPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { Home } from "./pages/Home";
+import TestSearchPage from "./pages/TestSearchPage";
+import TestPaginationPage from "./pages/TestPaginationPage";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +97,8 @@ const App = () => {
             {/** canonical auth routes under /auth */}
             <Route path="/health" element={<HealthPage />} />
             <Route path="/health-test" element={<HealthTestPage />} />
+            <Route path="/test-search" element={<TestSearchPage />} />
+            <Route path="/test-pagination" element={<TestPaginationPage />} />
             <Route
               path="/auth/login"
               element={<LoginPage onLogin={handleLogin} />}

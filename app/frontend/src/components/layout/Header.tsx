@@ -5,11 +5,13 @@ import {
   User,
   MessageCircle,
   LogOut,
+  Search,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { SearchResults } from "@/components/ui/search-results";
 
 interface HeaderProps {
   currentPage?:
@@ -21,7 +23,7 @@ interface HeaderProps {
     | "search";
   notificationCount?: number;
   messageCount?: number;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, query?: string) => void;
   onLogout?: () => void;
 }
 
@@ -51,6 +53,16 @@ export function Header({
     }
   };
 
+  const handleNavigation = (page: string, query?: string) => {
+    console.log("Navigate to:", page, "with query:", query);
+    if (onNavigate) {
+      onNavigate(page, query);
+    } else {
+      const url = query ? `/search?q=${encodeURIComponent(query)}` : `/${page}`;
+      navigate(url);
+    }
+  };
+
   return (
     <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-8 py-5 text-black">
       <div className="flex items-center gap-2">
@@ -58,6 +70,14 @@ export function Header({
           Matcha
         </span>
       </div>
+      
+      {/* Barre de recherche au centre sur les écrans moyens et larges */}
+      <div className="hidden md:block flex-1 max-w-md mx-8 relative">
+        <SearchResults 
+          onNavigate={handleNavigation}
+        />
+      </div>
+      
       <ul className="hidden md:flex items-center gap-8 font-medium font-montserrat">
         <li>
           <button
@@ -104,8 +124,12 @@ export function Header({
           </button>
         </li>
       </ul>
-      {/* Mobile: icons only */}
+      
+      {/* Version mobile: icône de recherche + autres icônes */}
       <div className="md:hidden flex items-center gap-4">
+        <div className="relative">
+          <Search className="w-5 h-5 text-muted-foreground" />
+        </div>
         <button
           onClick={() =>
             onNavigate ? onNavigate("messages") : navigate("/messages")
