@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import io from "socket.io-client";
 
 interface Notification {
   id: number;
@@ -12,22 +13,33 @@ interface Notification {
   updatedAt: string;
 }
 
-// Mock auth hook - replace with actual auth implementation
-function useAuth() {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [user, setUser] = useState<any>(null);
-  
-  return { token, user, setUser, setToken };
-}
-
 export function useNotification() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { token, user } = useAuth();
+
+  // Get token from localStorage
+  const getToken = () => {
+    return localStorage.getItem("accessToken");
+  };
+
+  // Get user ID from localStorage
+  const getUserId = () => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        return user.id;
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+    return null;
+  };
 
   // Fetch notifications from API
   const fetchNotifications = async () => {
     try {
+      const token = getToken();
       if (!token) return;
       
       const response = await api.getNotifications(token);
@@ -45,6 +57,7 @@ export function useNotification() {
   // Mark a notification as read
   const markAsRead = async (id: number) => {
     try {
+      const token = getToken();
       if (!token) return;
       
       await api.markNotificationAsRead(token, id);
@@ -62,6 +75,7 @@ export function useNotification() {
   // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
+      const token = getToken();
       if (!token) return;
       
       await api.markAllNotificationsAsRead(token);
@@ -76,8 +90,56 @@ export function useNotification() {
     }
   };
 
+  // Add a new notification to the list
+  const addNotification = (notification: Notification) => {
+    setNotifications(prev => [notification, ...prev]);
+    setUnreadCount(prev => prev + 1);
+  };
+
+  // Set up Socket.IO connection
+  useEffect(() => {
+    const token = getToken();
+    const userId = getUserId();
+    
+    if (token && userId) {
+      // Create Socket.IO connection
+      const wsUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const socket = io(wsUrl, {
+        transports: ["websocket"],
+        auth: {
+          token: token
+        }
+      });
+      
+      socket.on("connect", () => {
+        console.log("Socket.IO connected");
+        // Authenticate the user
+        socket.emit("authenticate", { userId });
+      });
+      
+      socket.on("notification", (data) => {
+        console.log("Received real-time notification:", data);
+        // Add new notification to the list
+        addNotification(data);
+      });
+      
+      socket.on("disconnect", () => {
+        console.log("Socket.IO disconnected");
+      });
+      
+      socket.on("connect_error", (error) => {
+        console.error("Socket.IO connection error:", error);
+      });
+      
+      return () => {
+        socket.close();
+      };
+    }
+  }, []);
+
   // Refresh notifications periodically
   useEffect(() => {
+    const token = getToken();
     if (token) {
       fetchNotifications();
       
@@ -85,7 +147,7 @@ export function useNotification() {
       
       return () => clearInterval(interval);
     }
-  }, [token]);
+  }, []);
 
   return {
     notifications,

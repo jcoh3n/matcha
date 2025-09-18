@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import io, { Socket } from "socket.io-client";
 
 interface Notification {
   id: number;
@@ -8,63 +9,66 @@ interface Notification {
   content: string;
   read: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const ws = useRef<WebSocket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    // Get user ID from localStorage or other auth mechanism
-    const userId = localStorage.getItem('userId');
+    // Get user ID and token from localStorage
+    const userStr = localStorage.getItem("user");
+    const token = localStorage.getItem("accessToken");
     
-    if (userId) {
-      // Create WebSocket connection
-      const wsUrl = (import.meta.env.VITE_WS_URL || 'ws://localhost:3000').replace('http', 'ws');
-      ws.current = new WebSocket(`${wsUrl}/socket.io/?EIO=4&transport=websocket`);
-      
-      ws.current.onopen = () => {
-        console.log('WebSocket connected');
-        setIsConnected(true);
+    if (userStr && token) {
+      try {
+        const user = JSON.parse(userStr);
+        const userId = user.id;
         
-        // Authenticate the user
-        ws.current?.send(JSON.stringify({
-          type: 'authenticate',
-          data: { userId: parseInt(userId) }
-        }));
-      };
-      
-      ws.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'notification') {
-            // Add new notification to the list
-            setNotifications(prev => [data.data, ...prev]);
+        // Create Socket.IO connection
+        const wsUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const newSocket = io(wsUrl, {
+          transports: ["websocket"],
+          auth: {
+            token: token
           }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
-      };
-      
-      ws.current.onclose = () => {
-        console.log('WebSocket disconnected');
-        setIsConnected(false);
-      };
-      
-      ws.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-    }
-    
-    // Clean up WebSocket connection
-    return () => {
-      if (ws.current) {
-        ws.current.close();
+        });
+        
+        setSocket(newSocket);
+        
+        newSocket.on("connect", () => {
+          console.log("Socket.IO connected");
+          setIsConnected(true);
+          
+          // Authenticate the user
+          newSocket.emit("authenticate", { userId });
+        });
+        
+        newSocket.on("notification", (data) => {
+          console.log("Received notification:", data);
+          // Add new notification to the list
+          setNotifications(prev => [data, ...prev]);
+        });
+        
+        newSocket.on("disconnect", () => {
+          console.log("Socket.IO disconnected");
+          setIsConnected(false);
+        });
+        
+        newSocket.on("connect_error", (error) => {
+          console.error("Socket.IO connection error:", error);
+        });
+        
+        return () => {
+          newSocket.close();
+        };
+      } catch (error) {
+        console.error("Error setting up Socket.IO connection:", error);
       }
-    };
+    }
   }, []);
 
-  return { isConnected, notifications };
+  return { isConnected, notifications, socket };
 }

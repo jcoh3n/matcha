@@ -205,6 +205,9 @@ const likeUser = async (req, res) => {
       likedUserId
     });
     
+    // Check if it's a match
+    const isMatch = await Like.exists(likedUserId, currentUserId);
+    
     // Send notification to the liked user
     // Only send if the liker is not the liked user (should always be true here)
     // and if they're not blocked

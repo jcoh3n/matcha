@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { useNotification } from "@/hooks/useNotification";
 
 type NavKey =
   | "discover"
@@ -24,11 +25,13 @@ export function AppShell({
   onLogout,
   fullWidth,
 }: AppShellProps) {
+  const { unreadCount } = useNotification();
+
   return (
     <div className="min-h-screen w-full flex flex-col relative bg-transparent">
       <Header
         currentPage={current}
-        notificationCount={3}
+        notificationCount={unreadCount}
         messageCount={2}
         onLogout={onLogout}
       />

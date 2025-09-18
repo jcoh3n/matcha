@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "socket.io-client": path.resolve(__dirname, "node_modules/socket.io-client/dist/socket.io.js"),
     },
   },
 }));
