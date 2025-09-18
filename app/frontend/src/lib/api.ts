@@ -68,5 +68,29 @@ export const api = {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(profileData)
+    }),
+    
+  // Notification endpoints
+  getNotifications: (token: string) => 
+    fetch(`${API_BASE_URL}/api/notifications`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }),
+    
+  markNotificationAsRead: (token: string, id: number) => 
+    fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    }),
+    
+  markAllNotificationsAsRead: (token: string) => 
+    fetch(`${API_BASE_URL}/api/notifications/read-all`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
     })
 };

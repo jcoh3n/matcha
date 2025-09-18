@@ -1,6 +1,7 @@
 const http = require('http');
 const socketIo = require('socket.io');
 const app = require('./app');
+const { addUser, removeUser } = require('../utils/notificationHandler');
 require('dotenv').config();
 
 const server = http.createServer(app);
@@ -11,14 +12,27 @@ const io = socketIo(server, {
   }
 });
 
+// Make io globally available
+global.io = io;
+
 const PORT = process.env.PORT || 3000;
 
 // Socket.io connection
 io.on('connection', (socket) => {
-  console.log('New client connected');
+  console.log('New client connected:', socket.id);
+  
+  // Handle user authentication
+  socket.on('authenticate', (data) => {
+    const { userId } = data;
+    if (userId) {
+      addUser(userId, socket.id);
+      console.log(`User ${userId} authenticated with socket ${socket.id}`);
+    }
+  });
   
   socket.on('disconnect', () => {
-    console.log('Client disconnected');
+    console.log('Client disconnected:', socket.id);
+    removeUser(socket.id);
   });
 });
 
