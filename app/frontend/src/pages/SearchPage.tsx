@@ -82,37 +82,42 @@ export function SearchPage() {
     };
   };
 
-  const fetchUsers = async (searchQuery = "") => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        console.error("No access token found");
-        return;
-      }
-
-      const response = searchQuery
-        ? await api.searchUsers(token, searchQuery, 20, fetchOffset)
-        : await api.getRandomUsers(token, 20);
-
-      if (response.ok) {
-        const users: UserProfile[] = await response.json();
-        if (fetchOffset === 0) {
-          setResults(users);
-        } else {
-          setResults((prev) => [...prev, ...users]);
+  const fetchUsers = useCallback(
+    async (searchQuery = "", fetchOffset = 0) => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          console.error("No access token found");
+          setLoading(false);
+          return;
         }
-        setHasMore(users.length === 20); // If we got less than 20 results, there are no more
-        setOffset(fetchOffset + users.length);
-      } else {
-        console.error("Failed to fetch users");
+
+        const response = searchQuery
+          ? await api.searchUsers(token, searchQuery, 20, fetchOffset)
+          : await api.getRandomUsers(token, 20);
+
+        if (response.ok) {
+          const users: UserProfile[] = await response.json();
+          if (fetchOffset === 0) {
+            setResults(users);
+          } else {
+            setResults((prev) => [...prev, ...users]);
+          }
+          // If we got less than 20 results, there are no more
+          setHasMore(users.length === 20);
+          setOffset(fetchOffset + users.length);
+        } else {
+          console.error("Failed to fetch users");
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const onSearch = (q: string) => {
     setQuery(q);

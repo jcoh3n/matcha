@@ -282,25 +282,58 @@ export function DiscoverPage() {
       }
 
       console.log("Fetching filtered users with filters:", filters);
-      const response = await api.getFilteredUsers(
-        token,
-        {
-          ageMin: filters.ageRange[0],
-          ageMax: filters.ageRange[1],
-          distance: filters.distance,
-          tags: filters.tags,
-          sortBy: filters.sortBy,
-          sortOrder: filters.sortOrder,
-          fameRating: filters.fameRating,
-        },
-        8,
-        offset
-      );
+      // api.getFilteredUsers does not exist on the api object; fall back to discovery and apply filters client-side
+      const response = await api.getDiscoveryUsers(token, 8, offset);
 
       if (response.ok) {
         const users: UserProfile[] = await response.json();
         console.log("Received filtered users:", users);
-        const transformedUsers = users.map(transformUserForProfileCard);
+
+        // Apply client-side filtering based on selected filters
+        let filtered = users.filter((u) => {
+          const age = calculateAge(u.profile?.birthDate);
+          // Age filter
+          if (age < filters.ageRange[0] || age > filters.ageRange[1])
+            return false;
+          // Fame rating filter
+          if (
+            typeof filters.fameRating === "number" &&
+            (u.profile?.fameRating || 0) < filters.fameRating
+          )
+            return false;
+          // Tags filter: require user to have all selected tags
+          if (filters.tags.length > 0) {
+            const userTags = u.tags || [];
+            if (!filters.tags.every((t) => userTags.includes(t))) return false;
+          }
+          return true;
+        });
+
+        // Transform after filtering
+        const transformedUsers = filtered.map(transformUserForProfileCard);
+
+        // Apply sorting if requested
+        if (filters.sortBy) {
+          transformedUsers.sort((a, b) => {
+            const order = filters.sortOrder === "asc" ? 1 : -1;
+            if (filters.sortBy === "fame") {
+              return ((a.fameRating || 0) - (b.fameRating || 0)) * order;
+            }
+            if (filters.sortBy === "distance") {
+              return ((a.distance || 0) - (b.distance || 0)) * order;
+            }
+            if (filters.sortBy === "age") {
+              return ((a.age || 0) - (b.age || 0)) * order;
+            }
+            if (filters.sortBy === "tags") {
+              const tagCount = (u: CardUser) =>
+                (u.tags || []).filter((t) => filters.tags.includes(t)).length;
+              return (tagCount(a) - tagCount(b)) * -order; // more common tags first by default
+            }
+            return 0;
+          });
+        }
+
         console.log("Transformed filtered users:", transformedUsers);
 
         if (offset === 0) {
@@ -615,49 +648,36 @@ export function DiscoverPage() {
         {/* RIGHT HALF: Profile Card (80% width inner wrapper) */}
         <div className="ml-auto w-[90%] flex flex-col justify-center p-8 ">
           {currentProfile ? (
-            <div className="w-[100%] ml-auto">
-              {/* Make the profile card clickable */}
-              <div 
-                className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300 cursor-pointer hover:shadow-lg"
-                onClick={() => handleProfileClick(currentProfile.id)}
-              >
-                <div className="relative w-full lg:w-1/2 h-[520px] lg:h-[700px] shrink-0">
-                  <img
-                    src={currentProfile.images[0] || "https://randomuser.me/api/portraits/women/2.jpg"}
-                    alt={currentProfile.name}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                </div>
-                <div className="w-full  flex flex-col p-6 lg:p-8 gap-4 bg-[#9ed09d]">
-                  <div className="flex flex-col space-y-3 items-start  py-40">
-                    <h2 className="font-poppins text-3xl lg:text-7xl font-bold tracking-tight text-black/70 drop-shadow-xl">
-                      {currentProfile.name}, {currentProfile.age}
-                    </h2>
-                    <p className="flex items-center gap-2 text-black/80 text-lg mt-40 font-inter lg:text-xl font-medium">
-                      <MapPin className="w-4 h-4 lg:w-8 lg:h-8" />
-                      <span>
-                        {currentProfile.distance.toFixed(1)} km •{" "}
-                        {currentProfile.location}
-                      </span>
-                    </p>
-                    <div className="flex flex-wrap gap-2 pt-10">
-                      {currentProfile.tags.slice(0, 4).map((t: string) => (
-                        <span
-                          key={t}
-                          className="px-3 py-1.5 font-poppins rounded-full bg-white/15 backdrop-blur-sm text-black/80 text-[14px] font-inter font-bold transition-colors hover:bg-white/20"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                    {typeof currentProfile.matchPercent === "number" && (
-                      <div className="flex gap-2 pt-1">
-                        <span className="px-3 py-1 rounded-full bg-[#7FB77E] text-black/8ext-[22px] font-poppins font-bold shadow-sm">
-                          {currentProfile.matchPercent}% match
+            <>
+              <div className="w-[100%] ml-auto">
+                {/* Make the profile card clickable */}
+                <div
+                  className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col lg:flex-row transition-all duration-300 cursor-pointer hover:shadow-lg"
+                  onClick={() => handleProfileClick(currentProfile.id)}
+                >
+                  <div className="relative w-full lg:w-1/2 h-[520px] lg:h-[700px] shrink-0">
+                    <img
+                      src={
+                        currentProfile.images[0] ||
+                        "https://randomuser.me/api/portraits/women/2.jpg"
+                      }
+                      alt={currentProfile.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="w-full  flex flex-col p-6 lg:p-8 gap-4 bg-[#9ed09d]">
+                    <div className="flex flex-col space-y-3 items-start  py-40">
+                      <h2 className="font-poppins text-3xl lg:text-7xl font-bold tracking-tight text-black/70 drop-shadow-xl">
+                        {currentProfile.name}, {currentProfile.age}
+                      </h2>
+                      <p className="flex items-center gap-2 text-black/80 text-lg mt-40 font-inter lg:text-xl font-medium">
+                        <span>
+                          {currentProfile.distance.toFixed(1)} km •{" "}
+                          {currentProfile.location}
                         </span>
                       </p>
                       <div className="flex flex-wrap gap-2 pt-10">
-                        {currentProfile.tags?.slice(0, 4).map((t: string) => (
+                        {currentProfile.tags.slice(0, 4).map((t: string) => (
                           <span
                             key={t}
                             className="px-3 py-1.5 font-poppins rounded-full bg-white/15 backdrop-blur-sm text-black/80 text-[14px] font-inter font-bold transition-colors hover:bg-white/20"
@@ -737,13 +757,16 @@ export function DiscoverPage() {
         {currentProfile && (
           <div>
             {/* Make the profile card clickable */}
-            <div 
+            <div
               className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-col transition-all duration-300 cursor-pointer hover:shadow-lg"
               onClick={() => handleProfileClick(currentProfile.id)}
             >
               <div className="relative w-full h-[420px]">
                 <img
-                  src={currentProfile.images[0] || "https://randomuser.me/api/portraits/women/3.jpg"}
+                  src={
+                    currentProfile.images[0] ||
+                    "https://randomuser.me/api/portraits/women/3.jpg"
+                  }
                   alt={currentProfile.name}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
