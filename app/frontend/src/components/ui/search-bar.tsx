@@ -18,11 +18,33 @@ function debounce<Func extends (...args: any[]) => any>(
   };
 }
 
+interface UserProfile {
+  id: string;
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  profilePhotoUrl?: string;
+  profile: {
+    birthDate?: string;
+    gender?: string;
+    orientation?: string;
+    bio?: string;
+    fameRating?: number;
+    lastActive?: string;
+  };
+  location?: {
+    city?: string;
+    country?: string;
+  };
+}
+
 interface SearchBarProps extends React.ComponentProps<"input"> {
   onSearch?: (value: string) => void;
   placeholder?: string;
-  onResults?: (results: any[]) => void;
+  onResults?: (results: UserProfile[]) => void;
   debounceDelay?: number;
+  showSpinner?: boolean; // Nouvelle prop pour contrôler l'affichage du spinner
 }
 
 export function SearchBar({
@@ -31,6 +53,7 @@ export function SearchBar({
   placeholder = "Rechercher...",
   onResults,
   debounceDelay = 300,
+  showSpinner = true, // Par défaut, le spinner est activé
   ...props
 }: SearchBarProps) {
   const [searchValue, setSearchValue] = useState("");
@@ -56,10 +79,12 @@ export function SearchBar({
 
         const response = await api.searchUsers(token, query);
         if (response.ok) {
-          const results = await response.json();
+          const results: UserProfile[] = await response.json();
+          console.log("Search API response:", results);
           onResults?.(results);
         } else {
-          console.error("Failed to fetch search results");
+          const errorText = await response.text();
+          console.error("Failed to fetch search results:", response.status, errorText);
           onResults?.([]);
         }
       } catch (error) {
@@ -93,7 +118,7 @@ export function SearchBar({
         onChange={(e) => setSearchValue(e.target.value)}
         {...props}
       />
-      {isLoading && (
+      {isLoading && showSpinner && ( // N'afficher le spinner que si showSpinner est true
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
           <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin"></div>
         </div>

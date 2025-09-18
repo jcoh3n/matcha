@@ -245,6 +245,114 @@ async function insertLocation(client, userId, user) {
   return locationId;
 }
 
+// -----------------------------
+// Tags seeding helpers
+// -----------------------------
+
+// Base tag catalog (aligned with frontend availableTags + extras for variety)
+const TAG_CATALOG = [
+  "Art",
+  "Coffee",
+  "Hiking",
+  "Foodie",
+  "Photography",
+  "Tech",
+  "Music",
+  "Guitar",
+  "Travel",
+  "Yoga",
+  "Mindfulness",
+  "Nature",
+  "Cooking",
+  "Dogs",
+  "Cats",
+  "Design",
+  "Fitness",
+  "Climbing",
+  "Adventure",
+  "Science",
+  "Movies",
+  "Gaming",
+  "Reading",
+  "Running",
+  "Cycling",
+  "Swimming",
+  "Coding",
+  "Baking",
+  "Dancing",
+  "Theatre",
+  "Board Games",
+  "Crafts",
+  "Gardening",
+  "Meditation",
+  "Podcasts",
+  "Fashion",
+  "Skateboarding",
+  "Skiing",
+  "Snowboarding",
+  "Surfing",
+  "Basketball",
+  "Football",
+  "Tennis",
+  "Badminton",
+  "Volleyball",
+  "Chess",
+  "Anime",
+];
+
+// Ensure all tags exist in tags table; return a map name -> id
+async function ensureTags(client, tagNames = TAG_CATALOG) {
+  console.log(`Ensuring ${tagNames.length} tags exist...`);
+  const nameToId = new Map();
+  for (const name of tagNames) {
+    try {
+      const upsert = await client.query(
+        `INSERT INTO tags (name) VALUES ($1)
+         ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+         RETURNING id`,
+        [name]
+      );
+      const id = upsert.rows[0]?.id;
+      if (id) {
+        nameToId.set(name, id);
+        continue;
+      }
+      // Fallback: select existing id
+      const sel = await client.query(`SELECT id FROM tags WHERE name = $1`, [
+        name,
+      ]);
+      if (sel.rows.length > 0) nameToId.set(name, sel.rows[0].id);
+    } catch (e) {
+      console.error(`Error ensuring tag '${name}':`, e);
+    }
+  }
+  console.log(`Tag catalog ready (${nameToId.size} tags).`);
+  return nameToId;
+}
+
+// Assign N random tags (3-7) to a user, ignore duplicates
+async function assignRandomTagsToUser(client, userId, tagIds) {
+  const pickCount = Math.floor(Math.random() * 5) + 3; // 3..7
+  const ids = [...tagIds];
+  // Shuffle
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  const chosen = ids.slice(0, pickCount);
+  for (const tagId of chosen) {
+    try {
+      await client.query(
+        `INSERT INTO user_tags (user_id, tag_id) VALUES ($1, $2)
+         ON CONFLICT (user_id, tag_id) DO NOTHING`,
+        [userId, tagId]
+      );
+    } catch (e) {
+      console.error(`Error assigning tag ${tagId} to user ${userId}:`, e);
+    }
+  }
+}
+
 // Main function to seed the database
 async function seedDatabase() {
   let client;
@@ -269,6 +377,10 @@ async function seedDatabase() {
     // Begin transaction
     await client.query("BEGIN");
     console.log("Started database transaction");
+
+    // Ensure tag catalog is present
+    const tagMap = await ensureTags(client);
+    const allTagIds = Array.from(tagMap.values());
 
     // Fetch users from API
     console.log("Fetching users from randomuser.me API...");
@@ -301,6 +413,9 @@ async function seedDatabase() {
 
         // Insert location
         await insertLocation(client, userId, user);
+
+        // Assign random tags to user
+        await assignRandomTagsToUser(client, userId, allTagIds);
 
         count++;
         index++;

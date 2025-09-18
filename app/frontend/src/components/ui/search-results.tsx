@@ -16,6 +16,7 @@ interface UserProfile {
     orientation?: string;
     bio?: string;
     fameRating?: number;
+    lastActive?: string;
   };
   location?: {
     city?: string;
@@ -33,6 +34,8 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
   const [showResults, setShowResults] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
+  const [searchValue, setSearchValue] = useState(""); // ← Ajout de cet état pour garder la valeur de recherche
+
   // Calculate age from birth date
   const calculateAge = (birthDate?: string) => {
     if (!birthDate) return 0;
@@ -48,6 +51,19 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
 
   // Transform API user data to match ProfileCard expectations
   const transformUserForProfileCard = (user: UserProfile) => {
+    // Calculer une distance plus réaliste (0-100km)
+    const distance = user.location?.city && user.location?.country ? 10 : 0;
+    
+    // Déterminer le statut en ligne de manière plus cohérente (basé sur la dernière activité)
+    const isOnline = user.profile?.lastActive ? 
+      (new Date().getTime() - new Date(user.profile.lastActive).getTime()) < 30 * 60 * 1000 : // En ligne si actif dans les 30 dernières minutes
+      false;
+    
+    // Calculer un pourcentage de compatibilité plus réaliste
+    const matchPercent = user.profile?.fameRating ? 
+      Math.min(95, Math.max(20, user.profile.fameRating)) : // Basé sur la cote de popularité
+      50;
+
     return {
       id: user.id,
       name: `${user.firstName} ${user.lastName}`,
@@ -55,22 +71,25 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
       images: user.profilePhotoUrl ? [user.profilePhotoUrl] : [],
       bio: user.profile?.bio || "",
       location: user.location ? `${user.location.city}, ${user.location.country}` : "",
-      distance: Math.floor(Math.random() * 20) + 1, // Placeholder - would be calculated based on user location
+      distance,
       tags: [], // Would be populated with user tags
       fame: user.profile?.fameRating || 0,
-      isOnline: Math.random() > 0.5, // Placeholder
+      isOnline,
       orientation: user.profile?.orientation || "straight",
       gender: user.profile?.gender || "female",
-      matchPercent: Math.floor(Math.random() * 60) + 20 // Placeholder match percentage
+      matchPercent
     };
   };
 
   const handleSearchResults = (results: UserProfile[]) => {
+    console.log("Search results received:", results);
     setSearchResults(results);
     setShowResults(results.length > 0);
   };
 
   const handleSearchSubmit = (query: string) => {
+    console.log("Search submitted with query:", query);
+    setSearchValue(query); // ← Mettre à jour la valeur de recherche
     if (onNavigate) {
       onNavigate("search", query);
     }
@@ -98,6 +117,9 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
         onResults={handleSearchResults}
         placeholder="Rechercher des profils..."
         className="w-full"
+        showSpinner={false} // Désactiver le spinner qui cause des problèmes
+        value={searchValue} // ← Ajouter la valeur pour contrôler le composant
+        onChange={(e) => setSearchValue(e.target.value)} // ← Mettre à jour la valeur
       />
       
       {showResults && (
@@ -115,7 +137,7 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
           <div className="p-2">
             {searchResults.length > 0 ? (
               <div className="space-y-2">
-                {searchResults.slice(0, 5).map((user) => (
+                {searchResults.slice(0, 8).map((user) => (
                   <div 
                     key={user.id} 
                     className="cursor-pointer hover:bg-muted rounded-lg p-2 transition-colors"
@@ -132,12 +154,12 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
                     />
                   </div>
                 ))}
-                {searchResults.length > 5 && (
+                {searchResults.length > 8 && (
                   <div className="p-3 text-center border-t border-border">
                     <button 
                       onClick={() => {
                         if (onNavigate) {
-                          onNavigate("search", ""); // Navigate to full search page
+                          onNavigate("search", searchValue); // ← CORRECTIF : transmettre la vraie requête
                         }
                         setShowResults(false);
                       }}

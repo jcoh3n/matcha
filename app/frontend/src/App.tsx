@@ -24,8 +24,6 @@ import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
 import { VerifyEmailPendingPage } from "./pages/auth/VerifyEmailPendingPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { Home } from "./pages/Home";
-import TestSearchPage from "./pages/TestSearchPage";
-import TestPaginationPage from "./pages/TestPaginationPage";
 
 const queryClient = new QueryClient();
 
@@ -97,8 +95,6 @@ const App = () => {
             {/** canonical auth routes under /auth */}
             <Route path="/health" element={<HealthPage />} />
             <Route path="/health-test" element={<HealthTestPage />} />
-            <Route path="/test-search" element={<TestSearchPage />} />
-            <Route path="/test-pagination" element={<TestPaginationPage />} />
             <Route
               path="/auth/login"
               element={<LoginPage onLogin={handleLogin} />}
@@ -113,7 +109,10 @@ const App = () => {
               element={<ResetPasswordPage />}
             />
             <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/auth/verify-email-pending" element={<VerifyEmailPendingPage />} />
+            <Route
+              path="/auth/verify-email-pending"
+              element={<VerifyEmailPendingPage />}
+            />
             {/** discover route is handled below based on auth state */}
             {isAuthenticated ? (
               <>
@@ -122,7 +121,11 @@ const App = () => {
                   path="/discover"
                   element={
                     <ProtectedRoute requireOnboarding={false}>
-                      <AppShell current="discover" onLogout={handleLogout} fullWidth>
+                      <AppShell
+                        current="discover"
+                        onLogout={handleLogout}
+                        fullWidth
+                      >
                         <DiscoverPage />
                       </AppShell>
                     </ProtectedRoute>
@@ -200,4 +203,3 @@ const App = () => {
 };
 
 export default App;
-

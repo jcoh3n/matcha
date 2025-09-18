@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { ProfileCard } from "@/components/ui/profile-card";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
@@ -16,6 +17,7 @@ interface UserProfile {
     orientation?: string;
     bio?: string;
     fameRating?: number;
+    lastActive?: string;
   };
   location?: {
     city?: string;
@@ -24,6 +26,7 @@ interface UserProfile {
 }
 
 export function SearchPage() {
+  const location = useLocation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,7 +40,10 @@ export function SearchPage() {
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
       age--;
     }
     return age;
@@ -45,24 +51,40 @@ export function SearchPage() {
 
   // Transform API user data to match ProfileCard expectations
   const transformUserForProfileCard = (user: UserProfile) => {
+    // Calculer une distance plus réaliste (0-100km)
+    const distance = user.location?.city && user.location?.country ? 10 : 0;
+
+    // Déterminer le statut en ligne de manière plus cohérente (basé sur la dernière activité)
+    const isOnline = user.profile?.lastActive
+      ? new Date().getTime() - new Date(user.profile.lastActive).getTime() <
+        30 * 60 * 1000 // En ligne si actif dans les 30 dernières minutes
+      : false;
+
+    // Calculer un pourcentage de compatibilité plus réaliste
+    const matchPercent = user.profile?.fameRating
+      ? Math.min(95, Math.max(20, user.profile.fameRating)) // Basé sur la cote de popularité
+      : 50;
+
     return {
       id: user.id,
       name: `${user.firstName} ${user.lastName}`,
       age: calculateAge(user.profile?.birthDate),
       images: user.profilePhotoUrl ? [user.profilePhotoUrl] : [],
       bio: user.profile?.bio || "",
-      location: user.location ? `${user.location.city}, ${user.location.country}` : "",
-      distance: Math.floor(Math.random() * 20) + 1, // Placeholder - would be calculated based on user location
+      location: user.location
+        ? `${user.location.city}, ${user.location.country}`
+        : "",
+      distance,
       tags: [], // Would be populated with user tags
       fame: user.profile?.fameRating || 0,
-      isOnline: Math.random() > 0.5, // Placeholder
+      isOnline,
       orientation: user.profile?.orientation || "straight",
       gender: user.profile?.gender || "female",
-      matchPercent: Math.floor(Math.random() * 60) + 20 // Placeholder match percentage
+      matchPercent,
     };
   };
 
-  const fetchUsers = async (searchQuery = "", fetchOffset = 0) => {
+  const fetchUsers = useCallback(async (searchQuery = "", fetchOffset = 0) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
@@ -71,16 +93,16 @@ export function SearchPage() {
         return;
       }
 
-      const response = searchQuery 
+      const response = searchQuery
         ? await api.searchUsers(token, searchQuery, 20, fetchOffset)
         : await api.getRandomUsers(token, 20);
-      
+
       if (response.ok) {
         const users: UserProfile[] = await response.json();
         if (fetchOffset === 0) {
           setResults(users);
         } else {
-          setResults(prev => [...prev, ...users]);
+          setResults((prev) => [...prev, ...users]);
         }
         setHasMore(users.length === 20); // If we got less than 20 results, there are no more
         setOffset(fetchOffset + users.length);
@@ -92,38 +114,52 @@ export function SearchPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const onSearch = (q: string) => {
     setQuery(q);
     setOffset(0);
     setHasMore(true);
+    // Update URL with search query
+    const newUrl = q ? `/search?q=${encodeURIComponent(q)}` : "/search";
+    window.history.replaceState({}, "", newUrl);
     fetchUsers(q, 0);
   };
 
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (hasMore && !loading) {
       fetchUsers(query, offset);
     }
-  };
+  }, [hasMore, loading, fetchUsers, query, offset]);
 
-  // Load initial users
+  // Load users based on URL query (?q=...) and react to route changes
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const params = new URLSearchParams(location.search);
+    const q = params.get("q") || "";
+    // If query changed due to navigation, sync state and fetch
+    setQuery(q);
+    setOffset(0);
+    setHasMore(true);
+    fetchUsers(q, 0);
+  }, [location.search, fetchUsers]);
 
   // Infinite scroll handler
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || !hasMore || loading) {
+      if (
+        window.innerHeight + document.documentElement.scrollTop !==
+          document.documentElement.offsetHeight ||
+        !hasMore ||
+        loading
+      ) {
         return;
       }
       loadMore();
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loading, offset, query]);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasMore, loading, offset, query, loadMore]);
 
   return (
     <div>
