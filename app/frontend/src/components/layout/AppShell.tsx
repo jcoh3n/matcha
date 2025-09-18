@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { useNavigate } from "react-router-dom";
 
 type NavKey =
   | "discover"
@@ -24,6 +25,19 @@ export function AppShell({
   onLogout,
   fullWidth,
 }: AppShellProps) {
+  const navigate = useNavigate();
+
+  const handleNavigation = (page: string, query?: string) => {
+    console.log("AppShell navigation:", page, query);
+    if (page === "search" && query) {
+      navigate(`/search?q=${encodeURIComponent(query)}`);
+    } else if (page === "profile" && query) {
+      navigate(`/profile/${query}`);
+    } else {
+      navigate(`/${page}`);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col relative bg-transparent">
       <Header
@@ -31,6 +45,7 @@ export function AppShell({
         notificationCount={3}
         messageCount={2}
         onLogout={onLogout}
+        onNavigate={handleNavigation}
       />
       <div
         className={`flex-1 w-full ${

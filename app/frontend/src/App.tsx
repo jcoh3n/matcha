@@ -111,7 +111,10 @@ const App = () => {
               element={<ResetPasswordPage />}
             />
             <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/auth/verify-email-pending" element={<VerifyEmailPendingPage />} />
+            <Route
+              path="/auth/verify-email-pending"
+              element={<VerifyEmailPendingPage />}
+            />
             {/** discover route is handled below based on auth state */}
             {isAuthenticated ? (
               <>
@@ -120,7 +123,11 @@ const App = () => {
                   path="/discover"
                   element={
                     <ProtectedRoute requireOnboarding={false}>
-                      <AppShell current="discover" onLogout={handleLogout} fullWidth>
+                      <AppShell
+                        current="discover"
+                        onLogout={handleLogout}
+                        fullWidth
+                      >
                         <DiscoverPage />
                       </AppShell>
                     </ProtectedRoute>
@@ -220,6 +227,3 @@ const App = () => {
 };
 
 export default App;
-
-
-

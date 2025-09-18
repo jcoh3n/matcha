@@ -5,11 +5,14 @@ import {
   User,
   MessageCircle,
   LogOut,
+  Search,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { SearchResults } from "@/components/ui/search-results";
+import { Button } from "react-day-picker";
 
 interface HeaderProps {
   currentPage?:
@@ -21,7 +24,7 @@ interface HeaderProps {
     | "search";
   notificationCount?: number;
   messageCount?: number;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, query?: string) => void;
   onLogout?: () => void;
 }
 
@@ -51,14 +54,39 @@ export function Header({
     }
   };
 
+  const handleNavigation = (page: string, query?: string) => {
+    console.log("Navigate to:", page, "with query:", query);
+    if (onNavigate) {
+      onNavigate(page, query);
+    } else {
+      const url = query ? `/search?q=${encodeURIComponent(query)}` : `/${page}`;
+      navigate(url);
+    }
+  };
+
   return (
     <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-8 py-5 text-black">
       <div className="flex items-center gap-2">
-        <span className="text-2xl font-extrabold tracking-tight font-montserrat">
-          Matcha
-        </span>
+        <button onClick={() => handleNavigation("discover")}>
+          <span className="text-2xl font-extrabold tracking-tight font-montserrat">
+            Matcha
+          </span>
+        </button>
       </div>
+
+      {/* Barre de recherche au centre sur les écrans moyens et larges */}
+      <div className="hidden md:block flex-1 max-w-md mx-8 relative"></div>
+
       <ul className="hidden md:flex items-center gap-8 font-medium font-montserrat">
+        <li>
+          <button
+            onClick={() => handleNavigation("search")}
+            className="w-full flex flex-row"
+          >
+            <Search className="w-5 h-5 mr-2 text-muted-foreground" />
+            <span>Search</span>
+          </button>
+        </li>
         <li>
           <button
             onClick={() => {
@@ -119,8 +147,12 @@ export function Header({
           </button>
         </li>
       </ul>
-      {/* Mobile: icons only */}
+
+      {/* Version mobile: icône de recherche + autres icônes */}
       <div className="md:hidden flex items-center gap-4">
+        <div className="relative">
+          <Search className="w-5 h-5 text-muted-foreground" />
+        </div>
         <button
           onClick={() => {
             if (onNavigate) onNavigate("profile");

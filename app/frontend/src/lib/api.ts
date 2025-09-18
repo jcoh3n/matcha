@@ -59,6 +59,39 @@ export const api = {
       headers: { 'Authorization': `Bearer ${token}` }
     }),
     
+<<<<<<< HEAD
+=======
+  getFilteredUsers: (
+    token: string, 
+    filters: { 
+      ageMin?: number; 
+      ageMax?: number; 
+      distance?: number; 
+      tags?: string[]; 
+      sortBy?: string; 
+      sortOrder?: string;
+      fameRating?: number;
+    },
+    limit?: number, 
+    offset?: number
+  ) => {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+    if (offset) params.append('offset', offset.toString());
+    if (filters.ageMin) params.append('ageMin', filters.ageMin.toString());
+    if (filters.ageMax) params.append('ageMax', filters.ageMax.toString());
+    if (filters.distance) params.append('distance', filters.distance.toString());
+    if (filters.tags) params.append('tags', filters.tags.join(','));
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+    if (filters.fameRating) params.append('fameRating', filters.fameRating.toString());
+    
+    return fetch(`${API_BASE_URL}/api/discovery/filtered?${params.toString()}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  },
+    
+>>>>>>> origin/mdembele_sprint_03
   // Profile endpoints
   completeOnboarding: (token: string, profileData: any) => 
     fetch(`${API_BASE_URL}/api/onboarding/complete`, {
