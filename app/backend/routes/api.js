@@ -3,6 +3,7 @@ const { getAllUsers, getUserById, createUser, updateUser, deleteUser, getCurrent
 const profileRoutes = require('./profile');
 const authRoutes = require('./auth');
 const onboardingRoutes = require('./onboarding');
+const discoveryRoutes = require('./discovery');
 const { authJWT } = require('../middleware/authJWT');
 
 const router = express.Router();
@@ -18,12 +19,15 @@ router.delete('/users/:id', deleteUser);
 router.get('/me', authJWT, getCurrentUser);
 
 // Profile routes
-router.use('/', profileRoutes);
+router.use('/profiles', profileRoutes);
 
 // Auth routes
 router.use('/auth', authRoutes);
 
 // Onboarding routes
 router.use('/', onboardingRoutes);
+
+// Discovery routes
+router.use('/', discoveryRoutes);
 
 module.exports = router;

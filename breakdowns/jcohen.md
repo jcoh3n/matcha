@@ -2,21 +2,21 @@
 
 ## État actuel
 - [x] Sprint 0 – Socle (React/Tailwind + Express/Postgres + `/health`)
-- [ ] Sprint 1 – Auth (reste à finir)
+- [X] Sprint 1 – Auth
 
 ---
 
 ## Sprint 1 – Auth (à terminer)
-- [ ] FE : Forgot/Reset password, guard routes privées, gestion refresh token
-- [ ] BE : `POST /auth/logout`, erreurs normalisées (si manquant)
-- [ ] DoD : Auth E2E complet (register/login/verify/reset/logout)
+- [X] FE : Forgot/Reset password, guard routes privées, gestion refresh token
+- [X] BE : `POST /auth/logout`, erreurs normalisées (si manquant)
+- [X] DoD : Auth E2E complet (register/login/verify/reset/logout)
 
 ---
 
 ## Sprint 2 – Vue Profil & Actions Sociales
-- [ ] API : `GET /profiles/:id` (infos publiques sans email/mdp), log visites
-- [ ] API : `POST/DELETE /likes/:id` (refus si pas de photo profil)
-- [ ] API : `POST /profiles/:id/block`, `POST /profiles/:id/report`
+- [X] API : `GET /profiles/:id` (infos publiques sans email/mdp), log visites
+- [X] API : `POST/DELETE /likes/:id` (refus si pas de photo profil)
+- [X] API : `POST /profiles/:id/block`, `POST /profiles/:id/report`
 - [ ] FE : page Profil (galerie photos, bio, tags, fame, distance, online/last seen)
 - [ ] FE : actions Like/Unlike, Block, Report, badges “vous a liké” / “match”
 - [ ] DoD : visite enregistrée, règles like/unlike/blocked respectées
@@ -51,3 +51,4 @@
 - [ ] Vérification contrats JSON avec mdembele
 - [ ] Tests E2E : Register → Profil public → Like ↔ Like → Notifs
 - [ ] Accessibilité (focus, contrastes)
+- [ ] Design upgrade

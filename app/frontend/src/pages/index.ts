@@ -6,6 +6,8 @@ export { DiscoverPage } from "./DiscoverPage";
 export { MatchesPage } from "./MatchesPage";
 export { MessagesPage } from "./MessagesPage";
 export { ProfilePage } from "./ProfilePage";
+export { PublicProfilePage } from "./PublicProfilePage";
+export { PrivateProfilePage } from "./PrivateProfilePage";
 export { NotificationsPage } from "./NotificationsPage";
 export { SearchPage } from "./SearchPage";
 export { HealthPage } from "./HealthPage";

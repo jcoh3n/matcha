@@ -10,6 +10,14 @@ const {
   deletePhoto,
   updateLocation
 } = require('../controllers/profileController');
+const { 
+  getPublicProfile,
+  likeUser,
+  unlikeUser,
+  blockUser,
+  unblockUser,
+  reportUser
+} = require('../controllers/socialController');
 const { authJWT } = require('../middleware/authJWT');
 
 const router = express.Router();
@@ -17,6 +25,16 @@ const router = express.Router();
 // Profile routes
 router.get('/me', authJWT, getProfile);
 router.put('/me', authJWT, updateProfile);
+
+// Public profile route
+router.get('/:id', authJWT, getPublicProfile);
+
+// Social interaction routes
+router.post('/likes/:id', authJWT, likeUser);
+router.delete('/likes/:id', authJWT, unlikeUser);
+router.post('/:id/block', authJWT, blockUser);
+router.delete('/:id/block', authJWT, unblockUser);
+router.post('/:id/report', authJWT, reportUser);
 
 // Tag routes
 router.get('/tags', getAllTags);

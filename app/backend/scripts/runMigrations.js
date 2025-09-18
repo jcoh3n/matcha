@@ -7,11 +7,11 @@ require('dotenv').config();
 
 // Database configuration
 const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'matcha_dev',
-  password: process.env.DB_PASSWORD || 'postgres',
-  port: process.env.DB_PORT || 5432,
+  user: process.env.POSTGRES_USER || process.env.DB_USER || 'postgres',
+  host: process.env.POSTGRES_HOST || process.env.DB_HOST || 'localhost',
+  database: process.env.POSTGRES_DB || process.env.DB_NAME || 'matcha_dev',
+  password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || 'postgres',
+  port: process.env.POSTGRES_PORT || process.env.DB_PORT || 5432,
 });
 
 // Function to run a migration file

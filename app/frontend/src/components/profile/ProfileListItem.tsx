@@ -1,7 +1,9 @@
 import { Heart, MapPin } from "lucide-react";
 import { Tag } from "@/components/ui/tag";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileListItemProps {
+  id: number;
   name: string;
   age: number;
   location: string;
@@ -9,10 +11,10 @@ interface ProfileListItemProps {
   matchPercentage: number;
   isOnline: boolean;
   imageUrl: string;
-  onClick: () => void;
 }
 
 export function ProfileListItem({
+  id,
   name,
   age,
   location,
@@ -20,16 +22,33 @@ export function ProfileListItem({
   matchPercentage,
   isOnline,
   imageUrl,
-  onClick
 }: ProfileListItemProps) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/profiles/${id}`);
+  };
+
+  // Function to handle image URLs - use placeholder if blob URL is not accessible
+  const getImageUrl = (url: string) => {
+    if (!url) return "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face";
+    
+    // If it's a blob URL, use a placeholder instead
+    if (url.startsWith('blob:')) {
+      return "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face";
+    }
+    
+    return url;
+  };
+
   return (
     <div 
       className="card interactive-card"
-      onClick={onClick}
+      onClick={handleClick}
     >
       <div className="relative">
         <img 
-          src={imageUrl} 
+          src={getImageUrl(imageUrl)} 
           alt={name} 
           className="w-full h-64 object-cover"
         />
