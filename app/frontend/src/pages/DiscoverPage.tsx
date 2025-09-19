@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Filter,
@@ -112,6 +112,9 @@ export function DiscoverPage() {
   const [activePeerId, setActivePeerId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+  const [swipeAnimation, setSwipeAnimation] = useState<"left" | "right" | null>(
+    null
+  );
   const navigate = useNavigate();
 
   const handleProfileClick = (profileId: string) => {
@@ -203,43 +206,73 @@ export function DiscoverPage() {
 
   const currentProfile = profiles[currentIndex];
 
-  const handleLike = (userId: string) => {
-    console.log(`Liked user: ${userId}`);
-    console.log(
-      `Current index: ${currentIndex}, Profiles length: ${profiles.length}`
-    );
-    // Add like animation and move to next profile
-    setTimeout(() => {
-      if (currentIndex < profiles.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-        console.log(`Moved to next profile, new index: ${currentIndex + 1}`);
-      } else {
-        // Load more profiles
-        console.log("No more profiles, fetching new ones");
-        fetchDiscoveryUsers(profiles.length);
-        setCurrentIndex(currentIndex + 1);
-      }
-    }, 300);
-  };
+  const moveToNextProfile = useCallback(() => {
+    if (currentIndex < profiles.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      console.log(`Moved to next profile, new index: ${currentIndex + 1}`);
+    } else {
+      // Load more profiles
+      console.log("No more profiles, fetching new ones");
+      fetchDiscoveryUsers(profiles.length);
+      setCurrentIndex(currentIndex + 1);
+    }
+  }, [currentIndex, profiles.length]);
 
-  const handlePass = (userId: string) => {
-    console.log(`Passed user: ${userId}`);
-    console.log(
-      `Current index: ${currentIndex}, Profiles length: ${profiles.length}`
-    );
-    // Add pass animation and move to next profile
-    setTimeout(() => {
-      if (currentIndex < profiles.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-        console.log(`Moved to next profile, new index: ${currentIndex + 1}`);
-      } else {
-        // Load more profiles
-        console.log("No more profiles, fetching new ones");
-        fetchDiscoveryUsers(profiles.length);
-        setCurrentIndex(currentIndex + 1);
+  const handleLike = useCallback(
+    (userId: string) => {
+      console.log(`Liked user: ${userId}`);
+      console.log(
+        `Current index: ${currentIndex}, Profiles length: ${profiles.length}`
+      );
+      // Add like animation
+      setSwipeAnimation("right");
+      setTimeout(() => {
+        setSwipeAnimation(null);
+        moveToNextProfile();
+      }, 300);
+    },
+    [currentIndex, profiles.length, moveToNextProfile]
+  );
+
+  const handlePass = useCallback(
+    (userId: string) => {
+      console.log(`Passed user: ${userId}`);
+      console.log(
+        `Current index: ${currentIndex}, Profiles length: ${profiles.length}`
+      );
+      // Add pass animation
+      setSwipeAnimation("left");
+      setTimeout(() => {
+        setSwipeAnimation(null);
+        moveToNextProfile();
+      }, 300);
+    },
+    [currentIndex, profiles.length, moveToNextProfile]
+  );
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (isFilterSidebarOpen) return; // Don't handle keyboard when sidebar is open
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (currentProfile) {
+          handlePass(currentProfile.id);
+        }
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (currentProfile) {
+          handleLike(currentProfile.id);
+        }
       }
-    }, 300);
-  };
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [currentProfile, handleLike, handlePass, isFilterSidebarOpen]);
 
   const toggleTag = (tag: string) => {
     setFilters((prev) => ({
@@ -583,9 +616,15 @@ export function DiscoverPage() {
           {currentProfile ? (
             <>
               <div className="w-[100%]">
-                {/* Make the profile card clickable */}
+                {/* Make the profile card clickable with animation */}
                 <div
-                  className="rounded-xl overflow-hidden shadow-soft bg-white flex flex-row lg:flex-row transition-all duration-300 cursor-pointer hover:shadow-lg w-full lg:max-w-5xl mx-auto"
+                  className={`rounded-xl overflow-hidden shadow-soft bg-white flex flex-row lg:flex-row transition-all duration-300 cursor-pointer hover:shadow-lg w-full lg:max-w-5xl mx-auto ${
+                    swipeAnimation === "left"
+                      ? "transform -translate-x-full opacity-50 -rotate-12"
+                      : swipeAnimation === "right"
+                      ? "transform translate-x-full opacity-50 rotate-12"
+                      : "transform translate-x-0 opacity-100 rotate-0"
+                  }`}
                   onClick={() => handleProfileClick(currentProfile.id)}
                 >
                   <div className="relative w-5/6 bg-[#9ed09d]">
@@ -641,6 +680,10 @@ export function DiscoverPage() {
                   <Heart className="w-5 h-5 mr-2 inline-block animate-pulse group-hover:animate-none" />
                   SMASH
                 </button>
+              </div>
+              {/* Keyboard hints */}
+              <div className="mt-4 text-center text-sm text-gray-500">
+                Utilisez ← pour PASS et → pour SMASH
               </div>
             </>
           ) : (
