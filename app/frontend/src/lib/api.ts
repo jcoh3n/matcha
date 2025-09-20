@@ -114,6 +114,12 @@ export const api = {
     );
   },
 
+  passUser: (token: string, userId: string | number) =>
+    fetch(`${API_BASE_URL}/api/profiles/${userId}/pass`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
   // Profile endpoints
   completeOnboarding: (token: string, profileData: any) =>
     fetch(`${API_BASE_URL}/api/onboarding/complete`, {

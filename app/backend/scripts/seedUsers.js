@@ -3,6 +3,7 @@
 const https = require("https");
 const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
+const { updateFameRating } = require("../services/fameRatingService");
 require("dotenv").config();
 
 // Database configuration
@@ -216,6 +217,33 @@ async function insertPhoto(client, userId, user, isProfile = true) {
 // Function to insert location for a user
 async function insertLocation(client, userId, user) {
   console.log(`Inserting location for user ID ${userId}`);
+  
+  // Use geocoding to get accurate coordinates
+  let latitude = 0;
+  let longitude = 0;
+  
+  try {
+    // Load French city coordinates
+    const frenchCityCoordinates = require('../data/frenchCities');
+    
+    const city = user.location.city;
+    if (frenchCityCoordinates[city]) {
+      latitude = frenchCityCoordinates[city].lat;
+      longitude = frenchCityCoordinates[city].lon;
+      console.log(`  Using predefined coordinates for ${city}: ${latitude}, ${longitude}`);
+    } else {
+      // Fallback to original coordinates if city not in our list
+      latitude = parseFloat(user.location.coordinates.latitude);
+      longitude = parseFloat(user.location.coordinates.longitude);
+      console.log(`  Using API coordinates for ${city}: ${latitude}, ${longitude}`);
+    }
+  } catch (error) {
+    console.error(`  Error geocoding location for user ${userId}:`, error.message);
+    // Fallback to original coordinates
+    latitude = parseFloat(user.location.coordinates.latitude);
+    longitude = parseFloat(user.location.coordinates.longitude);
+  }
+  
   const locationQuery = `
     INSERT INTO locations (user_id, latitude, longitude, city, country, location_method, created_at, updated_at)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -223,8 +251,8 @@ async function insertLocation(client, userId, user) {
   `;
   const locationValues = [
     userId,
-    parseFloat(user.location.coordinates.latitude),
-    parseFloat(user.location.coordinates.longitude),
+    latitude,
+    longitude,
     user.location.city,
     user.location.country,
     "manual", // location_method
@@ -238,6 +266,24 @@ async function insertLocation(client, userId, user) {
     `Successfully inserted location ID ${locationId} for user ID ${userId}`
   );
   return locationId;
+}
+
+// Insert extra gallery photos (0-4) so each user has 1-5 photos total
+async function insertExtraPhotos(client, userId, user) {
+  try {
+    const extraCount = Math.floor(Math.random() * 5); // 0..4
+    for (let i = 0; i < extraCount; i++) {
+      const url =
+        user.picture?.medium || user.picture?.thumbnail || user.picture?.large;
+      await client.query(
+        `INSERT INTO photos (user_id, url, is_profile, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [userId, url, false, new Date(), new Date()]
+      );
+    }
+  } catch (e) {
+    console.error(`Error inserting extra photos for user ${userId}:`, e);
+  }
 }
 
 // -----------------------------
@@ -404,6 +450,9 @@ async function seedDatabase() {
 
         // Insert photo
         await insertPhoto(client, userId, user, true);
+
+        // Insert 0-4 extra photos
+        await insertExtraPhotos(client, userId, user);
 
         // Insert location
         await insertLocation(client, userId, user);

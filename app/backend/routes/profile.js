@@ -16,7 +16,9 @@ const {
   unlikeUser,
   blockUser,
   unblockUser,
-  reportUser
+  reportUser,
+  passUser,
+  unpassUser
 } = require('../controllers/socialController');
 const { authJWT } = require('../middleware/authJWT');
 
@@ -35,6 +37,9 @@ router.delete('/likes/:id', authJWT, unlikeUser);
 router.post('/:id/block', authJWT, blockUser);
 router.delete('/:id/block', authJWT, unblockUser);
 router.post('/:id/report', authJWT, reportUser);
+// Pass routes
+router.post('/:id/pass', authJWT, passUser);
+router.delete('/:id/pass', authJWT, unpassUser);
 
 // Tag routes
 router.get('/tags', getAllTags);

@@ -7,6 +7,8 @@ const Like = require('../models/Like');
 const Block = require('../models/Block');
 const Report = require('../models/Report');
 const ProfileView = require('../models/ProfileView');
+const Pass = require('../models/Pass');
+const { updateFameRating } = require('../services/fameRatingService');
 
 // Helper function to calculate age from birth date
 const calculateAge = (birthDate) => {
@@ -108,6 +110,11 @@ const getPublicProfile = async (req, res) => {
       viewedUserId: profileUserId
     });
     
+    // Update the viewed user's fame rating (for activity tracking)
+    updateFameRating(profileUserId).catch(err => {
+      console.error('Error updating fame rating:', err);
+    });
+    
     // Get profile view count
     const viewsCount = await ProfileView.findByViewedUserId(profileUserId);
     
@@ -180,6 +187,11 @@ const likeUser = async (req, res) => {
     const like = await Like.create({
       userId: currentUserId,
       likedUserId
+    });
+    
+    // Update the liked user's fame rating
+    updateFameRating(likedUserId).catch(err => {
+      console.error('Error updating fame rating:', err);
     });
     
     // Check if it's a match
@@ -350,5 +362,37 @@ module.exports = {
   unlikeUser,
   blockUser,
   unblockUser,
-  reportUser
+  reportUser,
+  passUser: async (req, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const passedUserId = parseInt(req.params.id);
+      if (currentUserId === passedUserId) {
+        return res.status(400).json({ message: 'Cannot pass yourself' });
+      }
+      const passedUser = await User.findById(passedUserId);
+      if (!passedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      await Pass.create({ viewerId: currentUserId, passedUserId });
+      return res.json({ passed: true, message: 'User passed successfully' });
+    } catch (error) {
+      console.error('Error passing user:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+  unpassUser: async (req, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const passedUserId = parseInt(req.params.id);
+      const deleted = await Pass.delete(currentUserId, passedUserId);
+      if (!deleted) {
+        return res.status(404).json({ message: 'Pass not found' });
+      }
+      return res.json({ passed: false, message: 'User unpassed successfully' });
+    } catch (error) {
+      console.error('Error unpassing user:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
 };

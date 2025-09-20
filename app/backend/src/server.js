@@ -3,6 +3,9 @@ const socketIo = require('socket.io');
 const app = require('./app');
 require('dotenv').config();
 
+// Initialize fame rating cron jobs
+require('../jobs/fameRatingJob');
+
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {

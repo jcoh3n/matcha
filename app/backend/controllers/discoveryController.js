@@ -78,7 +78,7 @@ const getDiscoveryUsers = async (req, res) => {
       params.push(allowedGenders.map((g) => g.toLowerCase()));
     }
 
-    const query = `
+  const query = `
       SELECT 
         u.id,
         u.email,
@@ -97,6 +97,18 @@ const getDiscoveryUsers = async (req, res) => {
         ph.url as profile_photo_url,
         l.latitude,
         l.longitude,
+        /* distance in km between viewer and candidate; null if missing coords */
+        CASE 
+          WHEN l.latitude IS NULL OR l.longitude IS NULL THEN NULL
+          ELSE (
+            6371 * 2 * ASIN(
+              SQRT(
+                POWER(SIN(RADIANS(l.latitude - lv.latitude) / 2), 2) +
+                COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
+              )
+            )
+          )
+        END AS distance_km,
         l.city,
         l.country,
         array_remove(array_agg(DISTINCT t.name), NULL) as tags
@@ -104,15 +116,20 @@ const getDiscoveryUsers = async (req, res) => {
       LEFT JOIN profiles p ON u.id = p.user_id
       LEFT JOIN photos ph ON u.id = ph.user_id AND ph.is_profile = true
       LEFT JOIN locations l ON u.id = l.user_id
+      LEFT JOIN locations lv ON lv.user_id = $3
       LEFT JOIN user_tags ut ON u.id = ut.user_id
       LEFT JOIN tags t ON t.id = ut.tag_id
       WHERE u.email_verified = true AND u.id != $3
+      AND NOT EXISTS (
+        SELECT 1 FROM passes ps WHERE ps.viewer_id = $3 AND ps.passed_user_id = u.id
+      )
       ${genderFilterClause}
       GROUP BY 
         u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
         p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,
         ph.url,
-        l.latitude, l.longitude, l.city, l.country
+        l.latitude, l.longitude, l.city, l.country,
+        lv.latitude, lv.longitude
       ORDER BY p.fame_rating DESC, u.created_at DESC
       LIMIT $1 OFFSET $2
     `;
@@ -133,7 +150,7 @@ const getDiscoveryUsers = async (req, res) => {
     );
 
     // Transform the data to match the frontend's expected format
-    const users = result.rows.map((row) => ({
+  const users = result.rows.map((row) => ({
       id: row.id,
       email: row.email,
       username: row.username,
@@ -151,13 +168,17 @@ const getDiscoveryUsers = async (req, res) => {
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
-      location: {
+  location: {
         latitude: row.latitude,
         longitude: row.longitude,
         city: row.city,
         country: row.country,
       },
       tags: row.tags || [],
+      distanceKm:
+        row.distance_km !== null && row.distance_km !== undefined
+          ? Math.round(Number(row.distance_km))
+          : null,
     }));
 
     // Log the transformed users
@@ -190,7 +211,7 @@ const getRandomUsers = async (req, res) => {
       params.push(allowedGenders.map((g) => g.toLowerCase()));
     }
 
-    const query = `
+  const query = `
       SELECT 
         u.id,
         u.email,
@@ -209,6 +230,17 @@ const getRandomUsers = async (req, res) => {
         ph.url as profile_photo_url,
         l.latitude,
         l.longitude,
+        CASE 
+          WHEN l.latitude IS NULL OR l.longitude IS NULL THEN NULL
+          ELSE (
+            6371 * 2 * ASIN(
+              SQRT(
+                POWER(SIN(RADIANS(l.latitude - lv.latitude) / 2), 2) +
+                COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
+              )
+            )
+          )
+        END AS distance_km,
         l.city,
         l.country,
         array_remove(array_agg(DISTINCT t.name), NULL) as tags
@@ -216,15 +248,20 @@ const getRandomUsers = async (req, res) => {
       LEFT JOIN profiles p ON u.id = p.user_id
       LEFT JOIN photos ph ON u.id = ph.user_id AND ph.is_profile = true
       LEFT JOIN locations l ON u.id = l.user_id
+      LEFT JOIN locations lv ON lv.user_id = $2
       LEFT JOIN user_tags ut ON u.id = ut.user_id
       LEFT JOIN tags t ON t.id = ut.tag_id
       WHERE u.email_verified = true AND u.id != $2
+      AND NOT EXISTS (
+        SELECT 1 FROM passes ps WHERE ps.viewer_id = $2 AND ps.passed_user_id = u.id
+      )
       ${genderFilterClause}
       GROUP BY 
         u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
         p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,
         ph.url,
-        l.latitude, l.longitude, l.city, l.country
+        l.latitude, l.longitude, l.city, l.country,
+        lv.latitude, lv.longitude
       ORDER BY RANDOM()
       LIMIT $1
     `;
@@ -245,7 +282,7 @@ const getRandomUsers = async (req, res) => {
     );
 
     // Transform the data to match the frontend's expected format
-    const users = result.rows.map((row) => ({
+  const users = result.rows.map((row) => ({
       id: row.id,
       email: row.email,
       username: row.username,
@@ -263,13 +300,17 @@ const getRandomUsers = async (req, res) => {
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
-      location: {
+  location: {
         latitude: row.latitude,
         longitude: row.longitude,
         city: row.city,
         country: row.country,
       },
       tags: row.tags || [],
+      distanceKm:
+        row.distance_km !== null && row.distance_km !== undefined
+          ? Math.round(Number(row.distance_km))
+          : null,
     }));
 
     // Log the transformed users
@@ -305,7 +346,7 @@ const searchUsers = async (req, res) => {
     console.log("Allowed genders (search):", allowedGenders);
 
     // Construire la requête de recherche
-    let baseQuery = `
+  let baseQuery = `
       SELECT 
         u.id,
         u.email,
@@ -324,6 +365,17 @@ const searchUsers = async (req, res) => {
         ph.url as profile_photo_url,
         l.latitude,
         l.longitude,
+        CASE 
+          WHEN l.latitude IS NULL OR l.longitude IS NULL THEN NULL
+          ELSE (
+            6371 * 2 * ASIN(
+              SQRT(
+                POWER(SIN(RADIANS(l.latitude - lv.latitude) / 2), 2) +
+                COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
+              )
+            )
+          )
+        END AS distance_km,
         l.city,
         l.country,
         array_remove(array_agg(DISTINCT t.name), NULL) as tags
@@ -331,11 +383,15 @@ const searchUsers = async (req, res) => {
       LEFT JOIN profiles p ON u.id = p.user_id
       LEFT JOIN photos ph ON u.id = ph.user_id AND ph.is_profile = true
       LEFT JOIN locations l ON u.id = l.user_id
+      LEFT JOIN locations lv ON lv.user_id = $4
       LEFT JOIN user_tags ut ON u.id = ut.user_id
       LEFT JOIN tags t ON t.id = ut.tag_id
       WHERE u.email_verified = true
         AND (u.first_name ILIKE $3 OR u.last_name ILIKE $3)
         AND u.id != $4
+        AND NOT EXISTS (
+          SELECT 1 FROM passes ps WHERE ps.viewer_id = $4 AND ps.passed_user_id = u.id
+        )
     `;
 
     // Paramètres de base
@@ -361,7 +417,8 @@ const searchUsers = async (req, res) => {
         u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
         p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,
         ph.url,
-        l.latitude, l.longitude, l.city, l.country
+        l.latitude, l.longitude, l.city, l.country,
+        lv.latitude, lv.longitude
       ORDER BY p.fame_rating DESC, u.created_at DESC
       LIMIT $1 OFFSET $2
     `;
@@ -385,7 +442,7 @@ const searchUsers = async (req, res) => {
     );
 
     // Transform the data to match the frontend's expected format
-    const users = result.rows.map((row) => ({
+  const users = result.rows.map((row) => ({
       id: row.id,
       email: row.email,
       username: row.username,
@@ -403,12 +460,13 @@ const searchUsers = async (req, res) => {
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
-      location: {
+  location: {
         latitude: row.latitude,
         longitude: row.longitude,
         city: row.city,
         country: row.country,
       },
+  distanceKm: row.distance_km !== null && row.distance_km !== undefined ? Math.round(Number(row.distance_km)) : null,
       tags: row.tags || [],
     }));
 
@@ -453,7 +511,7 @@ const getFilteredUsers = async (req, res) => {
       allowedGenders
     );
 
-    let query = `
+  let query = `
       SELECT 
         u.id,
         u.email,
@@ -472,16 +530,31 @@ const getFilteredUsers = async (req, res) => {
         ph.url as profile_photo_url,
         l.latitude,
         l.longitude,
+        CASE 
+          WHEN l.latitude IS NULL OR l.longitude IS NULL THEN NULL
+          ELSE (
+            6371 * 2 * ASIN(
+              SQRT(
+                POWER(SIN(RADIANS(l.latitude - lv.latitude) / 2), 2) +
+                COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
+              )
+            )
+          )
+        END AS distance_km,
         l.city,
         l.country,
-        array_remove(array_agg(DISTINCT t.name), NULL) as tags
+  array_remove(array_agg(DISTINCT t.name), NULL) as tags
       FROM users u
       LEFT JOIN profiles p ON u.id = p.user_id
       LEFT JOIN photos ph ON u.id = ph.user_id AND ph.is_profile = true
       LEFT JOIN locations l ON u.id = l.user_id
+      LEFT JOIN locations lv ON lv.user_id = $1
       LEFT JOIN user_tags ut ON u.id = ut.user_id
       LEFT JOIN tags t ON t.id = ut.tag_id
       WHERE u.email_verified = true AND u.id != $1
+      AND NOT EXISTS (
+        SELECT 1 FROM passes ps WHERE ps.viewer_id = $1 AND ps.passed_user_id = u.id
+      )
     `;
 
     const params = [req.user.id];
@@ -530,10 +603,19 @@ const getFilteredUsers = async (req, res) => {
       params.push(parseInt(fameRating));
     }
 
-    if (distance) {
-      console.log(
-        `Distance filter requested (placeholder only): ${distance} km`
-      );
+    if (distance && !isNaN(parseInt(distance))) {
+      query += ` AND (
+        l.latitude IS NOT NULL AND l.longitude IS NOT NULL AND
+        (
+          6371 * 2 * ASIN(
+            SQRT(
+              POWER(SIN(RADIANS(l.latitude - lv.latitude) / 2), 2) +
+              COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
+            )
+          )
+        ) <= $${++paramIndex}
+      )`;
+      params.push(parseInt(distance));
     }
     // Tags filter (match users having at least one of the provided tag names)
     if (tags) {
@@ -556,10 +638,11 @@ const getFilteredUsers = async (req, res) => {
 
     // Tri
     query +=
-      " GROUP BY \n        u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,\n        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,\n        ph.url,\n        l.latitude, l.longitude, l.city, l.country\n      ORDER BY ";
+      " GROUP BY \n        u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,\n        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,\n        ph.url,\n        l.latitude, l.longitude, l.city, l.country,\n        lv.latitude, lv.longitude\n      ORDER BY ";
     switch (sortBy) {
       case "distance":
-        query += "u.created_at ";
+        query += "distance_km ";
+        query += sortOrder === "desc" ? "DESC " : "ASC ";
         break;
       case "age":
         query += "p.birth_date ";
@@ -598,7 +681,7 @@ const getFilteredUsers = async (req, res) => {
       );
     }
 
-    const users = result.rows.map((row) => ({
+  const users = result.rows.map((row) => ({
       id: row.id,
       email: row.email,
       username: row.username,
@@ -616,12 +699,13 @@ const getFilteredUsers = async (req, res) => {
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
-      location: {
+  location: {
         latitude: row.latitude,
         longitude: row.longitude,
         city: row.city,
         country: row.country,
       },
+  distanceKm: row.distance_km !== null && row.distance_km !== undefined ? Math.round(Number(row.distance_km)) : null,
       tags: row.tags || [],
     }));
 
