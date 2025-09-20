@@ -39,7 +39,7 @@ export function AppShell({
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col relative bg-transparent">
+    <div className="w-full flex flex-col relative bg-transparent">
       <Header
         currentPage={current}
         notificationCount={3}
@@ -48,9 +48,8 @@ export function AppShell({
         onNavigate={handleNavigation}
       />
       <div
-        className={`flex-1 w-full ${
-          fullWidth ? "px-0" : "container mx-auto px-4"
-        } mt-20 mb-20 py-10 md:mb-0`}
+        className={`w-full min-h-[80vh]
+        } flex justify-center items-center`}
       >
         {children}
       </div>
