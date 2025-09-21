@@ -78,7 +78,7 @@ const getDiscoveryUsers = async (req, res) => {
       params.push(allowedGenders.map((g) => g.toLowerCase()));
     }
 
-  const query = `
+    const query = `
       SELECT 
         u.id,
         u.email,
@@ -150,7 +150,7 @@ const getDiscoveryUsers = async (req, res) => {
     );
 
     // Transform the data to match the frontend's expected format
-  const users = result.rows.map((row) => ({
+    const users = result.rows.map((row) => ({
       id: row.id,
       email: row.email,
       username: row.username,
@@ -168,7 +168,7 @@ const getDiscoveryUsers = async (req, res) => {
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
-  location: {
+      location: {
         latitude: row.latitude,
         longitude: row.longitude,
         city: row.city,
@@ -211,7 +211,7 @@ const getRandomUsers = async (req, res) => {
       params.push(allowedGenders.map((g) => g.toLowerCase()));
     }
 
-  const query = `
+    const query = `
       SELECT 
         u.id,
         u.email,
@@ -282,7 +282,7 @@ const getRandomUsers = async (req, res) => {
     );
 
     // Transform the data to match the frontend's expected format
-  const users = result.rows.map((row) => ({
+    const users = result.rows.map((row) => ({
       id: row.id,
       email: row.email,
       username: row.username,
@@ -300,7 +300,7 @@ const getRandomUsers = async (req, res) => {
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
-  location: {
+      location: {
         latitude: row.latitude,
         longitude: row.longitude,
         city: row.city,
@@ -346,7 +346,7 @@ const searchUsers = async (req, res) => {
     console.log("Allowed genders (search):", allowedGenders);
 
     // Construire la requête de recherche
-  let baseQuery = `
+    let baseQuery = `
       SELECT 
         u.id,
         u.email,
@@ -442,7 +442,7 @@ const searchUsers = async (req, res) => {
     );
 
     // Transform the data to match the frontend's expected format
-  const users = result.rows.map((row) => ({
+    const users = result.rows.map((row) => ({
       id: row.id,
       email: row.email,
       username: row.username,
@@ -460,13 +460,16 @@ const searchUsers = async (req, res) => {
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
-  location: {
+      location: {
         latitude: row.latitude,
         longitude: row.longitude,
         city: row.city,
         country: row.country,
       },
-  distanceKm: row.distance_km !== null && row.distance_km !== undefined ? Math.round(Number(row.distance_km)) : null,
+      distanceKm:
+        row.distance_km !== null && row.distance_km !== undefined
+          ? Math.round(Number(row.distance_km))
+          : null,
       tags: row.tags || [],
     }));
 
@@ -511,7 +514,7 @@ const getFilteredUsers = async (req, res) => {
       allowedGenders
     );
 
-  let query = `
+    let query = `
       SELECT 
         u.id,
         u.email,
@@ -681,7 +684,7 @@ const getFilteredUsers = async (req, res) => {
       );
     }
 
-  const users = result.rows.map((row) => ({
+    const users = result.rows.map((row) => ({
       id: row.id,
       email: row.email,
       username: row.username,
@@ -699,13 +702,16 @@ const getFilteredUsers = async (req, res) => {
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
-  location: {
+      location: {
         latitude: row.latitude,
         longitude: row.longitude,
         city: row.city,
         country: row.country,
       },
-  distanceKm: row.distance_km !== null && row.distance_km !== undefined ? Math.round(Number(row.distance_km)) : null,
+      distanceKm:
+        row.distance_km !== null && row.distance_km !== undefined
+          ? Math.round(Number(row.distance_km))
+          : null,
       tags: row.tags || [],
     }));
 

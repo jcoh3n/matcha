@@ -217,33 +217,40 @@ async function insertPhoto(client, userId, user, isProfile = true) {
 // Function to insert location for a user
 async function insertLocation(client, userId, user) {
   console.log(`Inserting location for user ID ${userId}`);
-  
+
   // Use geocoding to get accurate coordinates
   let latitude = 0;
   let longitude = 0;
-  
+
   try {
     // Load French city coordinates
-    const frenchCityCoordinates = require('../data/frenchCities');
-    
-    const city = user.location.city;
-    if (frenchCityCoordinates[city]) {
-      latitude = frenchCityCoordinates[city].lat;
-      longitude = frenchCityCoordinates[city].lon;
-      console.log(`  Using predefined coordinates for ${city}: ${latitude}, ${longitude}`);
-    } else {
-      // Fallback to original coordinates if city not in our list
-      latitude = parseFloat(user.location.coordinates.latitude);
-      longitude = parseFloat(user.location.coordinates.longitude);
-      console.log(`  Using API coordinates for ${city}: ${latitude}, ${longitude}`);
+    const frenchCityCoordinates = require("../data/frenchCities");
+
+    // Determine city and fallback if not found in our table
+    let city = user?.location?.city;
+    const knownCities = Object.keys(frenchCityCoordinates);
+
+    if (!city || !frenchCityCoordinates[city]) {
+      const randomCity =
+        knownCities[Math.floor(Math.random() * knownCities.length)];
+      user.location.city = randomCity; // assign a random city from the table
+      city = randomCity;
+      console.log(`  City not recognized; assigned random city: ${city}`);
     }
+
+    latitude = frenchCityCoordinates[city].lat;
+    longitude = frenchCityCoordinates[city].lon;
+    console.log(`  Using coordinates for ${city}: ${latitude}, ${longitude}`);
   } catch (error) {
-    console.error(`  Error geocoding location for user ${userId}:`, error.message);
+    console.error(
+      ` ****************** Error geocoding location for user ${userId}: ****************************`,
+      error.message
+    );
     // Fallback to original coordinates
     latitude = parseFloat(user.location.coordinates.latitude);
     longitude = parseFloat(user.location.coordinates.longitude);
   }
-  
+
   const locationQuery = `
     INSERT INTO locations (user_id, latitude, longitude, city, country, location_method, created_at, updated_at)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)

@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
 class Pass {
   constructor(data) {
@@ -19,7 +19,7 @@ class Pass {
     const result = await db.query(query, values);
     if (result.rows.length === 0) {
       const existing = await db.query(
-        'SELECT * FROM passes WHERE viewer_id = $1 AND passed_user_id = $2',
+        "SELECT * FROM passes WHERE viewer_id = $1 AND passed_user_id = $2",
         [viewerId, passedUserId]
       );
       return existing.rows.length ? new Pass(existing.rows[0]) : null;
@@ -29,7 +29,7 @@ class Pass {
 
   static async delete(viewerId, passedUserId) {
     const result = await db.query(
-      'DELETE FROM passes WHERE viewer_id = $1 AND passed_user_id = $2 RETURNING *',
+      "DELETE FROM passes WHERE viewer_id = $1 AND passed_user_id = $2 RETURNING *",
       [viewerId, passedUserId]
     );
     return result.rows.length > 0;
@@ -37,7 +37,7 @@ class Pass {
 
   static async exists(viewerId, passedUserId) {
     const result = await db.query(
-      'SELECT 1 FROM passes WHERE viewer_id = $1 AND passed_user_id = $2',
+      "SELECT 1 FROM passes WHERE viewer_id = $1 AND passed_user_id = $2",
       [viewerId, passedUserId]
     );
     return result.rows.length > 0;
