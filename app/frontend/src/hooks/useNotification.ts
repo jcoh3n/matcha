@@ -123,6 +123,24 @@ export function useNotification() {
         addNotification(data);
       });
       
+      socket.on("message", (data) => {
+        console.log("Received real-time message:", data);
+        // We could handle real-time messages here if needed
+        // For now, we'll just trigger a notification
+        if (data.senderId !== getUserId()) {
+          addNotification({
+            id: Date.now(),
+            userId: getUserId(),
+            fromUserId: data.senderId,
+            type: "MESSAGE",
+            content: `New message from ${data.senderName}: ${data.content.substring(0, 50)}${data.content.length > 50 ? '...' : ''}`,
+            read: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+        }
+      });
+      
       socket.on("disconnect", () => {
         console.log("Socket.IO disconnected");
       });

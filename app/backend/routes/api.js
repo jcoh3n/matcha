@@ -5,6 +5,7 @@ const authRoutes = require('./auth');
 const onboardingRoutes = require('./onboarding');
 const discoveryRoutes = require('./discovery');
 const notificationsRoutes = require('./notifications');
+const messagesRoutes = require('./messages');
 const { authJWT } = require('../middleware/authJWT');
 
 const router = express.Router();
@@ -33,5 +34,8 @@ router.use('/', discoveryRoutes);
 
 // Notifications routes
 router.use('/notifications', notificationsRoutes);
+
+// Messages routes
+router.use('/messages', messagesRoutes);
 
 module.exports = router;

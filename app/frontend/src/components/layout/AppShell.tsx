@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { useNotification } from "@/hooks/useNotification";
+import { api } from "@/lib/api";
 
 type NavKey =
   | "discover"
@@ -26,13 +27,38 @@ export function AppShell({
   fullWidth,
 }: AppShellProps) {
   const { unreadCount } = useNotification();
+  const [messageCount, setMessageCount] = useState(0);
+
+  // Fetch unread messages count
+  useEffect(() => {
+    const fetchMessageCount = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          const response = await api.getUnreadMessagesCount(token);
+          if (response.ok) {
+            const data = await response.json();
+            setMessageCount(data.count);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching message count:", error);
+      }
+    };
+
+    fetchMessageCount();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchMessageCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen w-full flex flex-col relative bg-transparent">
       <Header
         currentPage={current}
         notificationCount={unreadCount}
-        messageCount={2}
+        messageCount={messageCount}
         onLogout={onLogout}
       />
       <div

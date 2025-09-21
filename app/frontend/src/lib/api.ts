@@ -92,5 +92,26 @@ export const api = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
+    }),
+    
+  // Messages endpoints
+  sendMessage: (token: string, messageData: { receiverId: number; content: string }) => 
+    fetch(`${API_BASE_URL}/api/messages`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(messageData)
+    }),
+    
+  getConversation: (token: string, userId: number) => 
+    fetch(`${API_BASE_URL}/api/messages/${userId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }),
+    
+  getUnreadMessagesCount: (token: string) => 
+    fetch(`${API_BASE_URL}/api/messages/unread/count`, {
+      headers: { 'Authorization': `Bearer ${token}` }
     })
 };
