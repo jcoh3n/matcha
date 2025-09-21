@@ -239,7 +239,7 @@ export function DiscoverPage() {
         }, 300);
       }
     },
-  [moveToNextProfile]
+    [moveToNextProfile]
   );
 
   const handlePass = useCallback(
@@ -262,7 +262,7 @@ export function DiscoverPage() {
         }, 300);
       }
     },
-  [moveToNextProfile]
+    [moveToNextProfile]
   );
 
   // Keyboard navigation
@@ -621,7 +621,7 @@ export function DiscoverPage() {
                         "https://randomuser.me/api/portraits/women/2.jpg"
                       }
                       alt={currentProfile.name}
-                      className="inset-0 w-full h-full object-cover"
+                      className="inset-0 w-full h-full"
                     />
                   </div>
                   <div className="w-full flex flex-col p-6 lg:p-8 gap-4 bg-[#9ed09d]">
