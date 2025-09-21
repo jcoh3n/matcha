@@ -116,7 +116,7 @@ export const api = {
 
   passUser: (token: string, userId: string | number) =>
     fetch(`${API_BASE_URL}/api/profiles/${userId}/pass`, {
-      method: 'POST',
+      method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     }),
 

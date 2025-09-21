@@ -89,7 +89,7 @@ const transformUserForProfileCard = (user: UserProfile) => {
     location: user.location
       ? `${user.location.city}, ${user.location.country}`
       : "",
-  distance: typeof user.distanceKm === "number" ? user.distanceKm : 0,
+    distance: typeof user.distanceKm === "number" ? user.distanceKm : 0,
     tags: user.tags || [],
     fameRating: user.profile?.fameRating || 0,
     isOnline: Math.random() > 0.5, // Placeholder
