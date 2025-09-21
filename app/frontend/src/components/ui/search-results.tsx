@@ -19,9 +19,13 @@ interface UserProfile {
     lastActive?: string;
   };
   location?: {
+    latitude?: number;
+    longitude?: number;
     city?: string;
     country?: string;
   };
+  tags?: string[];
+  distanceKm?: number;
 }
 
 interface SearchResultsProps {
@@ -50,9 +54,11 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
   };
 
   // Transform API user data to match ProfileCard expectations
-  const transformUserForProfileCard = (user: UserProfile) => {
-    // Calculer une distance plus réaliste (0-100km)
-    const distance = user.location?.city && user.location?.country ? 10 : 0;
+  const transformUserForProfileCard = (user: any) => { // Changed type to any to accommodate additional fields
+    // Use real distance from backend if available
+    const distance = user.distanceKm !== null && user.distanceKm !== undefined ? 
+      user.distanceKm : 
+      (user.location?.city && user.location?.country ? 10 : 0); // Fallback to old logic
     
     // Déterminer le statut en ligne de manière plus cohérente (basé sur la dernière activité)
     const isOnline = user.profile?.lastActive ? 
@@ -71,8 +77,8 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
       images: user.profilePhotoUrl ? [user.profilePhotoUrl] : [],
       bio: user.profile?.bio || "",
       location: user.location ? `${user.location.city}, ${user.location.country}` : "",
-      distance,
-      tags: [], // Would be populated with user tags
+      distance: distance, // Use real distance
+      tags: user.tags || [], // Use real tags from backend
       fame: user.profile?.fameRating || 0,
       isOnline,
       orientation: user.profile?.orientation || "straight",

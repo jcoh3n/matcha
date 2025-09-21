@@ -30,24 +30,29 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
     setIsDetecting(true);
     try {
       // In a real app, you would call your backend API to get location from IP
-      // For now, we'll use a mock response
-      setTimeout(() => {
-        const mockLocation = {
-          latitude: 48.8566,
-          longitude: 2.3522,
-          city: "Paris",
-          country: "France",
+      // For demonstration, we'll use a real IP geolocation API
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+      
+      if (data && data.latitude && data.longitude) {
+        const location = {
+          latitude: data.latitude,
+          longitude: data.longitude,
+          city: data.city || '',
+          country: data.country_name || '',
           method: "IP" as const
         };
         
-        onLocationChange(mockLocation);
+        onLocationChange(location);
         setIsDetecting(false);
         
         toast({
           title: "Localisation détectée",
-          description: `Localisation détectée : ${mockLocation.city}, ${mockLocation.country}`
+          description: `Localisation détectée : ${location.city || 'Inconnu'}, ${location.country || 'Inconnu'}`
         });
-      }, 1000);
+      } else {
+        throw new Error('Invalid response from IP geolocation service');
+      }
     } catch (error) {
       console.error('IP location error:', error);
       setIsDetecting(false);
@@ -73,24 +78,53 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
     setIsDetecting(true);
     
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        // In a real app, you would reverse geocode the coordinates to get city/country
-        // For now, we'll use mock data
-        const location = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          city: "Localisation GPS",
-          country: "",
-          method: "GPS" as const
-        };
-        
-        onLocationChange(location);
-        setIsDetecting(false);
-        
-        toast({
-          title: "Localisation GPS",
-          description: "Votre position a été détectée avec succès."
-        });
+      async (position) => {
+        try {
+          // Reverse geocode the coordinates to get city/country
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json&addressdetails=1`,
+            {
+              headers: {
+                'User-Agent': 'Matcha/1.0 (https://github.com/your-repo/matcha)'
+              }
+            }
+          );
+          const data = await response.json();
+          
+          const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            city: data?.address?.city || data?.address?.town || data?.address?.village || '',
+            country: data?.address?.country || '',
+            method: "GPS" as const
+          };
+          
+          onLocationChange(location);
+          setIsDetecting(false);
+          
+          toast({
+            title: "Localisation GPS",
+            description: `Votre position a été détectée : ${location.city || 'Inconnu'}, ${location.country || 'Inconnu'}`
+          });
+        } catch (error) {
+          console.error('Reverse geocoding error:', error);
+          // Fallback to coordinates only
+          const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            city: "",
+            country: "",
+            method: "GPS" as const
+          };
+          
+          onLocationChange(location);
+          setIsDetecting(false);
+          
+          toast({
+            title: "Localisation GPS",
+            description: "Votre position a été détectée avec succès (adresse non disponible)."
+          });
+        }
       },
       (error) => {
         console.error('GPS location error:', error);
@@ -105,7 +139,7 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
     );
   };
 
-  const handleManualLocationSubmit = () => {
+  const handleManualLocationSubmit = async () => {
     if (!manualLocation.city || !manualLocation.country) {
       toast({
         title: "Erreur",
@@ -115,22 +149,46 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
       return;
     }
 
-    // In a real app, you would geocode the city/country to get coordinates
-    // For now, we'll use mock coordinates
-    const location = {
-      latitude: 0,
-      longitude: 0,
-      city: manualLocation.city,
-      country: manualLocation.country,
-      method: "MANUAL" as const
-    };
-    
-    onLocationChange(location);
-    
-    toast({
-      title: "Localisation enregistrée",
-      description: `Localisation enregistrée : ${manualLocation.city}, ${manualLocation.country}`
-    });
+    try {
+      // Geocode the city/country to get coordinates
+      const query = `${manualLocation.city}, ${manualLocation.country}`;
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'Matcha/1.0 (https://github.com/your-repo/matcha)'
+          }
+        }
+      );
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const result = data[0];
+        const location = {
+          latitude: parseFloat(result.lat),
+          longitude: parseFloat(result.lon),
+          city: manualLocation.city,
+          country: manualLocation.country,
+          method: "MANUAL" as const
+        };
+        
+        onLocationChange(location);
+        
+        toast({
+          title: "Localisation enregistrée",
+          description: `Localisation enregistrée : ${manualLocation.city}, ${manualLocation.country}`
+        });
+      } else {
+        throw new Error('No results found for the provided location');
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      toast({
+        title: "Erreur de géocodage",
+        description: "Impossible de trouver les coordonnées pour cette localisation. Veuillez vérifier et réessayer.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

@@ -13,6 +13,10 @@ interface ProfileCardUser {
   bio?: string; // kept for other variants
   tags?: string[]; // kept for other variants
   isOnline?: boolean;
+  fame?: number;
+  orientation?: string;
+  gender?: string;
+  matchPercent?: number;
 }
 
 interface ProfileCardProps extends React.HTMLAttributes<HTMLDivElement> {

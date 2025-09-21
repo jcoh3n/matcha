@@ -21,8 +21,9 @@ Le projet est organisé en deux parties distinctes :
 ## Fonctionnalités principales
 - **Système d'authentification** : Inscription, connexion, vérification d'email, réinitialisation de mot de passe
 - **Profils détaillés** : Photos, informations personnelles, préférences, tags
-- **Recherche avancée** : Barre de recherche dans le header, filtres avancés
-- **Système de matching** : Like/dislike, suggestions de profils
+- **Géolocalisation précise** : Détection par GPS, IP ou saisie manuelle avec géocodage réel
+- **Recherche avancée** : Barre de recherche dans le header, filtres avancés avec tri par distance
+- **Système de matching** : Like/dislike, suggestions de profils basées sur la localisation
 - **Chat en temps réel** : Messagerie instantanée entre utilisateurs
 - **Notifications** : Alertes en temps réel pour les interactions  
 

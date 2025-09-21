@@ -31,6 +31,7 @@ interface UserProfile {
     country?: string;
   };
   tags?: string[];
+  distanceKm?: number | null;
 }
 
 interface Filters {
@@ -88,7 +89,7 @@ const transformUserForProfileCard = (user: UserProfile) => {
     location: user.location
       ? `${user.location.city}, ${user.location.country}`
       : "",
-    distance: Math.floor(Math.random() * 20) + 1, // Placeholder - would be calculated based on user location
+    distance: typeof user.distanceKm === "number" ? user.distanceKm : 0,
     tags: user.tags || [],
     fameRating: user.profile?.fameRating || 0,
     isOnline: Math.random() > 0.5, // Placeholder
@@ -235,17 +236,24 @@ export function DiscoverPage() {
   );
 
   const handlePass = useCallback(
-    (userId: string) => {
-      console.log(`Passed user: ${userId}`);
-      console.log(
-        `Current index: ${currentIndex}, Profiles length: ${profiles.length}`
-      );
-      // Add pass animation
-      setSwipeAnimation("left");
-      setTimeout(() => {
-        setSwipeAnimation(null);
-        moveToNextProfile();
-      }, 300);
+    async (userId: string) => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          await fetch(`http://localhost:3000/api/profiles/${userId}/pass`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
+      } catch (e) {
+        console.error("Failed to record pass", e);
+      } finally {
+        setSwipeAnimation("left");
+        setTimeout(() => {
+          setSwipeAnimation(null);
+          moveToNextProfile();
+        }, 300);
+      }
     },
     [currentIndex, profiles.length, moveToNextProfile]
   );
@@ -292,53 +300,25 @@ export function DiscoverPage() {
         return;
       }
       console.log("Fetching filtered users with filters:", filters);
-      // api.getFilteredUsers does not exist on the api object; fall back to discovery and apply filters client-side
-      const response = await api.getDiscoveryUsers(token, 8, offset);
+      const response = await api.getFilteredUsers(
+        token,
+        {
+          ageMin: filters.ageRange[0],
+          ageMax: filters.ageRange[1],
+          distance: filters.distance,
+          tags: filters.tags,
+          sortBy: filters.sortBy,
+          sortOrder: filters.sortOrder,
+          fameRating: filters.fameRating,
+        },
+        8,
+        offset
+      );
       if (response.ok) {
         const users: UserProfile[] = await response.json();
         console.log("Received filtered users:", users);
-        // Apply client-side filtering based on selected filters
-        let filtered = users.filter((u) => {
-          const age = calculateAge(u.profile?.birthDate);
-          // Age filter
-          if (age < filters.ageRange[0] || age > filters.ageRange[1])
-            return false;
-          // Fame rating filter
-          if (
-            typeof filters.fameRating === "number" &&
-            (u.profile?.fameRating || 0) < filters.fameRating
-          )
-            return false;
-          // Tags filter: require user to have all selected tags
-          if (filters.tags.length > 0) {
-            const userTags = u.tags || [];
-            if (!filters.tags.every((t) => userTags.includes(t))) return false;
-          }
-          return true;
-        });
-        // Transform after filtering
-        const transformedUsers = filtered.map(transformUserForProfileCard);
-        // Apply sorting if requested
-        if (filters.sortBy) {
-          transformedUsers.sort((a, b) => {
-            const order = filters.sortOrder === "asc" ? 1 : -1;
-            if (filters.sortBy === "fame") {
-              return ((a.fameRating || 0) - (b.fameRating || 0)) * order;
-            }
-            if (filters.sortBy === "distance") {
-              return ((a.distance || 0) - (b.distance || 0)) * order;
-            }
-            if (filters.sortBy === "age") {
-              return ((a.age || 0) - (b.age || 0)) * order;
-            }
-            if (filters.sortBy === "tags") {
-              const tagCount = (u: CardUser) =>
-                (u.tags || []).filter((t) => filters.tags.includes(t)).length;
-              return (tagCount(a) - tagCount(b)) * -order; // more common tags first by default
-            }
-            return 0;
-          });
-        }
+        // Transform; backend already filters/sorts, client sort remains as fallback
+        const transformedUsers = users.map(transformUserForProfileCard);
         console.log("Transformed filtered users:", transformedUsers);
         if (offset === 0) {
           // Replace profiles for initial load
