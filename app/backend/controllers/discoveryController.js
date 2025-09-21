@@ -92,7 +92,6 @@ const getDiscoveryUsers = async (req, res) => {
         p.sexual_orientation as sexual_orientation,
         p.bio,
         p.fame_rating,
-        p.is_verified,
         p.last_active,
         ph.url as profile_photo_url,
         l.latitude,
@@ -119,14 +118,14 @@ const getDiscoveryUsers = async (req, res) => {
       LEFT JOIN locations lv ON lv.user_id = $3
       LEFT JOIN user_tags ut ON u.id = ut.user_id
       LEFT JOIN tags t ON t.id = ut.tag_id
-      WHERE u.email_verified = true AND u.id != $3
+  WHERE COALESCE(u.email_verified, true) = true AND u.id != $3
       AND NOT EXISTS (
         SELECT 1 FROM passes ps WHERE ps.viewer_id = $3 AND ps.passed_user_id = u.id
       )
       ${genderFilterClause}
       GROUP BY 
         u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
-        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,
+        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.last_active,
         ph.url,
         l.latitude, l.longitude, l.city, l.country,
         lv.latitude, lv.longitude
@@ -164,7 +163,6 @@ const getDiscoveryUsers = async (req, res) => {
         orientation: row.sexual_orientation,
         bio: row.bio,
         fameRating: row.fame_rating,
-        isVerified: row.is_verified,
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
@@ -224,8 +222,7 @@ const getRandomUsers = async (req, res) => {
         p.gender,
         p.sexual_orientation as sexual_orientation,
         p.bio,
-        p.fame_rating,
-        p.is_verified,
+  p.fame_rating,
         p.last_active,
         ph.url as profile_photo_url,
         l.latitude,
@@ -251,14 +248,14 @@ const getRandomUsers = async (req, res) => {
       LEFT JOIN locations lv ON lv.user_id = $2
       LEFT JOIN user_tags ut ON u.id = ut.user_id
       LEFT JOIN tags t ON t.id = ut.tag_id
-      WHERE u.email_verified = true AND u.id != $2
+  WHERE COALESCE(u.email_verified, true) = true AND u.id != $2
       AND NOT EXISTS (
         SELECT 1 FROM passes ps WHERE ps.viewer_id = $2 AND ps.passed_user_id = u.id
       )
       ${genderFilterClause}
       GROUP BY 
         u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
-        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,
+        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.last_active,
         ph.url,
         l.latitude, l.longitude, l.city, l.country,
         lv.latitude, lv.longitude
@@ -296,7 +293,6 @@ const getRandomUsers = async (req, res) => {
         orientation: row.sexual_orientation,
         bio: row.bio,
         fameRating: row.fame_rating,
-        isVerified: row.is_verified,
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
@@ -359,8 +355,7 @@ const searchUsers = async (req, res) => {
         p.gender,
         p.sexual_orientation as sexual_orientation,
         p.bio,
-        p.fame_rating,
-        p.is_verified,
+  p.fame_rating,
         p.last_active,
         ph.url as profile_photo_url,
         l.latitude,
@@ -386,7 +381,7 @@ const searchUsers = async (req, res) => {
       LEFT JOIN locations lv ON lv.user_id = $4
       LEFT JOIN user_tags ut ON u.id = ut.user_id
       LEFT JOIN tags t ON t.id = ut.tag_id
-      WHERE u.email_verified = true
+  WHERE COALESCE(u.email_verified, true) = true
         AND (u.first_name ILIKE $3 OR u.last_name ILIKE $3)
         AND u.id != $4
         AND NOT EXISTS (
@@ -415,7 +410,7 @@ const searchUsers = async (req, res) => {
     baseQuery += `
       GROUP BY 
         u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
-        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,
+    p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.last_active,
         ph.url,
         l.latitude, l.longitude, l.city, l.country,
         lv.latitude, lv.longitude
@@ -456,7 +451,6 @@ const searchUsers = async (req, res) => {
         orientation: row.sexual_orientation,
         bio: row.bio,
         fameRating: row.fame_rating,
-        isVerified: row.is_verified,
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,

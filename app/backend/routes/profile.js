@@ -1,57 +1,36 @@
 const express = require("express");
-const {
-  getProfile,
-  updateProfile,
-  getAllTags,
-  addUserTags,
-  getUserTags,
-  addPhoto,
-  setProfilePhoto,
-  deletePhoto,
-  updateLocation,
-} = require("../controllers/profileController");
-const {
-  getPublicProfile,
-  likeUser,
-  unlikeUser,
-  blockUser,
-  unblockUser,
-  reportUser,
-  passUser,
-  unpassUser,
-} = require("../controllers/socialController");
-const { authJWT } = require("../middleware/authJWT");
-
 const router = express.Router();
+const { authJWT } = require("../middleware/authJWT");
+const profileController = require("../controllers/profileController");
+const socialController = require("../controllers/socialController");
 
-// Profile routes
-router.get("/me", authJWT, getProfile);
-router.put("/me", authJWT, updateProfile);
+router.get("/me", authJWT, profileController.getProfile);
+router.put("/me", authJWT, profileController.updateProfile);
 
-// Public profile route
-router.get("/:id", authJWT, getPublicProfile);
+router.get("/:id", authJWT, socialController.getPublicProfile);
 
-// Social interaction routes
-router.post("/likes/:id", authJWT, likeUser);
-router.delete("/likes/:id", authJWT, unlikeUser);
-router.post("/:id/block", authJWT, blockUser);
-router.delete("/:id/block", authJWT, unblockUser);
-router.post("/:id/report", authJWT, reportUser);
-// Pass routes
-router.post("/:id/pass", authJWT, passUser);
-router.delete("/:id/pass", authJWT, unpassUser);
+router.post("/likes/:id", authJWT, socialController.likeUser);
+router.delete("/likes/:id", authJWT, socialController.unlikeUser);
+router.post("/:id/block", authJWT, socialController.blockUser);
+router.delete("/:id/block", authJWT, socialController.unblockUser);
+router.post("/:id/report", authJWT, socialController.reportUser);
+router.post("/:id/pass", authJWT, socialController.passUser);
+router.delete("/:id/pass", authJWT, socialController.unpassUser);
 
-// Tag routes
-router.get("/tags", getAllTags);
-router.post("/me/tags", authJWT, addUserTags);
-router.get("/me/tags", authJWT, getUserTags);
+router.get("/tags", profileController.getAllTags);
+router.post("/me/tags", authJWT, profileController.addUserTags);
+router.get("/me/tags", authJWT, profileController.getUserTags);
 
-// Photo routes
-router.post("/me/photos", authJWT, addPhoto);
-router.put("/me/photos/:photoId/profile", authJWT, setProfilePhoto);
-router.delete("/me/photos/:photoId", authJWT, deletePhoto);
+router.post("/me/photos", authJWT, profileController.addPhoto);
+router.put(
+  "/me/photos/:photoId/profile",
+  authJWT,
+  profileController.setProfilePhoto
+);
+router.delete("/me/photos/:photoId", authJWT, profileController.deletePhoto);
 
-// Location routes
-router.put("/me/location", authJWT, updateLocation);
+router.get("/me/matches", authJWT, profileController.getMatchesUser);
+
+router.put("/me/location", authJWT, profileController.updateLocation);
 
 module.exports = router;

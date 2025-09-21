@@ -119,7 +119,35 @@ async function insertUser(client, user, index) {
     new Date(),
   ];
 
-  const userResult = await client.query(userQuery, userValues);
+  let userResult;
+  try {
+    userResult = await client.query(userQuery, userValues);
+  } catch (e) {
+    // Column does not exist (e.g., email_verified not migrated yet)
+    if (
+      e &&
+      (e.code === "42703" || /column .* does not exist/i.test(e.message))
+    ) {
+      const fallbackQuery = `
+        INSERT INTO users (email, username, first_name, last_name, password, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (email) DO NOTHING
+        RETURNING id
+      `;
+      const fallbackValues = [
+        email,
+        username,
+        user.name.first,
+        user.name.last,
+        hashedPassword,
+        new Date(user.registered.date),
+        new Date(),
+      ];
+      userResult = await client.query(fallbackQuery, fallbackValues);
+    } else {
+      throw e;
+    }
+  }
 
   // If no rows were returned, it means the email already exists
   if (userResult.rows.length === 0) {
@@ -139,9 +167,10 @@ async function insertUser(client, user, index) {
 // Function to insert profile for a user
 async function insertProfile(client, userId, user) {
   console.log(`Inserting profile for user ID ${userId}`);
-  const profileQuery = `
-    INSERT INTO profiles (user_id, birth_date, gender, sexual_orientation, bio, fame_rating, is_verified, last_active, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+  // Prefer normalized columns (sexual_orientation, last_active). 'is_verified' does not exist in profiles.
+  let profileQuery = `
+    INSERT INTO profiles (user_id, birth_date, gender, sexual_orientation, bio, fame_rating, last_active, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING id
   `;
 
@@ -169,20 +198,47 @@ async function insertProfile(client, userId, user) {
   const randomOrientation =
     orientations[Math.floor(Math.random() * orientations.length)];
 
-  const profileValues = [
+  let profileValues = [
     userId,
     birthDate,
     user.gender,
     randomOrientation,
     randomBio,
-    Math.floor(Math.random() * 500), // fame_rating between 0-500
-    true, // is_verified
-    new Date(), // last_active
-    new Date(), // created_at
-    new Date(), // updated_at
+    Math.floor(Math.random() * 500),
+    new Date(),
+    new Date(),
+    new Date(),
   ];
 
-  const profileResult = await client.query(profileQuery, profileValues);
+  let profileResult;
+  try {
+    profileResult = await client.query(profileQuery, profileValues);
+  } catch (e) {
+    // If sexual_orientation doesn't exist, fallback to legacy 'orientation' column
+    if (
+      e &&
+      (e.code === "42703" || /column .* does not exist/i.test(e.message))
+    ) {
+      profileQuery = `
+        INSERT INTO profiles (user_id, birth_date, gender, orientation, bio, fame_rating, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING id
+      `;
+      profileValues = [
+        userId,
+        birthDate,
+        user.gender,
+        randomOrientation,
+        randomBio,
+        Math.floor(Math.random() * 500),
+        new Date(),
+        new Date(),
+      ];
+      profileResult = await client.query(profileQuery, profileValues);
+    } else {
+      throw e;
+    }
+  }
   const profileId = profileResult.rows[0].id;
   console.log(
     `Successfully inserted profile ID ${profileId} for user ID ${userId}`
@@ -443,12 +499,14 @@ async function seedDatabase() {
 
     for (const user of users) {
       try {
+        await client.query("SAVEPOINT user_seed");
         // Insert user
         const userId = await insertUser(client, user, index);
         // If user was not inserted due to conflict, skip to next
         if (userId === null) {
           skipped++;
           index++;
+          await client.query("RELEASE SAVEPOINT user_seed");
           continue;
         }
 
@@ -474,9 +532,13 @@ async function seedDatabase() {
             `Processed ${count} users... (Skipped ${skipped} duplicates)`
           );
         }
+        await client.query("RELEASE SAVEPOINT user_seed");
       } catch (error) {
         console.error(`Error processing user ${user.login.username}:`, error);
-        // Continue with next user instead of aborting transaction
+        // Roll back this user only, then continue
+        try {
+          await client.query("ROLLBACK TO SAVEPOINT user_seed");
+        } catch (_) {}
       }
     }
 

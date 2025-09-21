@@ -9,6 +9,7 @@ const Report = require("../models/Report");
 const ProfileView = require("../models/ProfileView");
 const Pass = require("../models/Pass");
 const { updateFameRating } = require("../services/fameRatingService");
+const Match = require("../models/Match");
 
 // Helper function to calculate age from birth date
 const calculateAge = (birthDate) => {
@@ -205,6 +206,10 @@ const likeUser = async (req, res) => {
 
     // Check if it's a match
     const isMatch = await Like.exists(likedUserId, currentUserId);
+    if (isMatch) {
+      // Persist match pair
+      await Match.createIfNotExists(currentUserId, likedUserId);
+    }
 
     // Return relationship status
     res.json({
@@ -242,6 +247,9 @@ const unlikeUser = async (req, res) => {
       return res.status(404).json({ message: "Like not found" });
     }
 
+    // If a match existed, remove it when either side unlikes
+    await Match.delete(currentUserId, unlikedUserId);
+
     res.json({
       isLiked: false,
       isMatch: false,
@@ -275,6 +283,11 @@ const blockUser = async (req, res) => {
       userId: currentUserId,
       blockedUserId,
     });
+
+    // Remove any existing like relations in both directions and match
+    await Like.delete(currentUserId, blockedUserId);
+    await Like.delete(blockedUserId, currentUserId);
+    await Match.delete(currentUserId, blockedUserId);
 
     res.json({
       isBlocked: true,

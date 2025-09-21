@@ -59,6 +59,14 @@ export const api = {
       }
     ),
 
+  getMatchesUser: (token: string, limit?: number, offset?: number) =>
+    fetch(
+      `${API_BASE_URL}/api/profiles/me/matches?limit=${limit}&offset=${offset}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    ),
+
   getRandomUsers: (token: string, limit?: number) =>
     fetch(`${API_BASE_URL}/api/discovery/random?limit=${limit || 9}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -121,7 +129,7 @@ export const api = {
     }),
 
   // Profile endpoints
-  completeOnboarding: (token: string, profileData: any) =>
+  completeOnboarding: (token: string, profileData: unknown) =>
     fetch(`${API_BASE_URL}/api/onboarding/complete`, {
       method: "POST",
       headers: {

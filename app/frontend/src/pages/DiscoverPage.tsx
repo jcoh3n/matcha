@@ -11,6 +11,7 @@ import {
   Tag,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { likeUser as likeUserApi } from "@/services/profileService";
 
 interface UserProfile {
   id: string;
@@ -220,19 +221,25 @@ export function DiscoverPage() {
   }, [currentIndex, profiles.length]);
 
   const handleLike = useCallback(
-    (userId: string) => {
-      console.log(`Liked user: ${userId}`);
-      console.log(
-        `Current index: ${currentIndex}, Profiles length: ${profiles.length}`
-      );
-      // Add like animation
-      setSwipeAnimation("right");
-      setTimeout(() => {
-        setSwipeAnimation(null);
-        moveToNextProfile();
-      }, 300);
+    async (userId: string) => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          // Create like server-side so mutual likes can form a match
+          await likeUserApi(Number(userId), token);
+        }
+      } catch (e) {
+        console.error("Failed to like user", e);
+      } finally {
+        // Add like animation then proceed to next profile
+        setSwipeAnimation("right");
+        setTimeout(() => {
+          setSwipeAnimation(null);
+          moveToNextProfile();
+        }, 300);
+      }
     },
-    [currentIndex, profiles.length, moveToNextProfile]
+  [moveToNextProfile]
   );
 
   const handlePass = useCallback(
@@ -255,7 +262,7 @@ export function DiscoverPage() {
         }, 300);
       }
     },
-    [currentIndex, profiles.length, moveToNextProfile]
+  [moveToNextProfile]
   );
 
   // Keyboard navigation
