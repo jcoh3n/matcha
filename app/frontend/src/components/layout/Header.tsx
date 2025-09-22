@@ -1,8 +1,4 @@
-import SearchIcon from "@mui/icons-material/Search";
-import PersonIcon from "@mui/icons-material/Person";
-import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import LogoutIcon from "@mui/icons-material/Logout";
+import { Search, User, MessageCircle, Bell, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -79,7 +75,7 @@ export function Header({
             onClick={() => handleNavigation("search")}
             className="w-full flex flex-row"
           >
-            <SearchIcon className="w-5 h-5 mr-2 text-muted-foreground" />
+            <Search className="w-5 h-5 mr-2 text-muted-foreground" />
             <span>Search</span>
           </button>
         </li>
@@ -94,7 +90,7 @@ export function Header({
               currentPage === "profile" && "font-bold"
             )}
           >
-            <PersonIcon className="w-5 h-5" />
+            <User className="w-5 h-5" />
             <span>Profil</span>
           </button>
         </li>
@@ -106,7 +102,7 @@ export function Header({
             }}
             className="relative flex items-center gap-2 hover:opacity-80 transition"
           >
-            <ChatBubbleIcon className="w-5 h-5" />
+            <MessageCircle className="w-5 h-5" />
             <span>Messages</span>
             {messageCount > 0 && (
               <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/90 text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
@@ -123,7 +119,7 @@ export function Header({
             }}
             className="relative flex items-center gap-2 hover:opacity-80 transition "
           >
-            <NotificationsIcon className="w-5 h-5" />
+            <Bell className="w-5 h-5" />
             <span>Notifications</span>
             {notificationCount > 0 && (
               <span className="ml-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
@@ -138,7 +134,7 @@ export function Header({
             onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
           >
-            <LogoutIcon className="w-4 h-4" />
+            <LogOut className="w-4 h-4" />
             <span>Logout</span>
           </button>
         </li>
@@ -147,7 +143,7 @@ export function Header({
       {/* Version mobile: icône de recherche + autres icônes */}
       <div className="md:hidden flex items-center gap-4">
         <div className="relative">
-          <SearchIcon className="w-5 h-5 text-muted-foreground" />
+          <Search className="w-5 h-5 text-muted-foreground" />
         </div>
         <button
           onClick={() => {
@@ -160,7 +156,7 @@ export function Header({
           )}
           aria-label="Profil"
         >
-          <PersonIcon className="w-5 h-5" />
+          <User className="w-5 h-5" />
         </button>
         <button
           onClick={() =>
@@ -169,7 +165,7 @@ export function Header({
           className="relative p-2 rounded-full border border-white/30 hover:bg-white/10 transition"
           aria-label="Messages"
         >
-          <ChatBubbleIcon className="w-5 h-5" />
+          <MessageCircle className="w-5 h-5" />
           {messageCount > 0 && (
             <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
               {messageCount > 99 ? "99+" : messageCount}
@@ -185,7 +181,7 @@ export function Header({
           className="relative p-2 rounded-full border border-white/30 hover:bg-white/10 transition"
           aria-label="Notifications"
         >
-          <NotificationsIcon className="w-5 h-5" />
+          <Bell className="w-5 h-5" />
           {notificationCount > 0 && (
             <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
               {notificationCount > 99 ? "99+" : notificationCount}
@@ -198,7 +194,7 @@ export function Header({
           className="flex items-center justify-center p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
           aria-label="Logout"
         >
-          <LogoutIcon className="w-4 h-4" />
+          <LogOut className="w-4 h-4" />
         </button>
       </div>
     </nav>
