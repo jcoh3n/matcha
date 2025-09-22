@@ -2,9 +2,21 @@ import { useNotification } from "@/hooks/useNotification";
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 export function NotificationsPage() {
   const { notifications, markAsRead, markAllAsRead } = useNotification();
+  const navigate = useNavigate();
+
+  const handleNotificationClick = (id: number, fromUserId?: number) => {
+    // Mark notification as read
+    markAsRead(id);
+    
+    // Navigate to user profile if fromUserId exists
+    if (fromUserId) {
+      navigate(`/profiles/${fromUserId}`);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -36,11 +48,13 @@ export function NotificationsPage() {
                 <NotificationItem
                   key={notification.id}
                   id={notification.id}
+                  fromUserId={notification.fromUserId}
                   type={notification.type}
                   content={notification.content}
                   read={notification.read}
                   createdAt={notification.createdAt}
                   onMarkAsRead={markAsRead}
+                  onClick={() => handleNotificationClick(notification.id, notification.fromUserId)}
                 />
               ))
             )}

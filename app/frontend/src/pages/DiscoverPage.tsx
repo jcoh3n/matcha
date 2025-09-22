@@ -27,6 +27,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { api } from "@/lib/api";
+import { authService } from "@/services/authService";
 
 interface UserProfile {
   id: string;
@@ -138,14 +139,7 @@ export function DiscoverPage() {
   const fetchDiscoveryUsers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        console.error("No access token found");
-        return;
-      }
-
-      console.log("Fetching discovery users...");
-      const response = await api.getRandomUsers(token, 8);
+      const response = await api.getRandomUsers(8);
       
       if (response.ok) {
         const users: UserProfile[] = await response.json();
@@ -175,16 +169,7 @@ export function DiscoverPage() {
   useEffect(() => {
     const checkProfileCompletion = async () => {
       try {
-        const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) {
-          return;
-        }
-
-        const response = await fetch("http://localhost:3000/api/me", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        const response = await api.getCurrentUser();
 
         if (response.ok) {
           const userData = await response.json();

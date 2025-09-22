@@ -12,15 +12,18 @@ interface NotificationItemProps {
   read: boolean;
   createdAt: string;
   onMarkAsRead: (id: number) => void;
+  onClick?: () => void;
 }
 
 export function NotificationItem({
   id,
+  fromUserId,
   type,
   content,
   read,
   createdAt,
   onMarkAsRead,
+  onClick,
 }: NotificationItemProps) {
   const getIcon = () => {
     switch (type) {
@@ -48,9 +51,8 @@ export function NotificationItem({
 
   return (
     <Card
-      className={`p-4 mb-2 flex items-start gap-3 ${
-        read ? "bg-white" : "bg-blue-50"
-      }`}
+      className={`p-4 mb-2 flex items-start gap-3 cursor-pointer ${read ? "bg-white" : "bg-blue-50"}`}
+      onClick={onClick}
     >
       <div className="text-xl">{getIcon()}</div>
       <div className="flex-1">
@@ -63,7 +65,10 @@ export function NotificationItem({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => onMarkAsRead(id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMarkAsRead(id);
+          }}
           className="h-6 w-6 p-0"
         >
           <X className="h-4 w-4" />

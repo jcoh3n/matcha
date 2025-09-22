@@ -1,27 +1,28 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { authService } from "@/services/authService";
+import { config, API_ENDPOINTS } from "@/config/api";
 
 export const api = {
   // User endpoints
-  getUsers: () => fetch(`${API_BASE_URL}/api/users`),
-  getUser: (id: string) => fetch(`${API_BASE_URL}/api/users/${id}`),
+  getUsers: () => authService.authenticatedFetch(API_ENDPOINTS.USERS),
+  getUser: (id: string) => authService.authenticatedFetch(API_ENDPOINTS.USER(id)),
   
   // Auth endpoints
   login: (credentials: { email: string; password: string }) => 
-    fetch(`${API_BASE_URL}/api/auth/login`, {
+    fetch(`${config.apiUrl}${API_ENDPOINTS.AUTH_LOGIN}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials)
     }),
     
   register: (userData: { email: string; password: string; firstName: string; lastName: string }) => 
-    fetch(`${API_BASE_URL}/api/auth/register`, {
+    fetch(`${config.apiUrl}${API_ENDPOINTS.AUTH_REGISTER}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
     }),
     
   logout: (token: string) => 
-    fetch(`${API_BASE_URL}/api/auth/logout`, {
+    fetch(`${config.apiUrl}${API_ENDPOINTS.AUTH_LOGOUT}`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -30,7 +31,7 @@ export const api = {
     }),
     
   refresh: (refreshToken: string) => 
-    fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    fetch(`${config.apiUrl}${API_ENDPOINTS.AUTH_REFRESH}`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -38,80 +39,62 @@ export const api = {
       }
     }),
     
-  getCurrentUser: (token: string) => 
-    fetch(`${API_BASE_URL}/api/me`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }),
+  getCurrentUser: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.CURRENT_USER),
     
   // Discovery endpoints
-  getDiscoveryUsers: (token: string, limit?: number, offset?: number) => 
-    fetch(`${API_BASE_URL}/api/discovery?limit=${limit || 20}&offset=${offset || 0}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }),
+  getDiscoveryUsers: (limit?: number, offset?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}?limit=${limit || 20}&offset=${offset || 0}`),
     
-  getRandomUsers: (token: string, limit?: number) => 
-    fetch(`${API_BASE_URL}/api/discovery/random?limit=${limit || 9}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }),
+  getRandomUsers: (limit?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY_RANDOM}?limit=${limit || 9}`),
     
-  searchUsers: (token: string, query: string, limit?: number, offset?: number) => 
-    fetch(`${API_BASE_URL}/api/discovery/search?query=${encodeURIComponent(query)}&limit=${limit || 20}&offset=${offset || 0}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }),
+  searchUsers: (query: string, limit?: number, offset?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY_SEARCH}?query=${encodeURIComponent(query)}&limit=${limit || 20}&offset=${offset || 0}`),
     
   // Profile endpoints
-  completeOnboarding: (token: string, profileData: any) => 
-    fetch(`${API_BASE_URL}/api/onboarding/complete`, {
+  completeOnboarding: (profileData: any) => 
+    authService.authenticatedFetch(API_ENDPOINTS.ONBOARDING_COMPLETE, {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(profileData)
     }),
     
   // Notification endpoints
-  getNotifications: (token: string) => 
-    fetch(`${API_BASE_URL}/api/notifications`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }),
+  getNotifications: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.NOTIFICATIONS),
     
-  markNotificationAsRead: (token: string, id: number) => 
-    fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
+  markNotificationAsRead: (id: number) => 
+    authService.authenticatedFetch(API_ENDPOINTS.NOTIFICATION_READ(id), {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       }
     }),
     
-  markAllNotificationsAsRead: (token: string) => 
-    fetch(`${API_BASE_URL}/api/notifications/read-all`, {
+  markAllNotificationsAsRead: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.NOTIFICATIONS_READ_ALL, {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       }
     }),
     
   // Messages endpoints
-  sendMessage: (token: string, messageData: { receiverId: number; content: string }) => 
-    fetch(`${API_BASE_URL}/api/messages`, {
+  sendMessage: (messageData: { receiverId: number; content: string }) => 
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES, {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(messageData)
     }),
     
-  getConversation: (token: string, userId: number) => 
-    fetch(`${API_BASE_URL}/api/messages/${userId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }),
+  getConversation: (userId: number) => 
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGE_CONVERSATION(userId)),
     
-  getUnreadMessagesCount: (token: string) => 
-    fetch(`${API_BASE_URL}/api/messages/unread/count`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
+  getUnreadMessagesCount: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES_UNREAD_COUNT)
 };

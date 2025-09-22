@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import io from "socket.io-client";
+import { authService } from "@/services/authService";
+import { config } from "@/config/api";
 
 interface Notification {
   id: number;
@@ -16,11 +18,6 @@ interface Notification {
 export function useNotification() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-
-  // Get token from localStorage
-  const getToken = () => {
-    return localStorage.getItem("accessToken");
-  };
 
   // Get user ID from localStorage
   const getUserId = () => {
@@ -39,10 +36,7 @@ export function useNotification() {
   // Fetch notifications from API
   const fetchNotifications = async () => {
     try {
-      const token = getToken();
-      if (!token) return;
-      
-      const response = await api.getNotifications(token);
+      const response = await api.getNotifications();
       const data = await response.json();
       
       if (data.notifications) {
@@ -57,10 +51,7 @@ export function useNotification() {
   // Mark a notification as read
   const markAsRead = async (id: number) => {
     try {
-      const token = getToken();
-      if (!token) return;
-      
-      await api.markNotificationAsRead(token, id);
+      await api.markNotificationAsRead(id);
       
       setNotifications(notifications.map(notification => 
         notification.id === id ? { ...notification, read: true } : notification
@@ -75,10 +66,7 @@ export function useNotification() {
   // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      const token = getToken();
-      if (!token) return;
-      
-      await api.markAllNotificationsAsRead(token);
+      await api.markAllNotificationsAsRead();
       
       setNotifications(notifications.map(notification => 
         ({ ...notification, read: true })
@@ -98,12 +86,15 @@ export function useNotification() {
 
   // Set up Socket.IO connection
   useEffect(() => {
-    const token = getToken();
+    const token = authService.getAccessToken();
     const userId = getUserId();
     
     if (token && userId) {
+      // Fetch initial notifications
+      fetchNotifications();
+      
       // Create Socket.IO connection
-      const wsUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const wsUrl = config.apiUrl || "http://localhost:3000";
       const socket = io(wsUrl, {
         transports: ["websocket"],
         auth: {
@@ -152,18 +143,6 @@ export function useNotification() {
       return () => {
         socket.close();
       };
-    }
-  }, []);
-
-  // Refresh notifications periodically
-  useEffect(() => {
-    const token = getToken();
-    if (token) {
-      fetchNotifications();
-      
-      const interval = setInterval(fetchNotifications, 30000); // Refresh every 30 seconds
-      
-      return () => clearInterval(interval);
     }
   }, []);
 

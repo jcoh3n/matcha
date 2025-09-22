@@ -33,13 +33,10 @@ export function AppShell({
   useEffect(() => {
     const fetchMessageCount = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
-        if (token) {
-          const response = await api.getUnreadMessagesCount(token);
-          if (response.ok) {
-            const data = await response.json();
-            setMessageCount(data.count);
-          }
+        const response = await api.getUnreadMessagesCount();
+        if (response.ok) {
+          const data = await response.json();
+          setMessageCount(data.count);
         }
       } catch (error) {
         console.error("Error fetching message count:", error);
