@@ -52,7 +52,7 @@ export function MessagesPage() {
 
       //for now uses matches users as chat peers
 
-      const response = await api.get
+      const response = await api.getMatchesUser(token, 18, 0);
       
       if (response.ok) {
         const users: UserProfile[] = await response.json();
