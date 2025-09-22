@@ -50,9 +50,9 @@ export function MessagesPage() {
         return;
       }
 
-      // For now, we'll use random users as chat peers
-      // In a real implementation, this would be actual chat contacts
-      const response = await api.getRandomUsers(token, 4);
+      //for now uses matches users as chat peers
+
+      const response = await api.get
       
       if (response.ok) {
         const users: UserProfile[] = await response.json();
