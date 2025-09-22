@@ -1,7 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "@/hooks/useNotification";
+import { api } from "@/lib/api";
 
 type NavKey =
   | "discover"
@@ -37,13 +39,36 @@ export function AppShell({
       navigate(`/${page}`);
     }
   };
+  const { unreadCount } = useNotification();
+  const [messageCount, setMessageCount] = useState(0);
+
+  // Fetch unread messages count
+  useEffect(() => {
+    const fetchMessageCount = async () => {
+      try {
+        const response = await api.getUnreadMessagesCount();
+        if (response.ok) {
+          const data = await response.json();
+          setMessageCount(data.count);
+        }
+      } catch (error) {
+        console.error("Error fetching message count:", error);
+      }
+    };
+
+    fetchMessageCount();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchMessageCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="w-full flex flex-col relative bg-transparent">
       <Header
         currentPage={current}
-        notificationCount={3}
-        messageCount={2}
+        notificationCount={unreadCount}
+        messageCount={messageCount}
         onLogout={onLogout}
         onNavigate={handleNavigation}
       />

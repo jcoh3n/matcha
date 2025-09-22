@@ -39,6 +39,20 @@ export function MessagesPage() {
   const [activePeer, setActivePeer] = useState<any>(null);
   const [history, setHistory] = useState<Record<string, ChatMessage[]>>({});
   const [loading, setLoading] = useState(false);
+  const [selfId, setSelfId] = useState<string>("");
+
+  // Get self ID from localStorage
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setSelfId(user.id.toString());
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
 
   // Fetch chat peers
   const fetchChatPeers = async () => {
@@ -109,13 +123,13 @@ export function MessagesPage() {
         ))}
       </aside>
       <section className="md:col-span-3 min-h-[60vh]">
-        {activePeer ? (
+        {activePeer && selfId ? (
           <>
             <h1 className="font-montserrat text-2xl font-bold tracking-tight mb-4">
               Chat with {activePeer.name}
             </h1>
             <Chat
-              selfId="self"
+              selfId={selfId}
               peerId={activePeer.id}
               initialMessages={history[activePeer.id] || []}
             />
