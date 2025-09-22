@@ -5,6 +5,8 @@ const authRoutes = require('./auth');
 const onboardingRoutes = require('./onboarding');
 const discoveryRoutes = require('./discovery');
 const locationRoutes = require('./location');
+const notificationsRoutes = require('./notifications');
+const messagesRoutes = require('./messages');
 const { authJWT } = require('../middleware/authJWT');
 
 const router = express.Router();
@@ -33,5 +35,10 @@ router.use('/', discoveryRoutes);
 
 // Location routes
 router.use('/', locationRoutes);
+// Notifications routes
+router.use('/notifications', notificationsRoutes);
+
+// Messages routes
+router.use('/messages', messagesRoutes);
 
 module.exports = router;

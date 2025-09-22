@@ -1,106 +1,76 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { authService } from "@/services/authService";
+import { config, API_ENDPOINTS } from "@/config/api";
+import { get } from "http";
 
 export const api = {
   // User endpoints
-  getUsers: () => fetch(`${API_BASE_URL}/api/users`),
-  getUser: (id: string) => fetch(`${API_BASE_URL}/api/users/${id}`),
-
+  getUsers: () => authService.authenticatedFetch(API_ENDPOINTS.USERS),
+  getUser: (id: string) => authService.authenticatedFetch(API_ENDPOINTS.USER(id)),
+  
   // Auth endpoints
-  login: (credentials: { email: string; password: string }) =>
-    fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(credentials),
+  login: (credentials: { email: string; password: string }) => 
+    fetch(`${config.apiUrl}${API_ENDPOINTS.AUTH_LOGIN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
     }),
-
-  register: (userData: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-  }) =>
-    fetch(`${API_BASE_URL}/api/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
+    
+  register: (userData: { email: string; password: string; firstName: string; lastName: string }) => 
+    fetch(`${config.apiUrl}${API_ENDPOINTS.AUTH_REGISTER}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
     }),
-
-  logout: (token: string) =>
-    fetch(`${API_BASE_URL}/api/auth/logout`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+    
+  logout: (token: string) => 
+    fetch(`${config.apiUrl}${API_ENDPOINTS.AUTH_LOGOUT}`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
     }),
-
-  refresh: (refreshToken: string) =>
-    fetch(`${API_BASE_URL}/api/auth/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${refreshToken}`,
-      },
+    
+  refresh: (refreshToken: string) => 
+    fetch(`${config.apiUrl}${API_ENDPOINTS.AUTH_REFRESH}`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${refreshToken}`
+      }
     }),
-
-  getCurrentUser: (token: string) =>
-    fetch(`${API_BASE_URL}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-
+    
+  getCurrentUser: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.CURRENT_USER),
+    
   // Discovery endpoints
-  getDiscoveryUsers: (token: string, limit?: number, offset?: number) =>
-    fetch(
-      `${API_BASE_URL}/api/discovery?limit=${limit || 20}&offset=${
-        offset || 0
-      }`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    ),
 
-  getMatchesUser: (token: string, limit?: number, offset?: number) =>
-    fetch(
-      `${API_BASE_URL}/api/profiles/me/matches?limit=${limit}&offset=${offset}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    ),
 
-  getRandomUsers: (token: string, limit?: number) =>
-    fetch(`${API_BASE_URL}/api/discovery/random?limit=${limit || 9}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
+  
 
-  searchUsers: (
-    token: string,
-    query: string,
-    limit?: number,
-    offset?: number
-  ) =>
-    fetch(
-      `${API_BASE_URL}/api/discovery/search?query=${encodeURIComponent(
-        query
-      )}&limit=${limit || 20}&offset=${offset || 0}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    ),
 
+  getDiscoveryUsers: (token: string, limit?: number, offset?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}?limit=${limit || 20}&offset=${offset || 0}`),
+  
+  getMatchesUser: (token: string, limit?: number, offset?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.MATCHES}?limit=${limit || 20}&offset=${offset || 0}`),
+  
+  getRandomUsers: (limit?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY_RANDOM}?limit=${limit || 9}`),
+    
+  searchUsers: (query: string, limit?: number, offset?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY_SEARCH}?query=${encodeURIComponent(query)}&limit=${limit || 20}&offset=${offset || 0}`),
+  
   getFilteredUsers: (
-    token: string,
-    filters: {
-      ageMin?: number;
-      ageMax?: number;
-      distance?: number;
-      tags?: string[];
-      sortBy?: string;
-      sortOrder?: string;
-      fameRating?: number;
-    },
-    limit?: number,
-    offset?: number
-  ) => {
+token: string, filters: {
+  ageMin?: number;
+  ageMax?: number;
+  distance?: number;
+  tags?: string[];
+  sortBy?: string;
+  sortOrder?: string;
+  fameRating?: number;
+}, limit?: number, offset?: number  ) => {
     const params = new URLSearchParams();
     if (limit) params.append("limit", limit.toString());
     if (offset) params.append("offset", offset.toString());
@@ -114,28 +84,57 @@ export const api = {
     if (filters.fameRating)
       params.append("fameRating", filters.fameRating.toString());
 
-    return fetch(
-      `${API_BASE_URL}/api/discovery/filtered?${params.toString()}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    return authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}/filtered?${params.toString()}`);
   },
-
-  passUser: (token: string, userId: string | number) =>
-    fetch(`${API_BASE_URL}/api/profiles/${userId}/pass`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+  
+  passUser: (userId: string | number) => 
+    authService.authenticatedFetch(`/api/profiles/${userId}/pass`, {
+      method: 'POST'
     }),
-
+    
   // Profile endpoints
-  completeOnboarding: (token: string, profileData: unknown) =>
-    fetch(`${API_BASE_URL}/api/onboarding/complete`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+  completeOnboarding: (profileData: any) => 
+    authService.authenticatedFetch(API_ENDPOINTS.ONBOARDING_COMPLETE, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(profileData),
+      body: JSON.stringify(profileData)
     }),
+    
+  // Notification endpoints
+  getNotifications: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.NOTIFICATIONS),
+    
+  markNotificationAsRead: (id: number) => 
+    authService.authenticatedFetch(API_ENDPOINTS.NOTIFICATION_READ(id), {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json'
+      }
+    }),
+    
+  markAllNotificationsAsRead: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.NOTIFICATIONS_READ_ALL, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json'
+      }
+    }),
+    
+  // Messages endpoints
+  sendMessage: (messageData: { receiverId: number; content: string }) => 
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(messageData)
+    }),
+    
+  getConversation: (userId: number) => 
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGE_CONVERSATION(userId)),
+    
+  getUnreadMessagesCount: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES_UNREAD_COUNT)
 };

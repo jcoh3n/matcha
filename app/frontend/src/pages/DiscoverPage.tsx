@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { likeUser as likeUserApi } from "@/services/profileService";
+import { authService } from "@/services/authService";
 
 interface UserProfile {
   id: string;
@@ -174,11 +175,9 @@ export function DiscoverPage() {
         if (!accessToken) {
           return;
         }
-        const response = await fetch("http://localhost:3000/api/me", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        
+        const response = await api.getCurrentUser();
+
         if (response.ok) {
           const userData = await response.json();
           // Check if essential profile fields are filled

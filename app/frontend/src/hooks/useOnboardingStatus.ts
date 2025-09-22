@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { authService } from "@/services/authService";
+import { API_ENDPOINTS } from "@/config/api";
 
 export function useOnboardingStatus() {
   const [isLoading, setIsLoading] = useState(true);
@@ -7,7 +9,7 @@ export function useOnboardingStatus() {
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       try {
-        const accessToken = localStorage.getItem("accessToken");
+        const accessToken = authService.getAccessToken();
         if (!accessToken) {
           setIsLoading(false);
           setHasCompletedOnboarding(false);
@@ -15,13 +17,7 @@ export function useOnboardingStatus() {
         }
 
         // Fetch user profile to check if onboarding is complete
-        const response = await fetch("http://localhost:3000/api/me", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`,
-          },
-        });
+        const response = await authService.authenticatedFetch(API_ENDPOINTS.CURRENT_USER);
 
         if (!response.ok) {
           setIsLoading(false);

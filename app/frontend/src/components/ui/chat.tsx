@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { BrutalButton } from "@/components/ui/brutal-button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
 
 export interface ChatMessage {
   id: string
@@ -19,46 +20,84 @@ interface ChatProps {
   onSend?: (body: string) => Promise<void> | void
 }
 
-// Simulated realtime via interval (10s) – placeholder for WebSocket
 export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState("")
   const bottomRef = useRef<HTMLDivElement | null>(null)
+  const [token, setToken] = useState<string | null>(null)
 
+  // Get token from localStorage
   useEffect(() => {
-    const id = setInterval(() => {
-      // Fake incoming message
-      setMessages(prev => ([...prev, {
-        id: crypto.randomUUID(),
-        from: peerId,
-        to: selfId,
-        body: randomReply(),
-        createdAt: new Date().toISOString()
-      }]))
-    }, 10000) // 10s
-    return () => clearInterval(id)
-  }, [peerId, selfId])
+    const accessToken = localStorage.getItem("accessToken")
+    setToken(accessToken)
+    
+    // Load conversation history
+    if (accessToken) {
+      loadConversation(accessToken)
+    }
+  }, [peerId])
+
+  const loadConversation = async (accessToken: string) => {
+    try {
+      const response = await api.getConversation(accessToken, parseInt(peerId))
+      if (response.ok) {
+        const conversation = await response.json()
+        const formattedMessages = conversation.map((msg: any) => ({
+          id: msg.id.toString(),
+          from: msg.senderId.toString(),
+          to: msg.receiverId.toString(),
+          body: msg.content,
+          createdAt: msg.createdAt
+        }))
+        setMessages(formattedMessages)
+      }
+    } catch (error) {
+      console.error("Error loading conversation:", error)
+    }
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   const handleSend = async () => {
-    if (!input.trim()) return
+    if (!input.trim() || !token) return
+    
     const optimistic: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: Date.now().toString(),
       from: selfId,
       to: peerId,
       body: input.trim(),
       createdAt: new Date().toISOString(),
       pending: true
     }
+    
     setMessages(m => [...m, optimistic])
     setInput("")
+    
     try {
-      await onSend?.(optimistic.body)
-    } finally {
-      setMessages(m => m.map(msg => msg.id === optimistic.id ? { ...msg, pending: false } : msg))
+      const response = await api.sendMessage(token, {
+        receiverId: parseInt(peerId),
+        content: input.trim()
+      })
+      
+      if (response.ok) {
+        const savedMessage = await response.json()
+        // Replace optimistic message with saved message
+        setMessages(m => m.map(msg => 
+          msg.id === optimistic.id 
+            ? { ...msg, id: savedMessage.id.toString(), pending: false } 
+            : msg
+        ))
+      } else {
+        // Remove optimistic message on error
+        setMessages(m => m.filter(msg => msg.id !== optimistic.id))
+        console.error("Failed to send message")
+      }
+    } catch (error) {
+      // Remove optimistic message on error
+      setMessages(m => m.filter(msg => msg.id !== optimistic.id))
+      console.error("Error sending message:", error)
     }
   }
 
@@ -90,15 +129,4 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
 function formatTime(iso: string) {
   const d = new Date(iso)
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
-function randomReply() {
-  const replies = [
-    '🙂',
-    'Tell me more! ☕',
-    'Nice! 💬',
-    'Sounds great 🌿',
-    '👍',
-  ]
-  return replies[Math.floor(Math.random()*replies.length)]
 }

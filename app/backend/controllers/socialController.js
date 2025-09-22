@@ -10,6 +10,7 @@ const ProfileView = require("../models/ProfileView");
 const Pass = require("../models/Pass");
 const { updateFameRating } = require("../services/fameRatingService");
 const Match = require("../models/Match");
+const { createAndSendNotification } = require('../utils/notificationHandler');
 
 // Helper function to calculate age from birth date
 const calculateAge = (birthDate) => {
@@ -115,12 +116,29 @@ const getPublicProfile = async (req, res) => {
       viewerId: currentUserId,
       viewedUserId: profileUserId,
     });
-
-    // Update the viewed user's fame rating (for activity tracking)
-    updateFameRating(profileUserId).catch((err) => {
-      console.error("Error updating fame rating:", err);
-    });
-
+    
+    // Send notification to the profile owner about the visit
+    // Only send if the viewer is not the profile owner (should always be true here)
+    // and if they're not blocked
+    if (currentUserId !== profileUserId && !isBlocked) {
+      // Get the viewer's profile for the notification content
+      const viewerProfile = await Profile.findByUserId(currentUserId);
+      const viewerUser = await User.findById(currentUserId);
+      
+      if (viewerProfile && viewerUser) {
+        const notificationContent = `${viewerUser.firstName} ${viewerUser.lastName} visited your profile`;
+        
+        // We'll implement the io object passing later
+        // For now, we'll just create the notification in the database
+        await createAndSendNotification(global.io, {
+          userId: profileUserId,
+          fromUserId: currentUserId,
+          type: 'VISIT',
+          content: notificationContent
+        });
+      }
+    }
+    
     // Get profile view count
     const viewsCount = await ProfileView.findByViewedUserId(profileUserId);
 
@@ -206,11 +224,31 @@ const likeUser = async (req, res) => {
 
     // Check if it's a match
     const isMatch = await Like.exists(likedUserId, currentUserId);
-    if (isMatch) {
-      // Persist match pair
-      await Match.createIfNotExists(currentUserId, likedUserId);
+    
+    // Send notification to the liked user
+    // Only send if the liker is not the liked user (should always be true here)
+    // and if they're not blocked
+    if (currentUserId !== likedUserId && !isBlocked) {
+      // Get the liker's profile for the notification content
+      const likerUser = await User.findById(currentUserId);
+      
+      if (likerUser) {
+        const notificationContent = isMatch 
+          ? `${likerUser.firstName} ${likerUser.lastName} liked you back! It's a match!`
+          : `${likerUser.firstName} ${likerUser.lastName} liked your profile`;
+        
+        const notificationType = isMatch ? 'MATCH' : 'LIKE';
+        
+        // Send notification
+        await createAndSendNotification(global.io, {
+          userId: likedUserId,
+          fromUserId: currentUserId,
+          type: notificationType,
+          content: notificationContent
+        });
+      }
     }
-
+    
     // Return relationship status
     res.json({
       isLiked: true,
@@ -246,10 +284,26 @@ const unlikeUser = async (req, res) => {
     if (!deleted) {
       return res.status(404).json({ message: "Like not found" });
     }
-
-    // If a match existed, remove it when either side unlikes
-    await Match.delete(currentUserId, unlikedUserId);
-
+    
+    // Send notification to the unliked user about the unlike
+    // Only send if the unliker is not the unliked user
+    if (currentUserId !== unlikedUserId) {
+      // Get the unliker's profile for the notification content
+      const unlikerUser = await User.findById(currentUserId);
+      
+      if (unlikerUser) {
+        const notificationContent = `${unlikerUser.firstName} ${unlikerUser.lastName} unliked your profile`;
+        
+        // Send notification
+        await createAndSendNotification(global.io, {
+          userId: unlikedUserId,
+          fromUserId: currentUserId,
+          type: 'UNLIKE',
+          content: notificationContent
+        });
+      }
+    }
+    
     res.json({
       isLiked: false,
       isMatch: false,
