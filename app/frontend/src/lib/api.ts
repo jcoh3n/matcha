@@ -43,7 +43,7 @@ export const api = {
     authService.authenticatedFetch(API_ENDPOINTS.CURRENT_USER),
     
   // Discovery endpoints
-  getDiscoveryUsers: (limit?: number, offset?: number) => 
+  getDiscoveryUsers: (token: string, limit?: number, offset?: number) => 
     authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}?limit=${limit || 20}&offset=${offset || 0}`),
     
   getRandomUsers: (limit?: number) => 

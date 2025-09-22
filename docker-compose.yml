@@ -42,7 +42,6 @@ services:
       - db
     volumes:
       - ./app/backend:/app
-      - /app/node_modules
       - ./app/backend/public:/app/public:ro
 
   frontend:
