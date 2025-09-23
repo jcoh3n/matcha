@@ -19,26 +19,26 @@ export function NotificationsPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="font-montserrat text-3xl font-extrabold tracking-tight mb-6">
+    <div className="max-w-2xl mx-auto w-full px-4 sm:px-6">
+      <h1 className="font-montserrat text-2xl sm:text-3xl font-extrabold tracking-tight mb-4 sm:mb-6">
         Notifications
       </h1>
-      <div className="rounded-3xl card-shadow border-0 bg-white">
-        <div className="flex flex-row items-center justify-between p-6">
+      <div className="rounded-2xl sm:rounded-3xl card-shadow border-0 bg-white overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-6">
           <h2 className="font-display text-xl">Notifications</h2>
           {notifications.some((n) => !n.read) && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => markAllAsRead()}
-              className="text-xs text-muted-foreground hover:text-foreground transition-smooth"
+              className="text-xs text-muted-foreground hover:text-foreground transition-smooth h-8 px-3"
             >
               Mark all read
             </Button>
           )}
         </div>
-        <ScrollArea className="h-96">
-          <div className="space-y-4 p-2">
+        <ScrollArea className="h-[calc(100vh-200px)] sm:h-96">
+          <div className="space-y-3 sm:space-y-4 p-3 sm:p-4">
             {notifications.length === 0 ? (
               <div className="text-center text-sm text-muted-foreground py-8">
                 No notifications
