@@ -34,13 +34,18 @@ const authJWT = async (req, res, next) => {
     // Add user to request object
     req.user = user;
 
-    // Lightweight activity hook: update profiles.last_active occasionally
+    // Lightweight activity hook: update profiles.last_active and users.updated_at occasionally
     // Skip if client opts out via header (e.g., background polling)
     const skipActivity = req.headers["x-skip-activity"] === "1";
     if (!skipActivity) {
       try {
         // Best-effort, don't block request
         db.query("UPDATE profiles SET last_active = NOW() WHERE user_id = $1", [
+          user.id,
+        ]).catch(() => {});
+        
+        // Also update user's updated_at field
+        db.query("UPDATE users SET updated_at = NOW() WHERE id = $1", [
           user.id,
         ]).catch(() => {});
       } catch (_) {}
