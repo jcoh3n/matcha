@@ -7,6 +7,7 @@ const Like = require('../models/Like');
 const Block = require('../models/Block');
 const Report = require('../models/Report');
 const ProfileView = require('../models/ProfileView');
+const { updateFameRating } = require('../services/fameRatingService');
 const { createAndSendNotification } = require('../utils/notificationHandler');
 
 // Helper function to calculate age from birth date

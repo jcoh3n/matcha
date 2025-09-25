@@ -325,3 +325,49 @@ export const reportUser = async (userId: number, reason: string, accessToken: st
     throw error;
   }
 };
+
+// Get users who viewed my profile
+export const getProfileViewers = async (accessToken: string) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/me/viewers`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching profile viewers:', error);
+    throw error;
+  }
+};
+
+// Get users who liked me
+export const getProfileLikers = async (accessToken: string) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/me/likers`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching profile likers:', error);
+    throw error;
+  }
+};
