@@ -137,5 +137,8 @@ token: string, filters: {
     authService.authenticatedFetch(API_ENDPOINTS.MESSAGE_CONVERSATION(userId)),
     
   getUnreadMessagesCount: () => 
-    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES_UNREAD_COUNT)
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES_UNREAD_COUNT),
+    
+  getConversations: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES_CONVERSATIONS)
 };

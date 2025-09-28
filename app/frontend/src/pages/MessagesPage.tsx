@@ -20,6 +20,11 @@ interface UserProfile {
     city?: string;
     country?: string;
   };
+  lastMessage?: {
+    content: string;
+    senderId: string;
+    timestamp: string;
+  };
 }
 
 // Transform API user data to match chat expectations
@@ -30,6 +35,7 @@ const transformUserForChat = (user: UserProfile) => {
     images: user.profilePhotoUrl ? [user.profilePhotoUrl] : [],
     bio: user.profile?.bio || "",
     location: user.location ? `${user.location.city}, ${user.location.country}` : "",
+    lastMessage: user.lastMessage, // Include last message info if available
     // Add other properties as needed
   };
 };
@@ -39,33 +45,68 @@ export function MessagesPage() {
   const [activePeer, setActivePeer] = useState<any>(null);
   const [history, setHistory] = useState<Record<string, ChatMessage[]>>({});
   const [loading, setLoading] = useState(false);
+  const [selfId, setSelfId] = useState<string>("");
 
-  // Fetch chat peers
-  const fetchChatPeers = async () => {
+  // Fetch current user info and chat peers
+  const fetchUserData = async () => {
+    console.log('[DEBUG Frontend] fetchUserData called');
     setLoading(true);
     try {
+      // Get current user info to get the user ID
       const token = localStorage.getItem("accessToken");
       if (!token) {
         console.error("No access token found");
         return;
       }
 
-      //for now uses matches users as chat peers
+      console.log('[DEBUG Frontend] Getting current user info');
+      // Get current user to get the ID
+      const userResponse = await api.getCurrentUser();
+      console.log('[DEBUG Frontend] getCurrentUser response:', userResponse.status, userResponse.ok);
+      
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        console.log('[DEBUG Frontend] Current user data:', userData.id);
+        setSelfId(userData.id.toString()); // Set the current user ID as string to match message format
+      } else {
+        console.error("Failed to fetch current user");
+        return;
+      }
 
-      const response = await api.getMatchesUser(token, 18, 0);
+      // Use conversations endpoint to get users we can chat with (mutual matches)
+      console.log('[DEBUG Frontend] Fetching conversations');
+      const response = await api.getConversations();
+      console.log('[DEBUG Frontend] getConversations response:', response.status, response.ok); 
       
       if (response.ok) {
-        const users: UserProfile[] = await response.json();
-        const transformedUsers = users.map(transformUserForChat);
-        setPeers(transformedUsers);
-        if (transformedUsers.length > 0) {
-          setActivePeer(transformedUsers[0]);
+        const conversations = await response.json();
+        console.log('[DEBUG Frontend] Received', conversations.length, 'conversations from API');
+        
+        // Transform conversations to match the expected format for the UI
+        const formattedConversations = conversations.map(conv => ({
+          id: conv.id,
+          name: `${conv.firstName} ${conv.lastName}`,
+          images: conv.profilePhotoUrl ? [conv.profilePhotoUrl] : [],
+          bio: conv.profile?.bio || "",
+          location: conv.location ? `${conv.location.city}, ${conv.location.country}` : "",
+          lastMessage: conv.lastMessage
+        }));
+        
+        console.log('[DEBUG Frontend] Setting', formattedConversations.length, 'formatted conversations as peers');
+        setPeers(formattedConversations);
+        if (formattedConversations.length > 0) {
+          console.log('[DEBUG Frontend] Setting first peer as active:', formattedConversations[0].name);
+          setActivePeer(formattedConversations[0]);
+        } else {
+          console.log('[DEBUG Frontend] No conversations found - no peers to display');
         }
       } else {
-        console.error("Failed to fetch chat peers");
+        console.error("Failed to fetch conversations");
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
       }
     } catch (error) {
-      console.error("Error fetching chat peers:", error);
+      console.error("Error fetching conversations:", error);
     } finally {
       setLoading(false);
     }
@@ -73,7 +114,7 @@ export function MessagesPage() {
 
   // Load initial chat peers
   useEffect(() => {
-    fetchChatPeers();
+    fetchUserData();
   }, []);
 
   if (loading) {
@@ -99,11 +140,14 @@ export function MessagesPage() {
               alt={p.name}
               className="w-10 h-10 object-cover rounded-xl"
             />
-            <div>
-              <p className="font-semibold text-sm">{p.name}</p>
-              <p className="text-[10px] opacity-70">
-                {Math.round(Math.random() * 10 + 1)} new
-              </p>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm truncate">{p.name}</p>
+              {p.lastMessage && (
+                <p className="text-[10px] opacity-70 truncate">
+                  {p.lastMessage.senderId === p.id ? 'You: ' : ''}
+                  {p.lastMessage.content.substring(0, 30)}{p.lastMessage.content.length > 30 ? '...' : ''}
+                </p>
+              )}
             </div>
           </button>
         ))}
@@ -115,7 +159,7 @@ export function MessagesPage() {
               Chat with {activePeer.name}
             </h1>
             <Chat
-              selfId="self"
+              selfId={selfId}
               peerId={activePeer.id}
               initialMessages={history[activePeer.id] || []}
             />

@@ -224,6 +224,16 @@ const likeUser = async (req, res) => {
 
     // Check if it's a match
     const isMatch = await Like.exists(likedUserId, currentUserId);
+    console.log('[DEBUG] Like check result for', currentUserId, 'liking', likedUserId, ': isMatch =', isMatch);
+    
+    // If it's a mutual like, create a match in the matches table
+    if (isMatch) {
+        console.log('[DEBUG] Creating match between', currentUserId, 'and', likedUserId);
+        await Match.createIfNotExists(currentUserId, likedUserId);
+        console.log('[DEBUG] Match created successfully between', currentUserId, 'and', likedUserId);
+    } else {
+        console.log('[DEBUG] No match created - not a mutual like between', currentUserId, 'and', likedUserId);
+    }
     
     // Send notification to the liked user
     // Only send if the liker is not the liked user (should always be true here)

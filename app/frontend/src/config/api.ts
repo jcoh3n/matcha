@@ -46,5 +46,6 @@ export const API_ENDPOINTS = {
   // Messages endpoints
   MESSAGES: '/api/messages',
   MESSAGE_CONVERSATION: (userId: number) => `/api/messages/${userId}`,
-  MESSAGES_UNREAD_COUNT: '/api/messages/unread/count'
+  MESSAGES_UNREAD_COUNT: '/api/messages/unread/count',
+  MESSAGES_CONVERSATIONS: '/api/messages'
 };
