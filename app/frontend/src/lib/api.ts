@@ -49,12 +49,13 @@ export const api = {
   
 
 
-  getDiscoveryUsers: (token: string, limit?: number, offset?: number) => 
-    authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}?limit=${limit || 20}&offset=${offset || 0}`),
   
   getMatchesUser: (token: string, limit?: number, offset?: number) => 
     authService.authenticatedFetch(`${API_ENDPOINTS.MATCHES}?limit=${limit || 20}&offset=${offset || 0}`),
   
+  getDiscoveryUsers: (token: string, limit?: number, offset?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}?limit=${limit || 20}&offset=${offset || 0}`),
+    
   getRandomUsers: (limit?: number) => 
     authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY_RANDOM}?limit=${limit || 9}`),
     

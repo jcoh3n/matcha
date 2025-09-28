@@ -7,6 +7,7 @@ const discoveryRoutes = require('./discovery');
 const locationRoutes = require('./location');
 const notificationsRoutes = require('./notifications');
 const messagesRoutes = require('./messages');
+const meRoutes = require('./me');
 const { authJWT } = require('../middleware/authJWT');
 
 const router = express.Router();
@@ -40,5 +41,14 @@ router.use('/notifications', notificationsRoutes);
 
 // Messages routes
 router.use('/messages', messagesRoutes);
+
+// Notifications routes
+router.use('/notifications', notificationsRoutes);
+
+// Messages routes
+router.use('/messages', messagesRoutes);
+
+// Me routes (viewers, likers)
+router.use('/me', meRoutes);
 
 module.exports = router;
