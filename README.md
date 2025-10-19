@@ -39,5 +39,5 @@ L’application couvre l’ensemble du parcours utilisateur : de l’inscription
    ```
 
 ## Contributeurs
-- [@me](https://github.com/me)  
+- [@me](https://github.com/jcoh3n)  
 - [@demsCod](https://github.com/demsCod)  
