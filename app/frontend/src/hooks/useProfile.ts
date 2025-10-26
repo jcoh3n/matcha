@@ -8,7 +8,9 @@ import {
   deletePhoto,
   updateLocation,
   getUserTags,
-  addUserTags
+  addUserTags,
+  getProfileViewers,
+  getProfileLikers
 } from "@/services/profileService";
 
 export const useProfile = (accessToken: string | null) => {
@@ -191,6 +193,32 @@ export const useProfile = (accessToken: string | null) => {
     }
   };
 
+  // Get profile viewers
+  const getProfileViewersData = async () => {
+    if (!accessToken) return { success: false, error: "No access token" };
+    
+    try {
+      const viewers = await getProfileViewers(accessToken);
+      return { success: true, data: viewers };
+    } catch (error) {
+      console.error("Error fetching profile viewers:", error);
+      return { success: false, error };
+    }
+  };
+
+  // Get profile likers
+  const getProfileLikersData = async () => {
+    if (!accessToken) return { success: false, error: "No access token" };
+    
+    try {
+      const likers = await getProfileLikers(accessToken);
+      return { success: true, data: likers };
+    } catch (error) {
+      console.error("Error fetching profile likers:", error);
+      return { success: false, error };
+    }
+  };
+
   return {
     profile,
     loading,
@@ -202,6 +230,8 @@ export const useProfile = (accessToken: string | null) => {
     removePhoto,
     updateProfileLocation,
     fetchUserTags,
-    updateUserTags
+    updateUserTags,
+    getProfileViewersData,
+    getProfileLikersData
   };
 };

@@ -70,6 +70,7 @@ export function PublicProfilePage() {
   const { toast } = useToast();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<{type: string, message: string} | null>(null);
   
   const accessToken = localStorage.getItem("accessToken");
   const {
@@ -85,24 +86,46 @@ export function PublicProfilePage() {
       
       try {
         setLoading(true);
+        setError(null); // Reset any previous errors
         const profileData = await getPublicProfile(parseInt(id), accessToken);
         console.log("Profile data received:", profileData); // Debug log
         setProfile(profileData);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching profile:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load profile",
-          variant: "destructive",
-        });
-        navigate("/discover");
+        
+        // Check if the error is due to access being denied (user blocked)
+        if (error.message && error.message.includes("403")) {
+          const errorMessage = "You don't have permission to view this profile. You may have been blocked by this user.";
+          setError({type: "blocked", message: errorMessage});
+          toast({
+            title: "Access Denied",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        } else if (error.message && error.message.includes("404")) {
+          const errorMessage = "The requested profile could not be found.";
+          setError({type: "notfound", message: errorMessage});
+          toast({
+            title: "Profile Not Found",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        } else {
+          const errorMessage = error.message || "Failed to load profile";
+          setError({type: "generic", message: errorMessage});
+          toast({
+            title: "Error",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [id, accessToken, navigate, toast]);
+  }, [id, accessToken, toast]);
 
   const handleLike = async () => {
     if (!profile || !accessToken) return;
@@ -202,12 +225,64 @@ export function PublicProfilePage() {
     );
   }
 
+  // Handle specific error cases
+  if (error) {
+    if (error.type === "blocked") {
+      return (
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6 text-center">
+            <UserX className="w-16 h-16 text-destructive mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+            <p className="text-muted-foreground mb-4">{error.message}</p>
+            <div className="flex gap-3 justify-center">
+              <Button onClick={() => navigate("/discover")}>
+                Go to Discover
+              </Button>
+              <Button variant="outline" onClick={() => window.history.back()}>
+                Go Back
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6 text-center">
+            <UserX className="w-16 h-16 text-destructive mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Error Loading Profile</h2>
+            <p className="text-muted-foreground mb-4">{error.message}</p>
+            <div className="flex gap-3 justify-center">
+              <Button onClick={() => navigate("/discover")}>
+                Go to Discover
+              </Button>
+              <Button variant="outline" onClick={() => window.history.back()}>
+                Go Back
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // If we have no profile and no error, it means we couldn't fetch but didn't get an error either
+  // This shouldn't happen in most cases, but we'll handle it
   if (!profile) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Profile not found</h2>
-          <p className="text-muted-foreground">The requested profile could not be found.</p>
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6 text-center">
+          <UserX className="w-16 h-16 text-destructive mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Profile Not Found</h2>
+          <p className="text-muted-foreground mb-4">The requested profile could not be found.</p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => navigate("/discover")}>
+              Go to Discover
+            </Button>
+            <Button variant="outline" onClick={() => window.history.back()}>
+              Go Back
+            </Button>
+          </div>
         </div>
       </div>
     );
