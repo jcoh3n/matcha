@@ -294,6 +294,16 @@ const unlikeUser = async (req, res) => {
     if (!deleted) {
       return res.status(404).json({ message: "Like not found" });
     }
+    // If there was a match between these users, remove it so chat/notifications are stopped
+    try {
+      const matchDeleted = await Match.delete(currentUserId, unlikedUserId);
+      if (matchDeleted) {
+        console.log('[DEBUG] Match deleted due to unlike between', currentUserId, 'and', unlikedUserId);
+      }
+    } catch (matchErr) {
+      console.error('Error deleting match on unlike:', matchErr);
+      // continue - unlike succeeded, but match deletion failed; we don't want to block the unlike response
+    }
     
     // Send notification to the unliked user about the unlike
     // Only send if the unliker is not the unliked user

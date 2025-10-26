@@ -12,6 +12,7 @@ export interface ChatMessage {
   body: string
   createdAt: string
   pending?: boolean
+  read?: boolean
 }
 
 interface ChatProps {
@@ -57,39 +58,44 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
     // Create a stable handler function to avoid recreating on each render
     const handleMessage = (data) => {
       console.log('[DEBUG Frontend] Received WebSocket message:', data);
-      // Convert IDs to strings for consistent comparison
-      const receiverIdStr = String(data.receiverId);
-      const senderIdStr = String(data.senderId);
+
+      // Support two payload shapes: legacy { senderId, receiverId, content, timestamp }
+      // and new { message: { id, sender_id, receiver_id, content, created_at, read }, sender: { id } }
+      const msg = data.message || {};
+      const receiverIdStr = String(msg.receiver_id || msg.receiverId || data.receiverId || '');
+      const senderIdStr = String(msg.sender_id || msg.senderId || (data.sender && data.sender.id) || data.senderId || '');
+      const content = msg.content || msg.body || data.content || '';
+      const timestamp = msg.created_at || msg.createdAt || data.timestamp || new Date().toISOString();
+      const readFlag = typeof msg.read !== 'undefined' ? !!msg.read : false;
+
       const selfIdStr = String(selfId);
       const peerIdStr = String(peerId);
-      
-      console.log('[DEBUG Frontend] ID comparison - receiverId:', receiverIdStr, '=== selfId:', selfIdStr, 'is', receiverIdStr === selfIdStr);
-      console.log('[DEBUG Frontend] ID comparison - senderId:', senderIdStr, '=== peerId:', peerIdStr, 'is', senderIdStr === peerIdStr);
-      
+
       // Only add the message if it's for our current chat (to us from our peer)
       if (receiverIdStr === selfIdStr && senderIdStr === peerIdStr) {
-        console.log('[DEBUG Frontend] Adding message from peer to chat:', data.senderId);
+        console.log('[DEBUG Frontend] Adding message from peer to chat:', senderIdStr);
         setMessages(prev => {
           // Check if message already exists to avoid duplicates
-          const messageExists = prev.some(msg => 
-            msg.body === data.content && 
-            msg.from === senderIdStr && 
-            msg.createdAt === (data.timestamp || new Date().toISOString())
+          const messageExists = prev.some(msgItem => 
+            msgItem.body === content && 
+            msgItem.from === senderIdStr && 
+            msgItem.createdAt === timestamp
           );
-          
+
           if (messageExists) {
             console.log('[DEBUG Frontend] Message already exists, skipping');
             return prev;
           }
-          
+
           const newMessage: ChatMessage = {
-            id: Date.now().toString(), // Generate a temporary ID
+            id: String(msg.id || Date.now()), // use DB id when available
             from: senderIdStr,
             to: receiverIdStr,
-            body: data.content,
-            createdAt: data.timestamp || new Date().toISOString()
+            body: content,
+            createdAt: timestamp,
+            read: readFlag
           };
-          
+
           console.log('[DEBUG Frontend] Adding new message to messages state');
           return [...prev, newMessage];
         });
@@ -98,21 +104,36 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
       }
     };
     
-    // Listen for incoming messages
-    socket.on('message', handleMessage);
-    
+    // Listen for incoming messages (new_message) and read receipts (message_read)
+    socket.on('new_message', handleMessage);
+
+    const handleMessageRead = (data) => {
+      console.log('[DEBUG Frontend] Received message_read event:', data);
+      const { messageIds, readerId } = data || {};
+      // If the reader is our current peer, mark matching messages as read
+      if (!messageIds) return;
+
+      setMessages(prev => prev.map(m => ({
+        ...m,
+        read: Array.isArray(messageIds) && messageIds.map(String).includes(String(m.id)) ? true : m.read
+      })));
+    };
+
+    socket.on('message_read', handleMessageRead);
+
     socket.on('connect', () => {
       console.log('[DEBUG Frontend] WebSocket connected with id:', socket.id);
     });
-    
+
     socket.on('disconnect', () => {
       console.log('[DEBUG Frontend] WebSocket disconnected');
     });
-    
+
     // Cleanup function - remove listeners before disconnecting
     return () => {
       console.log('[DEBUG Frontend] Cleaning up WebSocket listeners and disconnecting');
-      socket.off('message', handleMessage);
+      socket.off('new_message', handleMessage);
+      socket.off('message_read', handleMessageRead);
       socket.disconnect();
     };
   }, [selfId, peerId])
@@ -132,7 +153,8 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
           from: msg.senderId.toString(),
           to: msg.receiverId.toString(),
           body: msg.content,
-          createdAt: msg.createdAt
+          createdAt: msg.createdAt,
+          read: !!msg.read
         }))
         console.log('[DEBUG Frontend] Setting formatted messages:', formattedMessages.length);
         setMessages(formattedMessages)
@@ -162,7 +184,8 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
       to: peerId,
       body: input.trim(),
       createdAt: new Date().toISOString(),
-      pending: true
+      pending: true,
+      read: false
     }
     
     console.log('[DEBUG Frontend] Adding optimistic message:', optimistic);
@@ -183,7 +206,7 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
         // Replace optimistic message with saved message
         setMessages(m => m.map(msg => 
           msg.id === optimistic.id 
-            ? { ...msg, id: savedMessage.id.toString(), pending: false } 
+            ? { ...msg, id: savedMessage.id.toString(), pending: false, read: !!savedMessage.read } 
             : msg
         ))
       } else {
@@ -209,6 +232,9 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
               <div className="mt-1 text-[10px] opacity-70 flex justify-end gap-1">
                 <span>{formatTime(m.createdAt)}</span>
                 {m.pending && <span>…</span>}
+                {mine && m.read && !m.pending && (
+                  <span className="ml-2 text-[10px] opacity-90">Seen</span>
+                )}
               </div>
             </div>
           )

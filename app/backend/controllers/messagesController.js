@@ -1,6 +1,7 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
-const { createAndSendNotification } = require('../utils/notificationHandler');
+const Match = require('../models/Match');
+const { createAndSendNotification, getUserSocketId } = require('../utils/notificationHandler');
 const db = require('../config/db');
 
 // Send a message
@@ -29,6 +30,18 @@ const sendMessage = async (req, res) => {
       console.log('[DEBUG] User tried to message themselves:', senderId);
       return res.status(400).json({ message: 'Cannot send message to yourself' });
     }
+
+    // Check if users are matched
+    try {
+      const areMatched = await Match.exists(senderId, receiverId);
+      if (!areMatched) {
+        console.log('[DEBUG] Message blocked - users are not matched:', senderId, receiverId);
+        return res.status(403).json({ message: 'You can only send messages to users you have matched with' });
+      }
+    } catch (matchErr) {
+      console.error('[ERROR] Failed to verify match status:', matchErr);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
     
     // Create the message
     const message = await Message.create({
@@ -39,18 +52,29 @@ const sendMessage = async (req, res) => {
     
     console.log('[DEBUG] Message created successfully:', message.id);
     
-    // Emit real-time message event
+    // Emit real-time message event to the receiver socket only (read flag included)
     const sender = await User.findById(senderId);
     if (sender && global.io) {
-      console.log('[DEBUG] Emitting message via WebSocket to receiver:', receiverId);
-      // Emit to receiver if they're connected
-      global.io.emit('message', {
-        senderId: senderId,
-        senderName: `${sender.firstName} ${sender.lastName}`,
-        receiverId: receiverId,
-        content: content.trim(),
-        timestamp: new Date()
-      });
+      try {
+        console.log('[DEBUG] Emitting new_message via WebSocket to receiver:', receiverId);
+        const socketId = getUserSocketId(receiverId);
+        const payload = {
+          message: message.toJSON(),
+          sender: {
+            id: senderId,
+            name: `${sender.firstName} ${sender.lastName}`
+          }
+        };
+
+        if (socketId) {
+          global.io.to(socketId).emit('new_message', payload);
+        } else {
+          // Fallback: if receiver not connected, we don't broadcast globally
+          console.log('[DEBUG] Receiver not connected, skipping real-time emit');
+        }
+      } catch (emitErr) {
+        console.error('[ERROR] Failed to emit new_message:', emitErr);
+      }
     } else {
       console.log('[DEBUG] Could not emit message via WebSocket - sender or io not available');
     }
@@ -104,9 +128,25 @@ const getConversation = async (req, res) => {
     const messages = await Message.findConversation(userId, otherUserId);
     console.log('[DEBUG] Found', messages.length, 'messages in conversation between', userId, 'and', otherUserId);
     
-    // Mark messages as read
-    await Message.markConversationAsRead(otherUserId, userId);
-    console.log('[DEBUG] Marked messages as read for conversation between', userId, 'and', otherUserId);
+    // Mark messages as read (messages sent by otherUserId to userId)
+    const updatedMessages = await Message.markConversationAsRead(otherUserId, userId);
+    console.log('[DEBUG] Marked', updatedMessages.length, 'messages as read for conversation between', userId, 'and', otherUserId);
+
+    // Notify the original sender that their messages were read
+    try {
+      if (updatedMessages.length > 0 && global.io) {
+        const messageIds = updatedMessages.map(m => m.id);
+        const senderSocketId = getUserSocketId(otherUserId);
+        if (senderSocketId) {
+          global.io.to(senderSocketId).emit('message_read', {
+            messageIds,
+            readerId: userId
+          });
+        }
+      }
+    } catch (notifyErr) {
+      console.error('[ERROR] Failed to notify sender about read receipts:', notifyErr);
+    }
     
     const messagesJson = messages.map(message => message.toJSON());
     console.log('[DEBUG] Returning', messagesJson.length, 'messages');

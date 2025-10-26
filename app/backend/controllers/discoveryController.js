@@ -4,6 +4,12 @@ const Photo = require("../models/Photo");
 const Location = require("../models/Location");
 const db = require("../config/db");
 
+// Small helper to safely parse integers from query params. Returns fallback when parsing fails.
+function safeParseInt(value, fallback = undefined) {
+  const n = parseInt(value);
+  return Number.isNaN(n) ? fallback : n;
+}
+
 // Helper: fetch current user's gender & orientation (support both schema variants)
 async function fetchViewerProfile(userId) {
   const q = `SELECT gender, sexual_orientation as orientation FROM profiles WHERE user_id = $1 LIMIT 1`;
@@ -56,7 +62,7 @@ function computeAllowedGenders(viewerGender, orientation) {
 const getDiscoveryUsers = async (req, res) => {
   try {
     // Get query parameters
-    const { limit = 20, offset = 0 } = req.query;
+  const { limit = 20, offset = 0 } = req.query;
 
     // Log the current user
     console.log("Current user:", req.user);
@@ -71,8 +77,8 @@ const getDiscoveryUsers = async (req, res) => {
     );
     console.log("Allowed genders derived:", allowedGenders);
 
-    let genderFilterClause = "";
-    const params = [parseInt(limit), parseInt(offset), req.user.id];
+  let genderFilterClause = "";
+  const params = [safeParseInt(limit, 20), safeParseInt(offset, 0), req.user.id];
     if (allowedGenders.length > 0) {
       genderFilterClause = " AND (LOWER(p.gender) = ANY($4))";
       params.push(allowedGenders.map((g) => g.toLowerCase()));
@@ -192,7 +198,7 @@ const getDiscoveryUsers = async (req, res) => {
 // Get a random set of users for discovery
 const getRandomUsers = async (req, res) => {
   try {
-    const { limit = 9 } = req.query;
+  const { limit = 9 } = req.query;
     console.log("Current user (random):", req.user);
     const viewerProfile = await fetchViewerProfile(req.user.id);
     console.log("Viewer profile (random/orientation filter):", viewerProfile);
@@ -202,8 +208,8 @@ const getRandomUsers = async (req, res) => {
     );
     console.log("Allowed genders (random):", allowedGenders);
 
-    let genderFilterClause = "";
-    const params = [parseInt(limit), req.user.id];
+  let genderFilterClause = "";
+  const params = [safeParseInt(limit, 9), req.user.id];
     if (allowedGenders.length > 0) {
       genderFilterClause = " AND (LOWER(p.gender) = ANY($3))";
       params.push(allowedGenders.map((g) => g.toLowerCase()));
@@ -322,7 +328,7 @@ const getRandomUsers = async (req, res) => {
 // Search users by name
 const searchUsers = async (req, res) => {
   try {
-    const { query: searchQuery, limit = 20, offset = 0 } = req.query;
+  const { query: searchQuery, limit = 20, offset = 0 } = req.query;
 
     if (!searchQuery) {
       return res.status(400).json({ message: "Query parameter is required" });
@@ -391,8 +397,8 @@ const searchUsers = async (req, res) => {
 
     // Paramètres de base
     const params = [
-      parseInt(limit),
-      parseInt(offset),
+      safeParseInt(limit, 20),
+      safeParseInt(offset, 0),
       `%${searchQuery}%`,
       req.user.id,
     ];
@@ -521,9 +527,8 @@ const getFilteredUsers = async (req, res) => {
         p.gender,
   p.sexual_orientation as sexual_orientation,
         p.bio,
-        p.fame_rating,
-        p.is_verified,
-        p.last_active,
+  p.fame_rating,
+  p.last_active,
         ph.url as profile_photo_url,
         l.latitude,
         l.longitude,
@@ -554,7 +559,7 @@ const getFilteredUsers = async (req, res) => {
       )
     `;
 
-    const params = [req.user.id];
+  const params = [req.user.id];
     let paramIndex = 1;
 
     if (allowedGenders.length > 0) {
@@ -565,12 +570,8 @@ const getFilteredUsers = async (req, res) => {
     // Age filters (convert ages to birth_date bounds)
     if (ageMax || ageMin) {
       const today = new Date();
-      const aMin = Number.isFinite(parseInt(ageMin))
-        ? parseInt(ageMin)
-        : undefined;
-      const aMax = Number.isFinite(parseInt(ageMax))
-        ? parseInt(ageMax)
-        : undefined;
+      const aMin = safeParseInt(ageMin, undefined);
+      const aMax = safeParseInt(ageMax, undefined);
 
       // Oldest acceptable birthdate (lower bound): today - (aMax + 1) years + 1 day
       if (aMax !== undefined) {
@@ -594,13 +595,13 @@ const getFilteredUsers = async (req, res) => {
     if (
       fameRating !== undefined &&
       fameRating !== "" &&
-      !isNaN(parseInt(fameRating))
+      !Number.isNaN(safeParseInt(fameRating))
     ) {
       query += ` AND p.fame_rating >= $${++paramIndex}`;
-      params.push(parseInt(fameRating));
+      params.push(safeParseInt(fameRating, 0));
     }
 
-    if (distance && !isNaN(parseInt(distance))) {
+  if (distance && !Number.isNaN(safeParseInt(distance))) {
       query += ` AND (
         l.latitude IS NOT NULL AND l.longitude IS NOT NULL AND
         (
@@ -612,7 +613,7 @@ const getFilteredUsers = async (req, res) => {
           )
         ) <= $${++paramIndex}
       )`;
-      params.push(parseInt(distance));
+      params.push(safeParseInt(distance, 0));
     }
     // Tags filter (match users having at least one of the provided tag names)
     if (tags) {
@@ -635,7 +636,7 @@ const getFilteredUsers = async (req, res) => {
 
     // Tri
     query +=
-      " GROUP BY \n        u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,\n        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.is_verified, p.last_active,\n        ph.url,\n        l.latitude, l.longitude, l.city, l.country,\n        lv.latitude, lv.longitude\n      ORDER BY ";
+  " GROUP BY \n        u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,\n        p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.last_active,\n        ph.url,\n        l.latitude, l.longitude, l.city, l.country,\n        lv.latitude, lv.longitude\n      ORDER BY ";
     switch (sortBy) {
       case "distance":
         query += "distance_km ";
@@ -661,9 +662,9 @@ const getFilteredUsers = async (req, res) => {
     }
     // (Pas de double ajout de ASC/DESC pour 'age' grâce au bloc ci-dessus)
 
-    // LIMIT / OFFSET
-    query += `LIMIT $${++paramIndex} OFFSET $${++paramIndex}`;
-    params.push(parseInt(limit), parseInt(offset));
+  // LIMIT / OFFSET
+  query += `LIMIT $${++paramIndex} OFFSET $${++paramIndex}`;
+  params.push(safeParseInt(limit, 20), safeParseInt(offset, 0));
 
     console.log("Final query:", query);
     console.log("Parameters:", params);
@@ -692,7 +693,8 @@ const getFilteredUsers = async (req, res) => {
         orientation: row.sexual_orientation,
         bio: row.bio,
         fameRating: row.fame_rating,
-        isVerified: row.is_verified,
+  // isVerified column may not exist in some schemas; avoid failing if absent
+  isVerified: typeof row.is_verified !== 'undefined' ? row.is_verified : false,
         lastActive: row.last_active,
       },
       profilePhotoUrl: row.profile_photo_url,
