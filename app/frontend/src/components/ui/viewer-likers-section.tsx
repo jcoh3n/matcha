@@ -160,7 +160,7 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
                       {person.username}
                       {person.age && `, ${person.age}`}
                     </h3>
-                    <OnlineStatus online={person.isOnline} lastSeen={person.lastSeen} size="sm" />
+                    <OnlineStatus online={person.isOnline} lastSeen={person.lastSeen} />
                   </div>
                   
                   <p className="text-sm text-muted-foreground truncate">
