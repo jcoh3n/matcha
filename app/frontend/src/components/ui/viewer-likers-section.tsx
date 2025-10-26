@@ -82,7 +82,7 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
   };
 
   const handleViewProfile = (userId: number) => {
-    navigate(`/profile/${userId}`);
+    navigate(`/profiles/${userId}`);
   };
 
   if (loading) {
