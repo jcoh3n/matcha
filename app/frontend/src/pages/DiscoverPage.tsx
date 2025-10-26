@@ -376,7 +376,7 @@ export function DiscoverPage() {
   }
 
   return (
-    <div className="w-full min-h-screen flex flex-col items-center justify-center font-poppins px-2 md:px-0">
+    <div className="w-full  flex flex-col items-center justify-center font-poppins px-2 md:px-0">
       {/* Overlay pour la sidebar */}
       {isFilterSidebarOpen && (
         <div
@@ -595,7 +595,7 @@ export function DiscoverPage() {
         <div className="w-full mx-auto flex items-center flex-col justify-center px-2">
           {/* Filter button */}
           <Filter
-            className="cursor-pointer mr-auto mb-10 hover:text-[#7FB77E] transition-colors"
+            className="cursor-pointer mr-auto  hover:text-[#7FB77E] transition-colors"
             onClick={() => setIsFilterSidebarOpen(true)}
           />
 

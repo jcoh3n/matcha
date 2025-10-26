@@ -72,12 +72,9 @@ export function AppShell({
         onLogout={onLogout}
         onNavigate={handleNavigation}
       />
-      <div
-        className={`w-full min-h-[80vh]
-        } flex justify-center items-center`}
-      >
+      <main className="w-full min-h-[80vh] pt-16 flex justify-center items-center">
         {children}
-      </div>
+      </main>
       {/* <Footer currentPage={current} /> */}
     </div>
   );

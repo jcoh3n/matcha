@@ -1,3 +1,4 @@
+import React from "react";
 import { Search, User, MessageCircle, Bell, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -57,8 +58,8 @@ export function Header({
   };
 
   return (
-    <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-8 py-5 text-black">
-      <div className="flex items-center gap-2">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16 backdrop-blur-sm border-b border-gray-200 shadow-sm text-black">
+  <div className="flex items-center gap-2 h-full">
         <button onClick={() => handleNavigation("discover")}>
           <span className="text-2xl font-extrabold tracking-tight font-montserrat">
             Matcha
@@ -66,10 +67,10 @@ export function Header({
         </button>
       </div>
 
-      {/* Barre de recherche au centre sur les écrans moyens et larges */}
-      <div className="hidden md:block flex-1 max-w-md mx-8 relative"></div>
+  {/* Barre de recherche au centre sur les écrans moyens et larges */}
+  <div className="hidden md:block flex-1 max-w-md mx-8 relative" />
 
-      <ul className="hidden md:flex items-center gap-8 font-medium font-montserrat">
+  <ul className="hidden md:flex items-center gap-8 font-medium font-montserrat h-full">
         <li>
           <button
             onClick={() => handleNavigation("search")}

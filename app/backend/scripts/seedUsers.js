@@ -106,7 +106,7 @@ async function insertUser(client, user, index) {
   `;
 
   // Generate a simple password for all users (same for simplicity)
-  const hashedPassword = await hashPassword("Password123!");
+  const hashedPassword = await hashPassword("P");
 
   const userValues = [
     email,

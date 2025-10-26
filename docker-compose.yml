@@ -42,6 +42,7 @@ services:
       - db
     volumes:
       - ./app/backend:/app
+      - /app/node_modules
       - ./app/backend/public:/app/public:ro
 
   frontend:
@@ -56,6 +57,7 @@ services:
       VITE_API_URL: http://localhost:3000
     volumes:
       - ./app/frontend:/app
+      - /app/node_modules
     # Use node_modules from the built image to avoid hiding installed deps
     depends_on:
       - backend
