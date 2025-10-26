@@ -20,21 +20,38 @@ global.io = io;
 
 const PORT = process.env.PORT || 3000;
 
-// Socket.io connection
-io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
-  
-  // Handle user authentication
-  socket.on('authenticate', (data) => {
-    const { userId } = data;
-    if (userId) {
-      addUser(userId, socket.id);
-      console.log(`User ${userId} authenticated with socket ${socket.id}`);
-    }
-  });
-  
+// Create a dedicated chat namespace and secure it with a JWT handshake
+const chat = io.of('/chat');
+
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+
+chat.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth && socket.handshake.auth.token;
+    if (!token) return next(new Error('Authentication error: token missing'));
+
+    // Verify token using same secret as REST middleware
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'access_secret_key');
+    const user = await User.findById(decoded.userId);
+    if (!user) return next(new Error('Authentication error: user not found'));
+
+    // Attach user to socket and register it
+    socket.user = user;
+    addUser(user.id, socket.id);
+    console.log(`Socket ${socket.id} authenticated as user ${user.id}`);
+    return next();
+  } catch (err) {
+    console.error('WebSocket auth error:', err.message || err);
+    return next(new Error('Authentication error'));
+  }
+});
+
+chat.on('connection', (socket) => {
+  console.log('New chat client connected:', socket.id, 'user:', socket.user && socket.user.id);
+
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    console.log('Chat client disconnected:', socket.id);
     removeUser(socket.id);
   });
 });

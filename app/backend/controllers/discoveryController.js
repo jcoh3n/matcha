@@ -128,6 +128,9 @@ const getDiscoveryUsers = async (req, res) => {
       AND NOT EXISTS (
         SELECT 1 FROM passes ps WHERE ps.viewer_id = $3 AND ps.passed_user_id = u.id
       )
+      AND NOT EXISTS (
+        SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $3 AND pv.viewed_user_id = u.id
+      )
       ${genderFilterClause}
       GROUP BY 
         u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
@@ -257,6 +260,9 @@ const getRandomUsers = async (req, res) => {
   WHERE COALESCE(u.email_verified, true) = true AND u.id != $2
       AND NOT EXISTS (
         SELECT 1 FROM passes ps WHERE ps.viewer_id = $2 AND ps.passed_user_id = u.id
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $2 AND pv.viewed_user_id = u.id
       )
       ${genderFilterClause}
       GROUP BY 
@@ -392,6 +398,9 @@ const searchUsers = async (req, res) => {
         AND u.id != $4
         AND NOT EXISTS (
           SELECT 1 FROM passes ps WHERE ps.viewer_id = $4 AND ps.passed_user_id = u.id
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $4 AND pv.viewed_user_id = u.id
         )
     `;
 
@@ -556,6 +565,9 @@ const getFilteredUsers = async (req, res) => {
       WHERE u.email_verified = true AND u.id != $1
       AND NOT EXISTS (
         SELECT 1 FROM passes ps WHERE ps.viewer_id = $1 AND ps.passed_user_id = u.id
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $1 AND pv.viewed_user_id = u.id
       )
     `;
 

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
 import io from 'socket.io-client'
+import DoneIcon from '@mui/icons-material/Done'
 
 export interface ChatMessage {
   id: string
@@ -43,17 +44,18 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
       console.error('[DEBUG Frontend] No access token found');
     }
     
-    // Initialize WebSocket connection
-    console.log('[DEBUG Frontend] Initializing WebSocket connection to:', import.meta.env.VITE_API_URL || 'http://localhost:3000');
-    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
-    
-    socketRef.current = socket;
-    
-    // Authenticate the socket connection with the user ID
-    if (selfId) {
-      console.log('[DEBUG Frontend] Authenticating socket with userId:', selfId);
-      socket.emit('authenticate', { userId: selfId });
-    }
+    // Initialize WebSocket connection to /chat namespace with JWT auth
+    console.log('[DEBUG Frontend] Initializing WebSocket connection to:', (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/chat');
+    if (!accessToken) {
+      console.error('[DEBUG Frontend] No access token found, skipping WebSocket init');
+    } else {
+      const socket = io((import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/chat', {
+        auth: { token: accessToken }
+      });
+
+      socketRef.current = socket;
+
+      // No client-side 'authenticate' event anymore — JWT handshake is used
     
     // Create a stable handler function to avoid recreating on each render
     const handleMessage = (data) => {
@@ -121,21 +123,44 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
 
     socket.on('message_read', handleMessageRead);
 
+    // Connection status handlers
+    let pollInterval: number | null = null;
+
+    const startPolling = () => {
+      if (pollInterval) return;
+      console.log('[DEBUG Frontend] Starting polling fallback (every 5s)');
+      pollInterval = window.setInterval(() => {
+        if (accessToken) loadConversation(accessToken);
+      }, 5000);
+    };
+
+    const stopPolling = () => {
+      if (pollInterval) {
+        console.log('[DEBUG Frontend] Stopping polling fallback');
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    };
+
     socket.on('connect', () => {
       console.log('[DEBUG Frontend] WebSocket connected with id:', socket.id);
+      stopPolling();
     });
 
     socket.on('disconnect', () => {
       console.log('[DEBUG Frontend] WebSocket disconnected');
+      startPolling();
     });
 
     // Cleanup function - remove listeners before disconnecting
     return () => {
       console.log('[DEBUG Frontend] Cleaning up WebSocket listeners and disconnecting');
+      stopPolling();
       socket.off('new_message', handleMessage);
       socket.off('message_read', handleMessageRead);
       socket.disconnect();
     };
+    }
   }, [selfId, peerId])
 
   const loadConversation = async (accessToken: string) => {
@@ -229,11 +254,14 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
           return (
             <div key={m.id} className={cn("max-w-xs rounded-2xl px-4 py-2 text-sm shadow-sm", mine ? 'ml-auto bg-primary text-primary-foreground' : 'bg-muted/60 backdrop-blur')}> 
               <p>{m.body}</p>
-              <div className="mt-1 text-[10px] opacity-70 flex justify-end gap-1">
+              <div className="mt-1 text-[10px] opacity-70 flex justify-end gap-1 items-center">
                 <span>{formatTime(m.createdAt)}</span>
                 {m.pending && <span>…</span>}
+                {mine && !m.pending && !m.read && (
+                  <DoneIcon style={{ fontSize: 14, marginLeft: 8, opacity: 0.8, transition: 'opacity 160ms linear' }} />
+                )}
                 {mine && m.read && !m.pending && (
-                  <span className="ml-2 text-[10px] opacity-90">Seen</span>
+                  <span className="ml-2 text-[10px] opacity-90" style={{ transition: 'opacity 220ms ease' }}>Seen</span>
                 )}
               </div>
             </div>

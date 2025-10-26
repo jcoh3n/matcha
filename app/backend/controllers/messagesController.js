@@ -57,7 +57,7 @@ const sendMessage = async (req, res) => {
     if (sender && global.io) {
       try {
         console.log('[DEBUG] Emitting new_message via WebSocket to receiver:', receiverId);
-        const socketId = getUserSocketId(receiverId);
+        const socketIds = getUserSocketIds(receiverId);
         const payload = {
           message: message.toJSON(),
           sender: {
@@ -66,10 +66,20 @@ const sendMessage = async (req, res) => {
           }
         };
 
-        if (socketId) {
-          global.io.to(socketId).emit('new_message', payload);
+        if (socketIds.length > 0) {
+          try {
+            for (const sid of socketIds) {
+              if (global.io && typeof global.io.of === 'function') {
+                global.io.of('/chat').to(sid).emit('new_message', payload);
+              } else {
+                global.io.to(sid).emit('new_message', payload);
+              }
+            }
+          } catch (nsErr) {
+            console.error('[ERROR] Failed to emit new_message to sockets:', nsErr);
+          }
         } else {
-          // Fallback: if receiver not connected, we don't broadcast globally
+          // Receiver not connected
           console.log('[DEBUG] Receiver not connected, skipping real-time emit');
         }
       } catch (emitErr) {
@@ -137,11 +147,25 @@ const getConversation = async (req, res) => {
       if (updatedMessages.length > 0 && global.io) {
         const messageIds = updatedMessages.map(m => m.id);
         const senderSocketId = getUserSocketId(otherUserId);
-        if (senderSocketId) {
-          global.io.to(senderSocketId).emit('message_read', {
-            messageIds,
-            readerId: userId
-          });
+        const senderSocketIds = getUserSocketIds(otherUserId);
+        if (senderSocketIds.length > 0) {
+          try {
+            for (const sid of senderSocketIds) {
+              if (global.io && typeof global.io.of === 'function') {
+                global.io.of('/chat').to(sid).emit('message_read', {
+                  messageIds,
+                  readerId: userId
+                });
+              } else {
+                global.io.to(sid).emit('message_read', {
+                  messageIds,
+                  readerId: userId
+                });
+              }
+            }
+          } catch (nsErr) {
+            console.error('[ERROR] Failed to emit message_read to sockets:', nsErr);
+          }
         }
       }
     } catch (notifyErr) {
