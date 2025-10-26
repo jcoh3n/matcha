@@ -80,8 +80,6 @@ export function PublicProfilePage() {
     reportProfile,
   } = useSocialInteractions(accessToken);
 
-  const [error, setError] = useState<{type: string, message: string} | null>(null);
-
   useEffect(() => {
     const fetchProfile = async () => {
       if (!id || !accessToken) return;
