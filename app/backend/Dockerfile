@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/l
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm i
+# Install dependencies (use npm ci for reproducible installs)
+RUN npm ci
 
 # Copy source code
 COPY . .

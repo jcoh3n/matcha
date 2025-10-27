@@ -56,7 +56,6 @@ services:
       VITE_API_URL: http://localhost:3000
     volumes:
       - ./app/frontend:/app
-      # Keep node_modules installed in the image by using an anonymous volume
       - /app/node_modules
     # Use node_modules from the built image to avoid hiding installed deps
     depends_on:

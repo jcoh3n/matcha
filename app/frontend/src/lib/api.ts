@@ -1,5 +1,6 @@
 import { authService } from "@/services/authService";
 import { config, API_ENDPOINTS } from "@/config/api";
+import { get } from "http";
 
 export const api = {
   // User endpoints
@@ -43,6 +44,15 @@ export const api = {
     authService.authenticatedFetch(API_ENDPOINTS.CURRENT_USER),
     
   // Discovery endpoints
+
+
+  
+
+
+  
+  getMatchesUser: (token: string, limit?: number, offset?: number) => 
+    authService.authenticatedFetch(`${API_ENDPOINTS.MATCHES}?limit=${limit || 20}&offset=${offset || 0}`),
+  
   getDiscoveryUsers: (token: string, limit?: number, offset?: number) => 
     authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}?limit=${limit || 20}&offset=${offset || 0}`),
     
@@ -51,9 +61,9 @@ export const api = {
     
   searchUsers: (query: string, limit?: number, offset?: number) => 
     authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY_SEARCH}?query=${encodeURIComponent(query)}&limit=${limit || 20}&offset=${offset || 0}`),
-    
+  
   getFilteredUsers: (
-    filters: {
+    token: string, filters: {
       ageMin?: number;
       ageMax?: number;
       distance?: number;
@@ -61,25 +71,22 @@ export const api = {
       sortBy?: string;
       sortOrder?: string;
       fameRating?: number;
-    },
-    limit?: number,
-    offset?: number
-  ) => {
-    const params = new URLSearchParams();
-    if (limit) params.append("limit", limit.toString());
-    if (offset) params.append("offset", offset.toString());
-    if (filters.ageMin) params.append("ageMin", filters.ageMin.toString());
-    if (filters.ageMax) params.append("ageMax", filters.ageMax.toString());
-    if (filters.distance)
-      params.append("distance", filters.distance.toString());
-    if (filters.tags) params.append("tags", filters.tags.join(","));
-    if (filters.sortBy) params.append("sortBy", filters.sortBy);
-    if (filters.sortOrder) params.append("sortOrder", filters.sortOrder);
-    if (filters.fameRating)
-      params.append("fameRating", filters.fameRating.toString());
+    }, limit?: number, offset?: number  ) => {
+        const params = new URLSearchParams();
+        if (limit) params.append("limit", limit.toString());
+        if (offset) params.append("offset", offset.toString());
+        if (filters.ageMin) params.append("ageMin", filters.ageMin.toString());
+        if (filters.ageMax) params.append("ageMax", filters.ageMax.toString());
+        if (filters.distance)
+          params.append("distance", filters.distance.toString());
+        if (filters.tags) params.append("tags", filters.tags.join(","));
+        if (filters.sortBy) params.append("sortBy", filters.sortBy);
+        if (filters.sortOrder) params.append("sortOrder", filters.sortOrder);
+        if (filters.fameRating)
+          params.append("fameRating", filters.fameRating.toString());
 
-    return authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}/filtered?${params.toString()}`);
-  },
+        return authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}/filtered?${params.toString()}`);
+      },
   
   passUser: (userId: string | number) => 
     authService.authenticatedFetch(`/api/profiles/${userId}/pass`, {
@@ -130,5 +137,8 @@ export const api = {
     authService.authenticatedFetch(API_ENDPOINTS.MESSAGE_CONVERSATION(userId)),
     
   getUnreadMessagesCount: () => 
-    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES_UNREAD_COUNT)
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES_UNREAD_COUNT),
+    
+  getConversations: () => 
+    authService.authenticatedFetch(API_ENDPOINTS.MESSAGES_CONVERSATIONS)
 };

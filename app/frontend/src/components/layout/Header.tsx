@@ -1,8 +1,9 @@
-import SearchIcon from "@mui/icons-material/Search";
-import PersonIcon from "@mui/icons-material/Person";
-import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import LogoutIcon from "@mui/icons-material/Logout";
+import React from "react";
+import SearchIcon from '@mui/icons-material/Search';
+import PersonIcon from '@mui/icons-material/Person';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -61,8 +62,8 @@ export function Header({
   };
 
   return (
-    <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-8 py-5 text-black">
-      <div className="flex items-center gap-2">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16 backdrop-blur-sm border-b border-gray-200 shadow-sm text-black">
+  <div className="flex items-center gap-2 h-full">
         <button onClick={() => handleNavigation("discover")}>
           <span className="text-2xl font-extrabold tracking-tight font-montserrat">
             Matcha
@@ -70,10 +71,10 @@ export function Header({
         </button>
       </div>
 
-      {/* Barre de recherche au centre sur les écrans moyens et larges */}
-      <div className="hidden md:block flex-1 max-w-md mx-8 relative"></div>
+  {/* Barre de recherche au centre sur les écrans moyens et larges */}
+  <div className="hidden md:block flex-1 max-w-md mx-8 relative" />
 
-      <ul className="hidden md:flex items-center gap-8 font-medium font-montserrat">
+  <ul className="hidden md:flex items-center gap-8 font-medium font-montserrat h-full">
         <li>
           <button
             onClick={() => handleNavigation("search")}
@@ -106,7 +107,7 @@ export function Header({
             }}
             className="relative flex items-center gap-2 hover:opacity-80 transition"
           >
-            <ChatBubbleIcon className="w-5 h-5" />
+            <ChatBubbleOutlineIcon className="w-5 h-5" />
             <span>Messages</span>
             {messageCount > 0 && (
               <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/90 text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
@@ -123,7 +124,7 @@ export function Header({
             }}
             className="relative flex items-center gap-2 hover:opacity-80 transition "
           >
-            <NotificationsIcon className="w-5 h-5" />
+            <NotificationsNoneIcon className="w-5 h-5" />
             <span>Notifications</span>
             {notificationCount > 0 && (
               <span className="ml-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
@@ -169,7 +170,7 @@ export function Header({
           className="relative p-2 rounded-full border border-white/30 hover:bg-white/10 transition"
           aria-label="Messages"
         >
-          <ChatBubbleIcon className="w-5 h-5" />
+          <ChatBubbleOutlineIcon className="w-5 h-5" />
           {messageCount > 0 && (
             <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
               {messageCount > 99 ? "99+" : messageCount}
@@ -185,7 +186,7 @@ export function Header({
           className="relative p-2 rounded-full border border-white/30 hover:bg-white/10 transition"
           aria-label="Notifications"
         >
-          <NotificationsIcon className="w-5 h-5" />
+          <NotificationsNoneIcon className="w-5 h-5" />
           {notificationCount > 0 && (
             <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
               {notificationCount > 99 ? "99+" : notificationCount}

@@ -3,7 +3,8 @@ const { authJWT } = require('../middleware/authJWT');
 const { 
   sendMessage, 
   getConversation, 
-  getUnreadMessagesCount 
+  getUnreadMessagesCount,
+  getConversations
 } = require('../controllers/messagesController');
 
 const router = express.Router();
@@ -19,5 +20,8 @@ router.get('/:userId', getConversation);
 
 // Get unread messages count
 router.get('/unread/count', getUnreadMessagesCount);
+
+// Get all conversations (matches with message history)
+router.get('/', getConversations);
 
 module.exports = router;

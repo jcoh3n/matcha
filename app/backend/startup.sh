@@ -9,7 +9,16 @@ done
 echo "Database is ready."
 
 echo "Initializing database (migrations and seeding)..."
-npm run init-db
+if npm run init-db; then
+    echo "Database initialization finished."
+else
+    echo "Database initialization failed. Exiting."
+    exit 1
+fi
 
 echo "Starting application..."
-exec npm run dev
+if [ "$NODE_ENV" = "production" ]; then
+    exec npm start
+else
+    exec npm run dev
+fi

@@ -36,6 +36,20 @@ router.use('/', discoveryRoutes);
 
 // Location routes
 router.use('/', locationRoutes);
+// Notifications routes
+router.use('/notifications', notificationsRoutes);
+
+// Messages routes
+router.use('/messages', messagesRoutes);
+
+// Notifications routes
+router.use('/notifications', notificationsRoutes);
+
+// Messages routes
+router.use('/messages', messagesRoutes);
+
+// Me routes (viewers, likers)
+router.use('/me', meRoutes);
 
 // Notifications routes
 router.use('/notifications', notificationsRoutes);

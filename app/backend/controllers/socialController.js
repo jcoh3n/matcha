@@ -1,13 +1,15 @@
-const User = require('../models/User');
-const Profile = require('../models/Profile');
-const Photo = require('../models/Photo');
-const Location = require('../models/Location');
-const UserTag = require('../models/UserTag');
-const Like = require('../models/Like');
-const Block = require('../models/Block');
-const Report = require('../models/Report');
-const ProfileView = require('../models/ProfileView');
-const { updateFameRating } = require('../services/fameRatingService');
+const User = require("../models/User");
+const Profile = require("../models/Profile");
+const Photo = require("../models/Photo");
+const Location = require("../models/Location");
+const UserTag = require("../models/UserTag");
+const Like = require("../models/Like");
+const Block = require("../models/Block");
+const Report = require("../models/Report");
+const ProfileView = require("../models/ProfileView");
+const Pass = require("../models/Pass");
+const { updateFameRating } = require("../services/fameRatingService");
+const Match = require("../models/Match");
 const { createAndSendNotification } = require('../utils/notificationHandler');
 
 // Helper function to calculate age from birth date
@@ -222,6 +224,16 @@ const likeUser = async (req, res) => {
 
     // Check if it's a match
     const isMatch = await Like.exists(likedUserId, currentUserId);
+    console.log('[DEBUG] Like check result for', currentUserId, 'liking', likedUserId, ': isMatch =', isMatch);
+    
+    // If it's a mutual like, create a match in the matches table
+    if (isMatch) {
+        console.log('[DEBUG] Creating match between', currentUserId, 'and', likedUserId);
+        await Match.createIfNotExists(currentUserId, likedUserId);
+        console.log('[DEBUG] Match created successfully between', currentUserId, 'and', likedUserId);
+    } else {
+        console.log('[DEBUG] No match created - not a mutual like between', currentUserId, 'and', likedUserId);
+    }
     
     // Send notification to the liked user
     // Only send if the liker is not the liked user (should always be true here)
@@ -282,6 +294,16 @@ const unlikeUser = async (req, res) => {
     if (!deleted) {
       return res.status(404).json({ message: "Like not found" });
     }
+    // If there was a match between these users, remove it so chat/notifications are stopped
+    try {
+      const matchDeleted = await Match.delete(currentUserId, unlikedUserId);
+      if (matchDeleted) {
+        console.log('[DEBUG] Match deleted due to unlike between', currentUserId, 'and', unlikedUserId);
+      }
+    } catch (matchErr) {
+      console.error('Error deleting match on unlike:', matchErr);
+      // continue - unlike succeeded, but match deletion failed; we don't want to block the unlike response
+    }
     
     // Send notification to the unliked user about the unlike
     // Only send if the unliker is not the unliked user
@@ -335,6 +357,11 @@ const blockUser = async (req, res) => {
       userId: currentUserId,
       blockedUserId,
     });
+
+    // Remove any existing like relations in both directions and match
+    await Like.delete(currentUserId, blockedUserId);
+    await Like.delete(blockedUserId, currentUserId);
+    await Match.delete(currentUserId, blockedUserId);
 
     res.json({
       isBlocked: true,
