@@ -4,6 +4,7 @@ const UserTag = require("../models/UserTag");
 const Photo = require("../models/Photo");
 const Location = require("../models/Location");
 const { forwardGeocode, reverseGeocode } = require("../utils/geocoding");
+const db = require("../config/db");
 
 // Get current user profile
 const getProfile = async (req, res) => {
@@ -35,6 +36,95 @@ const getProfile = async (req, res) => {
     res.json(profileData);
   } catch (error) {
     console.error("Error fetching profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getMatchesUser = async (req, res) => {
+  try {
+    const viewerId = req.user.id;
+    const limit = Math.min(parseInt(req.query.limit || "20", 10), 100);
+    const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
+
+    const { rows } = await db.query(
+      `WITH others AS (
+         SELECT CASE WHEN user1_id = $1 THEN user2_id ELSE user1_id END AS other_id
+         FROM matches
+         WHERE user1_id = $1 OR user2_id = $1
+      )
+      SELECT
+        u.id,
+        u.email,
+        u.username,
+        u.first_name AS "firstName",
+        u.last_name  AS "lastName",
+        p.birth_date AS "birthDate",
+        p.gender,
+        p.sexual_orientation AS "orientation",
+        p.bio,
+        p.fame_rating AS "fameRating",
+        l.city,
+        l.country,
+        (
+          SELECT ph.url FROM photos ph
+          WHERE ph.user_id = u.id AND ph.is_profile = TRUE
+          ORDER BY ph.id DESC LIMIT 1
+        ) AS "profilePhotoUrl",
+        CASE
+          WHEN lv.latitude IS NOT NULL AND lv.longitude IS NOT NULL
+           AND l.latitude  IS NOT NULL AND l.longitude  IS NOT NULL
+          THEN ROUND(
+            6371 * acos(
+              cos(radians(lv.latitude)) * cos(radians(l.latitude)) *
+              cos(radians(l.longitude) - radians(lv.longitude)) +
+              sin(radians(lv.latitude)) * sin(radians(l.latitude))
+            )::numeric, 1
+          )
+          ELSE NULL
+        END AS "distanceKm"
+      FROM others o
+      JOIN users u    ON u.id = o.other_id
+      JOIN profiles p ON p.user_id = u.id
+      LEFT JOIN LATERAL (
+        SELECT latitude, longitude, city, country
+        FROM locations
+        WHERE user_id = u.id
+        ORDER BY updated_at DESC NULLS LAST, created_at DESC
+        LIMIT 1
+      ) l ON true
+      LEFT JOIN LATERAL (
+        SELECT latitude, longitude
+        FROM locations
+        WHERE user_id = $1
+        ORDER BY updated_at DESC NULLS LAST, created_at DESC
+        LIMIT 1
+      ) lv ON true
+      ORDER BY p.fame_rating DESC NULLS LAST, u.id
+      LIMIT $2 OFFSET $3`,
+      [viewerId, limit, offset]
+    );
+
+    const data = rows.map((r) => ({
+      id: r.id,
+      email: r.email,
+      username: r.username,
+      firstName: r.firstName,
+      lastName: r.lastName,
+      profilePhotoUrl: r.profilePhotoUrl || null,
+      profile: {
+        birthDate: r.birthDate || null,
+        gender: r.gender || null,
+        orientation: r.orientation || null,
+        bio: r.bio || "",
+        fameRating: r.fameRating ?? 0,
+      },
+      location: { city: r.city || null, country: r.country || null },
+      distanceKm: r.distanceKm,
+    }));
+
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching matches:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -264,4 +354,5 @@ module.exports = {
   setProfilePhoto,
   deletePhoto,
   updateLocation,
+  getMatchesUser,
 };

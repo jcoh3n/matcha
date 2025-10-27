@@ -11,6 +11,8 @@ import {
   Tag,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { likeUser as likeUserApi } from "@/services/profileService";
+import { authService } from "@/services/authService";
 
 interface UserProfile {
   id: string;
@@ -173,11 +175,9 @@ export function DiscoverPage() {
         if (!accessToken) {
           return;
         }
-        const response = await fetch("http://localhost:3000/api/me", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        
+        const response = await api.getCurrentUser();
+
         if (response.ok) {
           const userData = await response.json();
           // Check if essential profile fields are filled
@@ -220,19 +220,25 @@ export function DiscoverPage() {
   }, [currentIndex, profiles.length]);
 
   const handleLike = useCallback(
-    (userId: string) => {
-      console.log(`Liked user: ${userId}`);
-      console.log(
-        `Current index: ${currentIndex}, Profiles length: ${profiles.length}`
-      );
-      // Add like animation
-      setSwipeAnimation("right");
-      setTimeout(() => {
-        setSwipeAnimation(null);
-        moveToNextProfile();
-      }, 300);
+    async (userId: string) => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          // Create like server-side so mutual likes can form a match
+          await likeUserApi(Number(userId), token);
+        }
+      } catch (e) {
+        console.error("Failed to like user", e);
+      } finally {
+        // Add like animation then proceed to next profile
+        setSwipeAnimation("right");
+        setTimeout(() => {
+          setSwipeAnimation(null);
+          moveToNextProfile();
+        }, 300);
+      }
     },
-    [currentIndex, profiles.length, moveToNextProfile]
+    [moveToNextProfile]
   );
 
   const handlePass = useCallback(
@@ -255,7 +261,7 @@ export function DiscoverPage() {
         }, 300);
       }
     },
-    [currentIndex, profiles.length, moveToNextProfile]
+    [moveToNextProfile]
   );
 
   // Keyboard navigation
@@ -370,7 +376,7 @@ export function DiscoverPage() {
   }
 
   return (
-    <div className="w-full min-h-screen flex flex-col items-center justify-center font-poppins px-2 md:px-0">
+    <div className="w-full  flex flex-col items-center justify-center font-poppins px-2 md:px-0">
       {/* Overlay pour la sidebar */}
       {isFilterSidebarOpen && (
         <div
@@ -589,7 +595,7 @@ export function DiscoverPage() {
         <div className="w-full mx-auto flex items-center flex-col justify-center px-2">
           {/* Filter button */}
           <Filter
-            className="cursor-pointer mr-auto mb-10 hover:text-[#7FB77E] transition-colors"
+            className="cursor-pointer mr-auto  hover:text-[#7FB77E] transition-colors"
             onClick={() => setIsFilterSidebarOpen(true)}
           />
 
@@ -614,7 +620,7 @@ export function DiscoverPage() {
                         "https://randomuser.me/api/portraits/women/2.jpg"
                       }
                       alt={currentProfile.name}
-                      className="inset-0 w-full h-full object-cover"
+                      className="inset-0 w-full h-full"
                     />
                   </div>
                   <div className="w-full flex flex-col p-6 lg:p-8 gap-4 bg-[#9ed09d]">

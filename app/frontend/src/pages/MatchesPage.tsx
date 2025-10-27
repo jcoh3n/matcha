@@ -8,22 +8,23 @@ interface UserProfile {
   username: string;
   firstName: string;
   lastName: string;
-  profilePhotoUrl?: string;
+  profilePhotoUrl?: string | null;
   profile: {
-    birthDate?: string;
-    gender?: string;
-    orientation?: string;
+    birthDate?: string | null;
+    gender?: string | null;
+    orientation?: string | null;
     bio?: string;
     fameRating?: number;
   };
   location?: {
-    city?: string;
-    country?: string;
+    city?: string | null;
+    country?: string | null;
   };
+  distanceKm?: number | null;
 }
 
 // Calculate age from birth date
-const calculateAge = (birthDate?: string) => {
+const calculateAge = (birthDate?: string | null) => {
   if (!birthDate) return 0;
   const today = new Date();
   const birth = new Date(birthDate);
@@ -37,25 +38,30 @@ const calculateAge = (birthDate?: string) => {
 
 // Transform API user data to match ProfileCard expectations
 const transformUserForProfileCard = (user: UserProfile) => {
+  const city = user.location?.city ?? "";
+  const country = user.location?.country ?? "";
+  const locationStr =
+    city || country ? `${city}${city && country ? ", " : ""}${country}` : "";
   return {
     id: user.id,
     name: `${user.firstName} ${user.lastName}`,
-    age: calculateAge(user.profile?.birthDate),
+    age: calculateAge(user.profile?.birthDate || null),
     images: user.profilePhotoUrl ? [user.profilePhotoUrl] : [],
     bio: user.profile?.bio || "",
-    location: user.location ? `${user.location.city}, ${user.location.country}` : "",
-    distance: Math.floor(Math.random() * 20) + 1, // Placeholder - would be calculated based on user location
-    tags: [], // Would be populated with user tags
+    location: locationStr,
+    distance: user.distanceKm ?? 0,
+    tags: [],
     fame: user.profile?.fameRating || 0,
-    isOnline: Math.random() > 0.5, // Placeholder
+    isOnline: Math.random() > 0.5,
     orientation: user.profile?.orientation || "straight",
     gender: user.profile?.gender || "female",
-    matchPercent: Math.floor(Math.random() * 40) + 60 // Higher match percentage for matches page
   };
 };
 
 export function MatchesPage() {
-  const [matches, setMatches] = useState<any[]>([]);
+  const [matches, setMatches] = useState<
+    ReturnType<typeof transformUserForProfileCard>[]
+  >([]);
   const [loading, setLoading] = useState(false);
 
   // Fetch matches
@@ -68,10 +74,8 @@ export function MatchesPage() {
         return;
       }
 
-      // For now, we'll use random users as matches
-      // In a real implementation, this would be actual matches
-      const response = await api.getRandomUsers(token, 6);
-      
+      const response = await api.getMatchesUser(token, 18, 0);
+
       if (response.ok) {
         const users: UserProfile[] = await response.json();
         const transformedUsers = users.map(transformUserForProfileCard);

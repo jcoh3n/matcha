@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     bio TEXT,
     location POINT,
     fame_rating INTEGER DEFAULT 0,
-    is_verified BOOLEAN DEFAULT FALSE,
+    matches INTEGER[] DEFAULT '{}'::INTEGER[],  -- user_ids this user has matched with
     last_active TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

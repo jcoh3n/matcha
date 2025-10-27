@@ -5,6 +5,7 @@ import { Pencil } from "lucide-react";
 import { MatchPercentage } from "@/components/ui/match-percentage";
 import { OrientationBadge } from "@/components/ui/orientation-badge";
 import { OnlineStatus } from "@/components/ui/online-status";
+import { ViewerLikersSection } from "@/components/ui/viewer-likers-section";
 import { useProfile } from "@/hooks/useProfile";
 
 export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
@@ -83,7 +84,8 @@ export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Mon Profil</h1>
         <Button 
           variant="outline" 
           onClick={() => navigate("/profile/edit")}
@@ -110,12 +112,12 @@ export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
             )}
           </div>
           {otherPhotos.length > 0 && (
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {otherPhotos.map((photo: any, i: number) => (
                 <img
                   key={photo.id}
                   src={getImageUrl(photo.url)}
-                  className="w-20 h-20 object-cover rounded-2xl border border-border/40"
+                  className="aspect-square object-cover rounded-2xl border border-border/40"
                 />
               ))}
             </div>
@@ -155,6 +157,12 @@ export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
           )}
         </div>
       </div>
+      
+      {accessToken && (
+        <div className="mt-8">
+          <ViewerLikersSection accessToken={accessToken} />
+        </div>
+      )}
     </div>
   );
 }
