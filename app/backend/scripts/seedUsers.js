@@ -175,7 +175,17 @@ async function insertProfile(client, userId, user) {
   `;
 
   // Calculate age from dob
-  const birthDate = new Date(user.dob.date);
+  // Generate a random age between 18 and 75 and create a birthDate
+  const minAge = 18;
+  const maxAge = 75;
+  const age = Math.floor(Math.random() * (maxAge - minAge + 1)) + minAge;
+  const today = new Date();
+  // Use random month/day (days limited to 1..28 to avoid month overflow)
+  const birthDate = new Date(
+    today.getFullYear() - age,
+    Math.floor(Math.random() * 12),
+    Math.floor(Math.random() * 28) + 1
+  );
 
   // Simple bio generation
   const bios = [
@@ -370,38 +380,7 @@ const TAG_CATALOG = [
   "Cooking",
   "Dogs",
   "Cats",
-  "Design",
-  "Fitness",
-  "Climbing",
-  "Adventure",
-  "Science",
-  "Movies",
-  "Gaming",
-  "Reading",
-  "Running",
-  "Cycling",
-  "Swimming",
-  "Coding",
-  "Baking",
-  "Dancing",
-  "Theatre",
-  "Board Games",
-  "Crafts",
-  "Gardening",
-  "Meditation",
-  "Podcasts",
-  "Fashion",
-  "Skateboarding",
-  "Skiing",
-  "Snowboarding",
-  "Surfing",
-  "Basketball",
-  "Football",
-  "Tennis",
-  "Badminton",
-  "Volleyball",
-  "Chess",
-  "Anime",
+  "Design"
 ];
 
 // Ensure all tags exist in tags table; return a map name -> id
