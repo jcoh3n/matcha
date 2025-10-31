@@ -26,6 +26,7 @@ import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
 import { VerifyEmailPendingPage } from "./pages/auth/VerifyEmailPendingPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { Home } from "./pages/Home";
+import { StyledButton } from "./components/StyledButton";
 
 const queryClient = new QueryClient();
 
