@@ -90,20 +90,7 @@ const StyledWrapper = styled.div`
     box-sizing: border-box;
     position: relative;
   }
-  
-  .coffee-header__display::before {
-    content: "";
-    position: absolute;
-    width: 55px;
-    height: 5ch5px;
-    background-image: url('/logo-matcha-removebg-preview.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
+
 
   .coffee-header__details {
     width: 8px;
@@ -240,7 +227,7 @@ const StyledWrapper = styled.div`
     top: 50px;
     left: calc(50% - 3px);
     background-color: #444111;  /* camouflage - dark color */
-    animation: liquid 4s 4s linear infinite;
+    animation: liquid 2s 1.5s linear infinite;
   }
 
   .coffee-medium__smoke {

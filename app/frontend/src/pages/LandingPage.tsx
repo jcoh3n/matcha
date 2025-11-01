@@ -3,7 +3,7 @@ import Loader from "@/components/Loader";
 
 export function LandingPage() {
   return (
-    <div className="relative min-h-screen flex flex-col bg-white overflow-hidden">
+    <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-[#f5f3eb] via-[#f0eee4] to-[#f7f4ed] overflow-hidden">
       
       {/* NAVBAR */}
       <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-end px-4 py-4">
@@ -16,7 +16,7 @@ export function LandingPage() {
       </nav>
 
       {/* CONTENU CENTRÉ */}
-      <div className="flex flex-1 items-center justify-center px-4">
+      <div className="flex flex-1 items-center justify-center px-4 py-4">
         <div className="flex flex-col items-center text-center w-full max-w-screen-lg">
 
           {/* LOGO */}
@@ -27,12 +27,12 @@ export function LandingPage() {
           />
 
           {/* TEXTE */}
-          <p className="text-gray-800 font-montserrat text-sm sm:text-base mt-3 max-w-[85%] md:max-w-[320px]">
+          <p className="text-gray-900 font-montserrat font-normal text-sm sm:text-base mt-3 max-w-[85%] md:max-w-[320px]">
             Parce que le meilleur Matcha, c'est celui qu'on partage.
           </p>
 
           {/* ZONE MACHINE */}
-          <div className="relative w-full max-w-[480px] aspect-[3/2] sm:aspect-[5/3] mt-6 flex items-center justify-center">
+          <div className="relative w-full max-w-[480px] aspect-[3/2] sm:aspect-[5/3] mt-4 sm:mt-6 flex items-center justify-center">
             <Loader />
 
             {/* Texte Matcha dans la tasse - hidden on mobile, visible on desktop */}
