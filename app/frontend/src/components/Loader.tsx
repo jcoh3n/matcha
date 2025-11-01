@@ -227,7 +227,7 @@ const StyledWrapper = styled.div`
     top: 50px;
     left: calc(50% - 3px);
     background-color: #444111;  /* camouflage - dark color */
-    animation: liquid 2s 1.5s linear infinite;
+    animation: liquid 4s 1.5s linear infinite;
   }
 
   .coffee-medium__smoke {
@@ -286,28 +286,28 @@ const StyledWrapper = styled.div`
     opacity: 0;
     bottom: 50px;
     left: 102px;
-    animation: smokeOne 3s 4s linear infinite;
+    animation: smokeOne 6s 4s linear infinite;
   }
 
   .coffee-medium__smoke-two {
     opacity: 0;
     bottom: 70px;
     left: 118px;
-    animation: smokeTwo 3s 5s linear infinite;
+    animation: smokeTwo 6s 5s linear infinite;
   }
 
   .coffee-medium__smoke-three {
     opacity: 0;
     bottom: 65px;
     right: 118px;
-    animation: smokeTwo 3s 6s linear infinite;
+    animation: smokeTwo 6s 6s linear infinite;
   }
 
   .coffee-medium__smoke-for {
     opacity: 0;
     bottom: 50px;
     right: 102px;
-    animation: smokeOne 3s 5s linear infinite;
+    animation: smokeOne 6s 5s linear infinite;
   }
 
   .coffee-footer {

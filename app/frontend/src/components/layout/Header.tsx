@@ -65,9 +65,8 @@ export function Header({
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16 backdrop-blur-sm border-b border-gray-200 shadow-sm text-black">
   <div className="flex items-center gap-2 h-full">
         <button onClick={() => handleNavigation("discover")}>
-          <span className="text-2xl font-extrabold tracking-tight font-montserrat">
-            Matcha
-          </span>
+          {/* Matcha logo in header */}
+          <img src="/matcha.svg" alt="Matcha Logo" className="h-8 w-auto" />
         </button>
       </div>
 

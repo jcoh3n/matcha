@@ -11,7 +11,7 @@ export function LandingPage() {
           to="/auth/login"
           className="font-semibold px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm"
         >
-          Connexion
+          Se Connecter
         </Link>
       </nav>
 
