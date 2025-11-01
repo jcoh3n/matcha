@@ -79,15 +79,30 @@ const StyledWrapper = styled.div`
   }
 
   .coffee-header__display {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     position: absolute;
-    top: calc(50% - 25px);
-    left: calc(50% - 25px);
+    top: calc(50% - 30px);
+    left: calc(50% - 30px);
     border-radius: 50%;
     background-color: #bcc4ac;  /* clay-ash - light green */
     border: 5px solid #78875e;  /* flax-smoke - matcha green */
     box-sizing: border-box;
+    position: relative;
+  }
+  
+  .coffee-header__display::before {
+    content: "";
+    position: absolute;
+    width: 55px;
+    height: 5ch5px;
+    background-image: url('/logo-matcha-removebg-preview.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   .coffee-header__details {

@@ -46,27 +46,21 @@ export function LandingPage() {
             <h1 className="font-montserrat text-4xl md:text-6xl font-extrabold leading-[1.1] text-gray-900 mb-6">
               MATCHA
             </h1>
-            <p className="mt-4 text-lg md:text-xl text-gray-700 font-montserrat leading-relaxed">
-              Crée des connexions authentiques. Une nouvelle façon élégante de
-              rencontrer des personnes compatibles.
-            </p>
-
-            <Link
-              to="/auth/register"
-              className="mt-10 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-b from-green-500 to-green-600 px-10 py-4 text-lg font-bold font-montserrat text-white tracking-wide hover:from-green-600 hover:to-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500/70 transition-colors shadow-lg shadow-green-500/20 block mx-auto md:mx-0"
-            >
-              Créer un compte
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            
-            <p className="mt-4 text-sm text-gray-500">
-              Rejoignez notre communauté aujourd'hui
+            <p className="mt-4 text-lg md:text-xl text-gray-700 font-montserrat leading-relaxed text-center md:text-left">
+              Parce que se matcher autour d'un "Matcha"... c'est quand même stylé.
             </p>
           </div>
 
           {/* Loader component */}
           <div className="relative w-full max-w-md h-80 flex items-center justify-center">
             <Loader />
+            
+            {/* Matcha text overlay */}
+            <img
+              src="/matcha-typo-wobg.png"
+              alt="Matcha Text"
+              className="absolute z-20 w-20 left-1/2 -translate-x-1/2 top-[60%]"
+            />
           </div>
         </div>
       </div>
