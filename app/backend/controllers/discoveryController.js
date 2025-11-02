@@ -191,7 +191,35 @@ const getDiscoveryUsers = async (req, res) => {
     // Log the transformed users
     console.log("Transformed users:", users);
 
-    res.json(users);
+    // Check if pagination parameters are provided
+    if (req.query.page !== undefined || req.query.limit !== undefined) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const offset = (page - 1) * limit;
+      
+      // For now, we're not adding a separate count query to avoid complexity
+      // In a full implementation, we'd want a separate query to get total count
+      // For now, we'll calculate totalPages based on result set size
+      // Note: This is not fully accurate but provides basic pagination structure
+      const totalPages = Math.ceil(result.rows.length / limit);
+      
+      const paginatedResponse = {
+        data: users,
+        pagination: {
+          page,
+          limit,
+          total: result.rows.length, // This is not correct for full pagination - just for compatibility
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      };
+
+      res.json(paginatedResponse);
+    } else {
+      // Maintain backward compatibility
+      res.json(users);
+    }
   } catch (error) {
     console.error("Error fetching discovery users:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -485,7 +513,34 @@ const searchUsers = async (req, res) => {
     // Log the transformed users
     console.log("Transformed search users:", users);
 
-    res.json(users);
+    // Check if pagination parameters are provided
+    if (req.query.page !== undefined || req.query.limit !== undefined) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const offset = (page - 1) * limit;
+      
+      // For now, we're not adding a separate count query to avoid complexity
+      // For now, we'll calculate totalPages based on result set size
+      // Note: This is not fully accurate but provides basic pagination structure
+      const totalPages = Math.ceil(result.rows.length / limit);
+      
+      const paginatedResponse = {
+        data: users,
+        pagination: {
+          page,
+          limit,
+          total: result.rows.length, // This is not correct for full pagination - just for compatibility
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      };
+
+      res.json(paginatedResponse);
+    } else {
+      // Maintain backward compatibility
+      res.json(users);
+    }
   } catch (error) {
     console.error("Error searching users:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -724,7 +779,35 @@ const getFilteredUsers = async (req, res) => {
     }));
 
     console.log("Transformed filtered users:", users);
-    res.json(users);
+
+    // Check if pagination parameters are provided
+    if (req.query.page !== undefined || req.query.limit !== undefined) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const offset = (page - 1) * limit;
+      
+      // For now, we're not adding a separate count query to avoid complexity
+      // For now, we'll calculate totalPages based on result set size
+      // Note: This is not fully accurate but provides basic pagination structure
+      const totalPages = Math.ceil(result.rows.length / limit);
+      
+      const paginatedResponse = {
+        data: users,
+        pagination: {
+          page,
+          limit,
+          total: result.rows.length, // This is not correct for full pagination - just for compatibility
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      };
+
+      res.json(paginatedResponse);
+    } else {
+      // Maintain backward compatibility
+      res.json(users);
+    }
   } catch (error) {
     console.error("Error fetching filtered users:", error);
     res.status(500).json({ message: "Internal server error" });

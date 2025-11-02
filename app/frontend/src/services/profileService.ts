@@ -1,5 +1,5 @@
 
- const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+ const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // Get current user profile
 export const getCurrentUserProfile = async (accessToken: string) => {
@@ -342,7 +342,8 @@ export const getProfileViewers = async (accessToken: string) => {
     }
 
     const data = await response.json();
-    return data;
+    // Check if response has pagination structure and extract data if needed
+    return Array.isArray(data) ? data : (data.data || []);
   } catch (error) {
     console.error('Error fetching profile viewers:', error);
     throw error;
@@ -365,7 +366,8 @@ export const getProfileLikers = async (accessToken: string) => {
     }
 
     const data = await response.json();
-    return data;
+    // Check if response has pagination structure and extract data if needed
+    return Array.isArray(data) ? data : (data.data || []);
   } catch (error) {
     console.error('Error fetching profile likers:', error);
     throw error;

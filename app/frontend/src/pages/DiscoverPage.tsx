@@ -135,7 +135,9 @@ export function DiscoverPage() {
       console.log("Fetching discovery users...");
       const response = await api.getDiscoveryUsers(token, 8, offset);
       if (response.ok) {
-        const users: UserProfile[] = await response.json();
+        const data = await response.json();
+        // Check if response has pagination structure and extract data if needed
+        const users: UserProfile[] = Array.isArray(data) ? data : (data.data || []);
         console.log("Received users:", users);
         const transformedUsers = users.map(transformUserForProfileCard);
         console.log("Transformed users:", transformedUsers);
@@ -321,7 +323,9 @@ export function DiscoverPage() {
         offset
       );
       if (response.ok) {
-        const users: UserProfile[] = await response.json();
+        const data = await response.json();
+        // Check if response has pagination structure and extract data if needed
+        const users: UserProfile[] = Array.isArray(data) ? data : (data.data || []);
         console.log("Received filtered users:", users);
         // Transform; backend already filters/sorts, client sort remains as fallback
         const transformedUsers = users.map(transformUserForProfileCard);

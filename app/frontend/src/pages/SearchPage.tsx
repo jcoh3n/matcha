@@ -94,11 +94,13 @@ export function SearchPage() {
         }
 
         const response = searchQuery
-          ? await api.searchUsers(token, searchQuery, 20, fetchOffset)
-          : await api.getRandomUsers(token, 20);
+          ? await api.searchUsers(searchQuery, 20, fetchOffset)
+          : await api.getRandomUsers(20);
 
         if (response.ok) {
-          const users: UserProfile[] = await response.json();
+          const data = await response.json();
+          // Check if response has pagination structure and extract data if needed
+          const users: UserProfile[] = Array.isArray(data) ? data : (data.data || []);
           if (fetchOffset === 0) {
             setResults(users);
           } else {

@@ -46,10 +46,39 @@ const isUserOnline = (lastActive) => {
   return (new Date() - new Date(lastActive)) < 5 * 60 * 1000;
 };
 
+// Helper function to parse pagination parameters
+const getPaginationParams = (query) => {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 20;
+  const offset = (page - 1) * limit;
+
+  return { page, limit, offset };
+};
+
+// Helper function to format paginated response
+const formatPaginatedResponse = (data, total, page, limit) => {
+  const totalPages = Math.ceil(total / limit);
+  
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    }
+  };
+};
+
 // Get users who viewed my profile
 const getViewers = async (req, res) => {
   try {
     const currentUserId = req.user.id;
+
+    // Parse pagination parameters
+    const { page, limit, offset } = getPaginationParams(req.query);
 
     // Get all profile views for the current user
     const views = await ProfileView.findByViewedUserId(currentUserId);
@@ -72,9 +101,15 @@ const getViewers = async (req, res) => {
       }, [])
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+    // Total count before pagination
+    const totalCount = uniqueViews.length;
+
+    // Apply pagination to the sorted views
+    const paginatedViews = uniqueViews.slice(offset, offset + limit);
+
     // Get viewer details
     const viewers = await Promise.all(
-      uniqueViews.map(async (view) => {
+      paginatedViews.map(async (view) => {
         const viewerUser = await User.findById(view.viewerId);
         if (!viewerUser) return null;
 
@@ -132,7 +167,9 @@ const getViewers = async (req, res) => {
     // Filter out null viewers (in case user was deleted)
     const validViewers = viewers.filter(viewer => viewer !== null);
 
-    res.json(validViewers);
+    // Format and send paginated response
+    const paginatedResponse = formatPaginatedResponse(validViewers, totalCount, page, limit);
+    res.json(paginatedResponse);
   } catch (error) {
     console.error("Error fetching viewers:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -143,6 +180,9 @@ const getViewers = async (req, res) => {
 const getLikers = async (req, res) => {
   try {
     const currentUserId = req.user.id;
+
+    // Parse pagination parameters
+    const { page, limit, offset } = getPaginationParams(req.query);
 
     // Get all likes for the current user
     const likes = await Like.findLikesForUser(currentUserId);
@@ -156,9 +196,15 @@ const getLikers = async (req, res) => {
       .filter(like => !blockedUserIds.includes(like.userId))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+    // Total count before pagination
+    const totalCount = filteredLikes.length;
+
+    // Apply pagination to the sorted likes
+    const paginatedLikes = filteredLikes.slice(offset, offset + limit);
+
     // Get liker details
     const likers = await Promise.all(
-      filteredLikes.map(async (like) => {
+      paginatedLikes.map(async (like) => {
         const likerUser = await User.findById(like.userId);
         if (!likerUser) return null;
 
@@ -214,7 +260,9 @@ const getLikers = async (req, res) => {
     // Filter out null likers (in case user was deleted)
     const validLikers = likers.filter(liker => liker !== null);
 
-    res.json(validLikers);
+    // Format and send paginated response
+    const paginatedResponse = formatPaginatedResponse(validLikers, totalCount, page, limit);
+    res.json(paginatedResponse);
   } catch (error) {
     console.error("Error fetching likers:", error);
     res.status(500).json({ message: "Internal server error" });
