@@ -344,6 +344,340 @@ const updateLocation = async (req, res) => {
   }
 };
 
+// Get all profiles with pagination and filtering
+const getAllProfiles = async (req, res) => {
+  try {
+    // Parse pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100); // Limit to 100 max for performance
+    const offset = (page - 1) * limit;
+
+    // Parse filter parameters
+    const { ageMin, ageMax, distance, fameRating, tags, lite } = req.query;
+
+    // Get current user id for potential filtering
+    const currentUserId = req.user.id;
+
+    // Determine if we should use lite response
+    const useLiteResponse = lite === 'true' || lite === true || lite === '1';
+
+    // Query to get profiles with their basic user information, photos, and locations
+    let query = '';
+    if (useLiteResponse) {
+      // Lite response - only essential fields to reduce payload
+      query = `
+        SELECT 
+          u.id,
+          u.username,
+          ph.url as profile_photo_url,
+          p.birth_date,
+          p.gender,
+          p.fame_rating,
+          l.city,
+          l.country,
+          CASE 
+            WHEN l.latitude IS NULL OR l.longitude IS NULL THEN NULL
+            ELSE (
+              6371 * 2 * ASIN(
+                SQRT(
+                  POWER(SIN(RADIANS(l.latitude - lv.latitude) / 2), 2) +
+                  COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
+                )
+              )
+            )
+          END AS distance_km,
+          (SELECT array_remove(array_agg(t2.name), NULL)
+           FROM user_tags ut2
+           JOIN tags t2 ON t2.id = ut2.tag_id
+           WHERE ut2.user_id = u.id
+           LIMIT 5  -- Limit number of tags to reduce payload
+          ) as tags
+        FROM users u
+        LEFT JOIN profiles p ON u.id = p.user_id
+        LEFT JOIN photos ph ON u.id = ph.user_id AND ph.is_profile = true
+        LEFT JOIN locations l ON u.id = l.user_id
+        LEFT JOIN locations lv ON lv.user_id = $3  -- Current user's location for distance calculation
+        WHERE COALESCE(u.email_verified, true) = true AND u.id != $3
+      `;
+    } else {
+      // Full response - all fields
+      query = `
+        SELECT 
+          u.id,
+          u.email,
+          u.username,
+          u.first_name,
+          u.last_name,
+          u.created_at,
+          u.updated_at,
+          p.birth_date,
+          p.gender,
+          p.sexual_orientation as sexual_orientation,
+          p.bio,
+          p.fame_rating,
+          p.last_active,
+          ph.url as profile_photo_url,
+          l.latitude,
+          l.longitude,
+          l.city,
+          l.country,
+          array_remove(array_agg(DISTINCT t.name), NULL) as tags
+        FROM users u
+        LEFT JOIN profiles p ON u.id = p.user_id
+        LEFT JOIN photos ph ON u.id = ph.user_id AND ph.is_profile = true
+        LEFT JOIN locations l ON u.id = l.user_id
+        LEFT JOIN locations lv ON lv.user_id = $3  -- Current user's location for distance calculation
+        LEFT JOIN user_tags ut ON u.id = ut.user_id
+        LEFT JOIN tags t ON t.id = ut.tag_id
+        WHERE COALESCE(u.email_verified, true) = true AND u.id != $3
+      `;
+    }
+
+    // Parameters array: [limit, offset, currentUserId, ...filter params]
+    const params = [limit, offset, currentUserId];
+    let paramIndex = 3;
+
+    // Age filters (convert ages to birth_date bounds)
+    if (ageMax || ageMin) {
+      const today = new Date();
+      const aMin = parseInt(ageMin);
+      const aMax = parseInt(ageMax);
+
+      // Oldest acceptable birthdate (lower bound): today - (aMax + 1) years + 1 day
+      if (aMax !== undefined && !isNaN(aMax)) {
+        const lower = new Date(today);
+        lower.setFullYear(today.getFullYear() - (aMax + 1));
+        lower.setDate(lower.getDate() + 1);
+        query += ` AND p.birth_date >= $${++paramIndex}`;
+        params.push(lower.toISOString().split("T")[0]);
+      }
+
+      // Youngest acceptable birthdate (upper bound): today - aMin years
+      if (aMin !== undefined && !isNaN(aMin)) {
+        const upper = new Date(today);
+        upper.setFullYear(today.getFullYear() - aMin);
+        query += ` AND p.birth_date <= $${++paramIndex}`;
+        params.push(upper.toISOString().split("T")[0]);
+      }
+    }
+
+    // Fame rating filter
+    if (fameRating !== undefined && fameRating !== "" && !isNaN(parseInt(fameRating))) {
+      query += ` AND p.fame_rating >= $${++paramIndex}`;
+      params.push(parseInt(fameRating));
+    }
+
+    // Distance filter
+    if (distance !== undefined && !isNaN(parseInt(distance))) {
+      query += ` AND (
+        l.latitude IS NOT NULL AND l.longitude IS NOT NULL AND
+        (
+          6371 * 2 * ASIN(
+            SQRT(
+              POWER(SIN(RADIANS(l.latitude - lv.latitude) / 2), 2) +
+              COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
+            )
+          )
+        ) <= $${++paramIndex}
+      )`;
+      params.push(parseInt(distance));
+    }
+
+    // Tags filter
+    if (tags) {
+      const tagList = Array.isArray(tags)
+        ? tags
+        : String(tags)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+      if (tagList.length > 0) {
+        query += ` AND EXISTS (
+          SELECT 1
+          FROM user_tags ut2
+          JOIN tags t2 ON t2.id = ut2.tag_id
+          WHERE ut2.user_id = u.id AND t2.name = ANY($${++paramIndex})
+        )`;
+        params.push(tagList);
+      }
+    }
+
+    // Group by clause - different for lite vs full response
+    if (useLiteResponse) {
+      query += ` GROUP BY 
+          u.id, u.username, ph.url, p.birth_date, p.gender, p.fame_rating, l.city, l.country,
+          l.latitude, l.longitude, lv.latitude, lv.longitude
+        ORDER BY p.fame_rating DESC, u.created_at DESC
+        LIMIT $1 OFFSET $2
+      `;
+    } else {
+      query += ` GROUP BY 
+          u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
+          p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.last_active,
+          ph.url,
+          l.latitude, l.longitude, l.city, l.country,
+          lv.latitude, lv.longitude
+        ORDER BY p.fame_rating DESC, u.created_at DESC
+        LIMIT $1 OFFSET $2
+      `;
+    }
+
+    // Count query with same filters
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM users u
+      LEFT JOIN profiles p ON u.id = p.user_id
+      LEFT JOIN locations l ON u.id = l.user_id
+      LEFT JOIN locations lv ON lv.user_id = $1
+      WHERE COALESCE(u.email_verified, true) = true AND u.id != $1
+    `;
+
+    // Parameters for count query
+    const countParams = [currentUserId];
+    let countParamIndex = 1;
+
+    // Apply same filters to count query
+    if (ageMax || ageMin) {
+      const today = new Date();
+      const aMin = parseInt(ageMin);
+      const aMax = parseInt(ageMax);
+
+      if (aMax !== undefined && !isNaN(aMax)) {
+        const lower = new Date(today);
+        lower.setFullYear(today.getFullYear() - (aMax + 1));
+        lower.setDate(lower.getDate() + 1);
+        countQuery += ` AND p.birth_date >= $${++countParamIndex}`;
+        countParams.push(lower.toISOString().split("T")[0]);
+      }
+
+      if (aMin !== undefined && !isNaN(aMin)) {
+        const upper = new Date(today);
+        upper.setFullYear(today.getFullYear() - aMin);
+        countQuery += ` AND p.birth_date <= $${++countParamIndex}`;
+        countParams.push(upper.toISOString().split("T")[0]);
+      }
+    }
+
+    if (fameRating !== undefined && fameRating !== "" && !isNaN(parseInt(fameRating))) {
+      countQuery += ` AND p.fame_rating >= $${++countParamIndex}`;
+      countParams.push(parseInt(fameRating));
+    }
+
+    if (distance !== undefined && !isNaN(parseInt(distance))) {
+      countQuery += ` AND (
+        l.latitude IS NOT NULL AND l.longitude IS NOT NULL AND
+        (
+          6371 * 2 * ASIN(
+            SQRT(
+              POWER(SIN(RADIANS(l.latitude - lv.latitude) / 2), 2) +
+              COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
+            )
+          )
+        ) <= $${++countParamIndex}
+      )`;
+      countParams.push(parseInt(distance));
+    }
+
+    if (tags) {
+      const tagList = Array.isArray(tags)
+        ? tags
+        : String(tags)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+      if (tagList.length > 0) {
+        countQuery += ` AND EXISTS (
+          SELECT 1
+          FROM user_tags ut2
+          JOIN tags t2 ON t2.id = ut2.tag_id
+          WHERE ut2.user_id = u.id AND t2.name = ANY($${++countParamIndex})
+        )`;
+        countParams.push(tagList);
+      }
+    }
+
+    // Execute both queries in parallel
+    const [profilesResult, countResult] = await Promise.all([
+      db.query(query, params),
+      db.query(countQuery, countParams)
+    ]);
+
+    // Transform the data based on whether we're using lite response
+    const profiles = profilesResult.rows.map((row) => {
+      if (useLiteResponse) {
+        // Lite response structure
+        return {
+          id: row.id,
+          username: row.username,
+          profilePhotoUrl: row.profile_photo_url,
+          profile: {
+            birthDate: row.birth_date,
+            gender: row.gender,
+            fameRating: row.fame_rating,
+          },
+          location: {
+            city: row.city,
+            country: row.country,
+          },
+          distanceKm: row.distance_km !== null && row.distance_km !== undefined
+            ? Math.round(Number(row.distance_km))
+            : null,
+          tags: row.tags || [],
+        };
+      } else {
+        // Full response structure
+        return {
+          id: row.id,
+          email: row.email,
+          username: row.username,
+          firstName: row.first_name,
+          lastName: row.last_name,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          profile: {
+            birthDate: row.birth_date,
+            gender: row.gender,
+            orientation: row.sexual_orientation,
+            bio: row.bio,
+            fameRating: row.fame_rating,
+            lastActive: row.last_active,
+          },
+          profilePhotoUrl: row.profile_photo_url,
+          location: {
+            latitude: row.latitude,
+            longitude: row.longitude,
+            city: row.city,
+            country: row.country,
+          },
+          tags: row.tags || [],
+        };
+      }
+    });
+
+    // Calculate pagination metadata
+    const total = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(total / limit);
+
+    // Send paginated response
+    const paginatedResponse = {
+      data: profiles,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
+
+    res.json(paginatedResponse);
+  } catch (error) {
+    console.error("Error fetching profiles:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -355,4 +689,5 @@ module.exports = {
   deletePhoto,
   updateLocation,
   getMatchesUser,
+  getAllProfiles,
 };
