@@ -264,7 +264,7 @@ const getDiscoveryUsers = async (req, res) => {
       const offset = (page - 1) * limit;
       
       // Query to get total count for proper pagination
-      const countQuery = `
+      let countQuery = `
         SELECT COUNT(*) as total
         FROM users u
         LEFT JOIN profiles p ON u.id = p.user_id
@@ -462,7 +462,7 @@ const searchUsers = async (req, res) => {
     console.log("Current user (search):", req.user);
     console.log("Search query:", searchQuery);
 
-    // Query to search users by first name or last name
+    // Query to search users by username, first name, or last name
     const viewerProfile = await fetchViewerProfile(req.user.id);
     const allowedGenders = computeAllowedGenders(
       viewerProfile.gender,
@@ -471,11 +471,10 @@ const searchUsers = async (req, res) => {
     console.log("Viewer profile (search/orientation filter):", viewerProfile);
     console.log("Allowed genders (search):", allowedGenders);
 
-    // Construire la requête de recherche
-    let baseQuery = '';
-    if (useLiteResponse) {
-      // Lite response - only essential fields to reduce payload
-      baseQuery = `
+    // Build the search query - parameters will be:
+    // $1: limit, $2: offset, $3: search query, $4: user id, $5: gender array (if any)
+    const baseQuery = useLiteResponse 
+      ? `
         SELECT 
           u.id,
           u.username,
@@ -500,7 +499,7 @@ const searchUsers = async (req, res) => {
            FROM user_tags ut2
            JOIN tags t2 ON t2.id = ut2.tag_id
            WHERE ut2.user_id = u.id
-           LIMIT 5  -- Limit number of tags to reduce payload
+           LIMIT 5
           ) as tags
         FROM users u
         LEFT JOIN profiles p ON u.id = p.user_id
@@ -508,7 +507,7 @@ const searchUsers = async (req, res) => {
         LEFT JOIN locations l ON u.id = l.user_id
         LEFT JOIN locations lv ON lv.user_id = $4
         WHERE COALESCE(u.email_verified, true) = true
-              AND (u.first_name ILIKE $3 OR u.last_name ILIKE $3)
+              AND (u.username ILIKE $3 OR u.first_name ILIKE $3 OR u.last_name ILIKE $3)
               AND u.id != $4
               AND NOT EXISTS (
                 SELECT 1 FROM passes ps WHERE ps.viewer_id = $4 AND ps.passed_user_id = u.id
@@ -516,10 +515,8 @@ const searchUsers = async (req, res) => {
               AND NOT EXISTS (
                 SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $4 AND pv.viewed_user_id = u.id
               )
-      `;
-    } else {
-      // Full response - all fields
-      baseQuery = `
+      `
+      : `
         SELECT 
           u.id,
           u.email,
@@ -532,7 +529,7 @@ const searchUsers = async (req, res) => {
           p.gender,
           p.sexual_orientation as sexual_orientation,
           p.bio,
-    p.fame_rating,
+          p.fame_rating,
           p.last_active,
           ph.url as profile_photo_url,
           l.latitude,
@@ -558,38 +555,35 @@ const searchUsers = async (req, res) => {
         LEFT JOIN locations lv ON lv.user_id = $4
         LEFT JOIN user_tags ut ON u.id = ut.user_id
         LEFT JOIN tags t ON t.id = ut.tag_id
-    WHERE COALESCE(u.email_verified, true) = true
-          AND (u.first_name ILIKE $3 OR u.last_name ILIKE $3)
-          AND u.id != $4
-          AND NOT EXISTS (
-            SELECT 1 FROM passes ps WHERE ps.viewer_id = $4 AND ps.passed_user_id = u.id
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $4 AND pv.viewed_user_id = u.id
-          )
+        WHERE COALESCE(u.email_verified, true) = true
+              AND (u.username ILIKE $3 OR u.first_name ILIKE $3 OR u.last_name ILIKE $3)
+              AND u.id != $4
+              AND NOT EXISTS (
+                SELECT 1 FROM passes ps WHERE ps.viewer_id = $4 AND ps.passed_user_id = u.id
+              )
+              AND NOT EXISTS (
+                SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $4 AND pv.viewed_user_id = u.id
+              )
       `;
-    }
 
-    // Paramètres de base
+    // Build parameters in the correct order
     const params = [
-      safeParseInt(limit, 20),
-      safeParseInt(offset, 0),
-      `%${searchQuery}%`,
-      req.user.id,
+      safeParseInt(limit, 20),  // $1: limit
+      safeParseInt(offset, 0),  // $2: offset
+      `%${searchQuery}%`,       // $3: search query
+      req.user.id,              // $4: user id
     ];
-    let paramIndex = 4;
 
-    // Ajouter le filtre de genre si nécessaire
+    // Add gender filter to query if needed
+    let fullQuery = baseQuery;
     if (allowedGenders.length > 0) {
-      paramIndex++;
-      // Use proper parameter placeholder with '$' for ANY() binding
-      baseQuery += ` AND (LOWER(p.gender) = ANY($${paramIndex}))`;
-      params.push(allowedGenders.map((g) => g.toLowerCase()));
+      params.push(allowedGenders.map((g) => g.toLowerCase())); // Add to params as next position
+      fullQuery += ` AND (LOWER(p.gender) = ANY($${params.length}))`; // Reference correct parameter number
     }
 
-    // GROUP BY then ORDER BY (ORDER must come after GROUP)
+    // Add GROUP BY and ORDER BY (and LIMIT/OFFSET) clauses
     if (useLiteResponse) {
-      baseQuery += `
+      fullQuery += `
         GROUP BY 
           u.id, u.username, ph.url, p.birth_date, p.gender, p.fame_rating, 
           l.city, l.country, l.latitude, l.longitude, lv.latitude, lv.longitude
@@ -597,10 +591,10 @@ const searchUsers = async (req, res) => {
         LIMIT $1 OFFSET $2
       `;
     } else {
-      baseQuery += `
+      fullQuery += `
         GROUP BY 
           u.id, u.email, u.username, u.first_name, u.last_name, u.created_at, u.updated_at,
-      p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.last_active,
+          p.birth_date, p.gender, p.sexual_orientation, p.bio, p.fame_rating, p.last_active,
           ph.url,
           l.latitude, l.longitude, l.city, l.country,
           lv.latitude, lv.longitude
@@ -609,10 +603,10 @@ const searchUsers = async (req, res) => {
       `;
     }
 
-    console.log("Search query:", baseQuery);
+    console.log("Search query:", fullQuery);
     console.log("Search params:", params);
 
-    const result = await db.query(baseQuery, params);
+    const result = await db.query(fullQuery, params);
     if (result.rows.length === 0 && allowedGenders.length > 0) {
       console.log(
         "[Search] No users found with allowed genders:",
@@ -687,14 +681,16 @@ const searchUsers = async (req, res) => {
     // Log the transformed users
     console.log("Transformed search users:", users);
 
-    // Query to get total count for proper pagination
+    // Count query - parameters will be:
+    // $1: search query, $2: user id, $3: gender array (if any)
     const countQuery = `
       SELECT COUNT(*) as total
       FROM users u
       LEFT JOIN profiles p ON u.id = p.user_id
       LEFT JOIN locations l ON u.id = l.user_id
+      LEFT JOIN locations lv ON lv.user_id = $2
       WHERE COALESCE(u.email_verified, true) = true
-            AND (u.first_name ILIKE $1 OR u.last_name ILIKE $1)
+            AND (u.username ILIKE $1 OR u.first_name ILIKE $1 OR u.last_name ILIKE $1)
             AND u.id != $2
             AND NOT EXISTS (
               SELECT 1 FROM passes ps WHERE ps.viewer_id = $2 AND ps.passed_user_id = u.id
@@ -704,17 +700,23 @@ const searchUsers = async (req, res) => {
             )
     `;
 
-    // Parameters for count query
-    const countParams = [`%${searchQuery}%`, req.user.id];
-    let countParamIndex = 2;
+    // Build count parameters
+    const countParams = [
+      `%${searchQuery}%`,  // $1: search query
+      req.user.id,         // $2: user id
+    ];
 
-    // Apply same gender filter to count query
+    // Add gender filter to count query if needed
+    let fullCountQuery = countQuery;
     if (allowedGenders.length > 0) {
-      countQuery += ` AND (LOWER(p.gender) = ANY($${++countParamIndex}))`;
-      countParams.push(allowedGenders.map((g) => g.toLowerCase()));
+      countParams.push(allowedGenders.map((g) => g.toLowerCase())); // Add to countParams as next position
+      fullCountQuery += ` AND (LOWER(p.gender) = ANY($${countParams.length}))`; // Reference correct parameter number
     }
 
-    const countResult = await db.query(countQuery, countParams);
+    console.log("Count query:", fullCountQuery);
+    console.log("Count params:", countParams);
+
+    const countResult = await db.query(fullCountQuery, countParams);
     const total = parseInt(countResult.rows[0].total);
     const totalPages = Math.ceil(total / limit);
 
@@ -734,7 +736,8 @@ const searchUsers = async (req, res) => {
     res.json(paginatedResponse);
   } catch (error) {
     console.error("Error searching users:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Stack trace:", error.stack);
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -870,8 +873,8 @@ const getFilteredUsers = async (req, res) => {
     let paramIndex = 1;
 
     if (allowedGenders.length > 0) {
-      query += ` AND (LOWER(p.gender) = ANY($${++paramIndex}))`;
       params.push(allowedGenders.map((g) => g.toLowerCase()));
+      query += ` AND (LOWER(p.gender) = ANY($${params.length}))`;
     }
 
     // Age filters (convert ages to birth_date bounds)
@@ -931,13 +934,13 @@ const getFilteredUsers = async (req, res) => {
             .map((s) => s.trim())
             .filter(Boolean);
       if (tagList.length > 0) {
+        params.push(tagList);
         query += ` AND EXISTS (
           SELECT 1
           FROM user_tags ut2
           JOIN tags t2 ON t2.id = ut2.tag_id
-          WHERE ut2.user_id = u.id AND t2.name = ANY($${++paramIndex})
+          WHERE ut2.user_id = u.id AND t2.name = ANY($${params.length})
         )`;
-        params.push(tagList);
       }
     }
 
@@ -1079,8 +1082,8 @@ const getFilteredUsers = async (req, res) => {
     paramIndex = 1;
 
     if (allowedGenders.length > 0) {
-      countQuery += ` AND (LOWER(p.gender) = ANY($${++paramIndex}))`;
-      countParams.push(allowedGenders.map((g) => g.toLowerCase()));
+      params.push(allowedGenders.map((g) => g.toLowerCase()));
+      countQuery += ` AND (LOWER(p.gender) = ANY($${countParams.length}))`;
     }
 
     if (ageMax || ageMin) {
@@ -1092,15 +1095,15 @@ const getFilteredUsers = async (req, res) => {
         const lower = new Date(today);
         lower.setFullYear(today.getFullYear() - (aMax + 1));
         lower.setDate(lower.getDate() + 1);
-        countQuery += ` AND p.birth_date >= $${++paramIndex}`;
         countParams.push(lower.toISOString().split("T")[0]);
+        countQuery += ` AND p.birth_date >= $${countParams.length}`;
       }
 
       if (aMin !== undefined) {
         const upper = new Date(today);
         upper.setFullYear(today.getFullYear() - aMin);
-        countQuery += ` AND p.birth_date <= $${++paramIndex}`;
         countParams.push(upper.toISOString().split("T")[0]);
+        countQuery += ` AND p.birth_date <= $${countParams.length}`;
       }
     }
 
@@ -1109,11 +1112,12 @@ const getFilteredUsers = async (req, res) => {
       fameRating !== "" &&
       !Number.isNaN(safeParseInt(fameRating))
     ) {
-      countQuery += ` AND p.fame_rating >= $${++paramIndex}`;
       countParams.push(safeParseInt(fameRating, 0));
+      countQuery += ` AND p.fame_rating >= $${countParams.length}`;
     }
 
     if (distance && !Number.isNaN(safeParseInt(distance))) {
+      countParams.push(safeParseInt(distance, 0));
       countQuery += ` AND (
         l.latitude IS NOT NULL AND l.longitude IS NOT NULL AND
         (
@@ -1123,9 +1127,8 @@ const getFilteredUsers = async (req, res) => {
               COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
             )
           )
-        ) <= $${++paramIndex}
+        ) <= $${countParams.length}
       )`;
-      countParams.push(safeParseInt(distance, 0));
     }
 
     if (tags) {
@@ -1136,13 +1139,13 @@ const getFilteredUsers = async (req, res) => {
             .map((s) => s.trim())
             .filter(Boolean);
       if (tagList.length > 0) {
+        countParams.push(tagList);
         countQuery += ` AND EXISTS (
           SELECT 1
           FROM user_tags ut2
           JOIN tags t2 ON t2.id = ut2.tag_id
-          WHERE ut2.user_id = u.id AND t2.name = ANY($${++paramIndex})
+          WHERE ut2.user_id = u.id AND t2.name = ANY($${countParams.length})
         )`;
-        countParams.push(tagList);
       }
     }
 
@@ -1315,8 +1318,8 @@ const getSuggestedUsers = async (req, res) => {
 
     // Gender filter based on orientation
     if (allowedGenders.length > 0) {
-      query += ` AND (LOWER(p.gender) = ANY($${++paramIndex}))`;
       params.push(allowedGenders.map((g) => g.toLowerCase()));
+      query += ` AND (LOWER(p.gender) = ANY($${params.length}))`;
     }
 
     // Age filters (convert ages to birth_date bounds)
@@ -1378,13 +1381,13 @@ const getSuggestedUsers = async (req, res) => {
             .map((s) => s.trim())
             .filter(Boolean);
       if (tagList.length > 0) {
+        params.push(tagList);
         query += ` AND EXISTS (
           SELECT 1
           FROM user_tags ut2
           JOIN tags t2 ON t2.id = ut2.tag_id
-          WHERE ut2.user_id = u.id AND t2.name = ANY($${++paramIndex})
+          WHERE ut2.user_id = u.id AND t2.name = ANY($${params.length})
         )`;
-        params.push(tagList);
       }
     }
 
@@ -1536,8 +1539,8 @@ const getSuggestedUsers = async (req, res) => {
     paramIndex = 1;
 
     if (allowedGenders.length > 0) {
-      countQuery += ` AND (LOWER(p.gender) = ANY($${++paramIndex}))`;
       countParams.push(allowedGenders.map((g) => g.toLowerCase()));
+      countQuery += ` AND (LOWER(p.gender) = ANY($${countParams.length}))`;
     }
 
     if (ageMax || ageMin) {
@@ -1549,15 +1552,15 @@ const getSuggestedUsers = async (req, res) => {
         const lower = new Date(today);
         lower.setFullYear(today.getFullYear() - (aMax + 1));
         lower.setDate(lower.getDate() + 1);
-        countQuery += ` AND p.birth_date >= $${++paramIndex}`;
         countParams.push(lower.toISOString().split("T")[0]);
+        countQuery += ` AND p.birth_date >= $${countParams.length}`;
       }
 
       if (aMin !== undefined) {
         const upper = new Date(today);
         upper.setFullYear(today.getFullYear() - aMin);
-        countQuery += ` AND p.birth_date <= $${++paramIndex}`;
         countParams.push(upper.toISOString().split("T")[0]);
+        countQuery += ` AND p.birth_date <= $${countParams.length}`;
       }
     }
 
@@ -1566,11 +1569,12 @@ const getSuggestedUsers = async (req, res) => {
       fameRating !== "" &&
       !Number.isNaN(safeParseInt(fameRating))
     ) {
-      countQuery += ` AND p.fame_rating >= $${++paramIndex}`;
       countParams.push(safeParseInt(fameRating, 0));
+      countQuery += ` AND p.fame_rating >= $${countParams.length}`;
     }
 
     if (distance && !Number.isNaN(safeParseInt(distance))) {
+      countParams.push(safeParseInt(distance, 0));
       countQuery += ` AND (
         l.latitude IS NOT NULL AND l.longitude IS NOT NULL AND
         (
@@ -1580,9 +1584,8 @@ const getSuggestedUsers = async (req, res) => {
               COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
             )
           )
-        ) <= $${++paramIndex}
+        ) <= $${countParams.length}
       )`;
-      countParams.push(safeParseInt(distance, 0));
     }
 
     if (tags) {
@@ -1593,13 +1596,13 @@ const getSuggestedUsers = async (req, res) => {
             .map((s) => s.trim())
             .filter(Boolean);
       if (tagList.length > 0) {
+        countParams.push(tagList);
         countQuery += ` AND EXISTS (
           SELECT 1
           FROM user_tags ut2
           JOIN tags t2 ON t2.id = ut2.tag_id
-          WHERE ut2.user_id = u.id AND t2.name = ANY($${++paramIndex})
+          WHERE ut2.user_id = u.id AND t2.name = ANY($${countParams.length})
         )`;
-        countParams.push(tagList);
       }
     }
 
