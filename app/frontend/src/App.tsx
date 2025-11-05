@@ -129,7 +129,9 @@ const App = () => {
                         onLogout={handleLogout}
                         fullWidth
                       >
-                        <DiscoverPage />
+                        <div className="bg-white w-full min-h-screen">
+                          <DiscoverPage />
+                        </div>
                       </AppShell>
                     </ProtectedRoute>
                   }
@@ -139,7 +141,9 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <AppShell current="matches" onLogout={handleLogout}>
-                        <MatchesPage />
+                        <div className="bg-white w-full min-h-screen">
+                          <MatchesPage />
+                        </div>
                       </AppShell>
                     </ProtectedRoute>
                   }
@@ -149,7 +153,9 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <AppShell current="messages" onLogout={handleLogout}>
-                        <MessagesPage />
+                        <div className="bg-white w-full min-h-screen">
+                          <MessagesPage />
+                        </div>
                       </AppShell>
                     </ProtectedRoute>
                   }
@@ -159,7 +165,9 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <AppShell current="profile" onLogout={handleLogout}>
-                        <ProfilePage onLogout={handleLogout} />
+                        <div className="bg-white w-full min-h-screen">
+                          <ProfilePage onLogout={handleLogout} />
+                        </div>
                       </AppShell>
                     </ProtectedRoute>
                   }
@@ -169,7 +177,9 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <AppShell current="profile" onLogout={handleLogout}>
-                        <PrivateProfilePage />
+                        <div className="bg-white w-full min-h-screen">
+                          <PrivateProfilePage />
+                        </div>
                       </AppShell>
                     </ProtectedRoute>
                   }
@@ -179,7 +189,9 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <AppShell current="discover" onLogout={handleLogout}>
-                        <PublicProfilePage />
+                        <div className="bg-white w-full min-h-screen">
+                          <PublicProfilePage />
+                        </div>
                       </AppShell>
                     </ProtectedRoute>
                   }
@@ -189,7 +201,9 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <AppShell current="notifications" onLogout={handleLogout}>
-                        <NotificationsPage />
+                        <div className="bg-white w-full min-h-screen">
+                          <NotificationsPage />
+                        </div>
                       </AppShell>
                     </ProtectedRoute>
                   }
@@ -199,7 +213,9 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <AppShell current="search" onLogout={handleLogout}>
-                        <SearchPage />
+                        <div className="bg-white w-full min-h-screen">
+                          <SearchPage />
+                        </div>
                       </AppShell>
                     </ProtectedRoute>
                   }

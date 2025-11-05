@@ -86,14 +86,25 @@ export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Mon Profil</h1>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate("/profile/edit")}
-          className="flex items-center gap-2"
-        >
-          <Pencil className="w-4 h-4" />
-          Modifier le profil
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate("/profile/edit")}
+            className="flex items-center gap-2"
+          >
+            <Pencil className="w-4 h-4" />
+            Modifier le profil
+          </Button>
+          {onLogout && (
+            <Button 
+              variant="outline" 
+              onClick={onLogout}
+              className="flex items-center gap-2 bg-red-500 text-white hover:bg-red-600"
+            >
+              Se déconnecter
+            </Button>
+          )}
+        </div>
       </div>
       
       <div className="grid md:grid-cols-3 gap-8">

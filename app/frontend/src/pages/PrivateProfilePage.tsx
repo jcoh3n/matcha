@@ -224,11 +224,46 @@ export function PrivateProfilePage() {
     <div className="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10 p-4">
       <div className="max-w-4xl mx-auto">
         <Card className="w-full">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Modifier votre profil</CardTitle>
-            <CardDescription className="text-center">
-              Mettez à jour vos informations pour améliorer vos correspondances
-            </CardDescription>
+          <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 space-y-0">
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-bold">Modifier votre profil</CardTitle>
+              <CardDescription>
+                Mettez à jour vos informations pour améliorer vos correspondances
+              </CardDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                // Make API call to logout
+                const accessToken = localStorage.getItem("accessToken");
+                if (accessToken) {
+                  fetch("http://localhost:3000/api/auth/logout", {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                    },
+                  })
+                    .then((response) => {
+                      console.log("Logout API response:", response);
+                    })
+                    .catch((error) => {
+                      console.error("Logout API error:", error);
+                    });
+                }
+
+                // Clear localStorage
+                console.log("Clearing localStorage");
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                localStorage.removeItem("user");
+
+                // Navigate to landing page
+                navigate("/");
+              }}
+              className="flex items-center gap-2 bg-red-500 text-white hover:bg-red-600 w-fit"
+            >
+              Se déconnecter
+            </Button>
           </CardHeader>
           
           <CardContent className="space-y-6">

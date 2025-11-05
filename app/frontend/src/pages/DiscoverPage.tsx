@@ -115,6 +115,19 @@ export function DiscoverPage() {
   const [activePeerId, setActivePeerId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+  
+  // Listen for the custom event to open filter sidebar from mobile header
+  useEffect(() => {
+    const handleOpenFilterSidebar = () => {
+      setIsFilterSidebarOpen(true);
+    };
+
+    window.addEventListener('openFilterSidebar', handleOpenFilterSidebar);
+    
+    return () => {
+      window.removeEventListener('openFilterSidebar', handleOpenFilterSidebar);
+    };
+  }, []);
   const [swipeAnimation, setSwipeAnimation] = useState<"left" | "right" | null>(
     null
   );
@@ -597,11 +610,13 @@ export function DiscoverPage() {
       {/* Desktop / large screens: split screen */}
       <div className="flex w-5/6 mx-auto relative">
         <div className="w-full mx-auto flex items-center flex-col justify-center px-2">
-          {/* Filter button */}
-          <Filter
-            className="cursor-pointer mr-auto  hover:text-[#7FB77E] transition-colors"
-            onClick={() => setIsFilterSidebarOpen(true)}
-          />
+          {/* Filter button - only show on desktop since mobile header has it */}
+          <div className="md:block hidden">
+            <Filter
+              className="cursor-pointer mr-auto  hover:text-[#7FB77E] transition-colors"
+              onClick={() => setIsFilterSidebarOpen(true)}
+            />
+          </div>
 
           {currentProfile ? (
             <>
