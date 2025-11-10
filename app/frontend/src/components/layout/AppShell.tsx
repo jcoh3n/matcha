@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MobileHeader } from "@/components/layout/MobileHeader";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "@/hooks/useNotification";
 import { api } from "@/lib/api";
@@ -63,19 +64,57 @@ export function AppShell({
     return () => clearInterval(interval);
   }, []);
 
+  // State for filter sidebar (to pass to mobile header)
+  const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+
+  const openFilterSidebar = () => {
+    setIsFilterSidebarOpen(true);
+    // We'll handle the actual sidebar in the DiscoverPage
+    if (current === 'discover') {
+      // Navigate to discover page if not already there
+      if (window.location.pathname !== '/discover') {
+        navigate('/discover');
+      }
+      // We'll let the DiscoverPage handle the sidebar opening
+      const event = new CustomEvent('openFilterSidebar');
+      window.dispatchEvent(event);
+    }
+  };
+
   return (
-    <div className="w-full flex flex-col relative bg-transparent">
-      <Header
-        currentPage={current}
-        notificationCount={unreadCount}
-        messageCount={messageCount}
-        onLogout={onLogout}
-        onNavigate={handleNavigation}
-      />
-      <main className="w-full min-h-[80vh] pt-16 flex justify-center items-center">
+    <div className="w-full flex flex-col relative bg-white">
+      {/* Mobile Header - Only show on mobile screens */}
+      <div className="md:hidden">
+        <MobileHeader
+          currentPage={current}
+          onNavigate={handleNavigation}
+          onFilterClick={openFilterSidebar}
+        />
+      </div>
+      
+      {/* Desktop Header - Only show on medium and larger screens */}
+      <div className="hidden md:block">
+        <Header
+          currentPage={current}
+          notificationCount={unreadCount}
+          messageCount={messageCount}
+          onLogout={onLogout}
+          onNavigate={handleNavigation}
+        />
+      </div>
+
+      {/* Main content with appropriate top padding for mobile vs desktop */}
+      <main className={`w-full min-h-[calc(100vh-4rem)] ${current ? 'pb-20 md:pb-0' : ''} pt-16 md:pt-16 flex justify-center items-center`}>
         {children}
       </main>
-      {/* <Footer currentPage={current} /> */}
+      
+      {/* Mobile Footer - Only show on mobile screens */}
+      <div className="md:hidden">
+        <Footer 
+          currentPage={current} 
+          onNavigate={handleNavigation}
+        />
+      </div>
     </div>
   );
 }

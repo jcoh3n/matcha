@@ -4,6 +4,8 @@ const { authJWT } = require("../middleware/authJWT");
 const profileController = require("../controllers/profileController");
 const socialController = require("../controllers/socialController");
 
+// Public profile endpoints
+router.get("/", authJWT, profileController.getAllProfiles);  // Add pagination for all profiles
 router.get("/me", authJWT, profileController.getProfile);
 router.put("/me", authJWT, profileController.updateProfile);
 

@@ -10,8 +10,8 @@ describe('Email Verification', () => {
   });
 
   afterAll(async () => {
-    // Close the database connection
-    await db.end();
+    // Close the database pool
+    await db.pool.end();
   });
 
   describe('POST /api/auth/register', () => {
