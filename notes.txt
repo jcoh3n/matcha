@@ -1,0 +1,4 @@
+responsivite page discover card / filtre
+responsivite bar header [X]
+responsivite profile page et edit profile page
+notifications websockets
