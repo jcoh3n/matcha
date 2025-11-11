@@ -1,10 +1,11 @@
 const express = require('express');
 const upload = require('../middleware/upload');
 const Photo = require('../models/Photo');
+const { authJWT } = require('../middleware/authJWT');
 const router = express.Router();
 
 // Upload a photo
-router.post('/upload-photo', upload.single('photo'), async (req, res) => {
+router.post('/upload-photo', authJWT, upload.single('photo'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -35,7 +36,7 @@ router.post('/upload-photo', upload.single('photo'), async (req, res) => {
 });
 
 // Set a photo as profile photo
-router.put('/photos/:photoId/set-profile', async (req, res) => {
+router.put('/photos/:photoId/set-profile', authJWT, async (req, res) => {
   try {
     const { photoId } = req.params;
     const userId = req.user.id;

@@ -132,16 +132,7 @@ export function Header({
             )}
           </button>
         </li>
-        {/* Simple logout button with icon */}
-        <li>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
-          >
-            <LogoutIcon className="w-4 h-4" />
-            <span>Logout</span>
-          </button>
-        </li>
+
       </ul>
 
       {/* Version mobile: icône de recherche + autres icônes */}
@@ -192,14 +183,7 @@ export function Header({
             </span>
           )}
         </button>
-        {/* Mobile logout button */}
-        <button
-          onClick={handleLogout}
-          className="flex items-center justify-center p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
-          aria-label="Logout"
-        >
-          <LogoutIcon className="w-4 h-4" />
-        </button>
+
       </div>
     </nav>
   );

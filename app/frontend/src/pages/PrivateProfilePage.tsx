@@ -9,12 +9,13 @@ import { TagSelector } from "@/components/ui/tag-selector";
 import { PhotoUploader } from "@/components/ui/photo-uploader";
 import { LocationSelector } from "@/components/ui/location-selector";
 import { useProfile } from "@/hooks/useProfile";
+import "@/pages/profile-edit-styles.css";
 
 export function PrivateProfilePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const accessToken = localStorage.getItem('accessToken');
-  
+
   const {
     profile,
     loading,
@@ -58,12 +59,12 @@ export function PrivateProfilePage() {
       setOrientation(profile.profile?.orientation || "");
       setBirthDate(profile.profile?.birthDate ? profile.profile.birthDate.split('T')[0] : "");
       setSelectedTags(profile.tags?.map((tag: any) => tag.name) || []);
-      
+
       // Process photos to handle blob URLs
       const processedPhotos = (profile.photos || []).map(photo => ({
         ...photo,
-        url: photo.url.startsWith('blob:') ? 
-          "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face" : 
+        url: photo.url.startsWith('blob:') ?
+          "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face" :
           photo.url
       }));
       setPhotos(processedPhotos);
@@ -103,7 +104,7 @@ export function PrivateProfilePage() {
 
       // Update tags
       const tagsResult = await updateUserTags(selectedTags);
-      
+
       if (!tagsResult.success) {
         throw new Error("Failed to update tags");
       }
@@ -117,7 +118,7 @@ export function PrivateProfilePage() {
           country: location.country,
           method: location.method
         });
-        
+
         if (!locationResult.success) {
           throw new Error("Failed to update location");
         }
@@ -127,7 +128,7 @@ export function PrivateProfilePage() {
         title: "Succès",
         description: "Votre profil a été mis à jour avec succès."
       });
-      
+
       // Redirect to profile page after successful update
       setTimeout(() => {
         navigate("/profile");
@@ -145,15 +146,15 @@ export function PrivateProfilePage() {
   const handlePhotosChange = async (newPhotos: { id?: number; url: string; isProfile: boolean }[]) => {
     try {
       // Determine what changed
-      const addedPhotos = newPhotos.filter(photo => 
+      const addedPhotos = newPhotos.filter(photo =>
         !photos.find(p => p.url === photo.url)
       );
-      
-      const removedPhotos = photos.filter(photo => 
+
+      const removedPhotos = photos.filter(photo =>
         !newPhotos.find(p => p.url === photo.url)
       );
-      
-      const profilePhotoChanges = newPhotos.filter(photo => 
+
+      const profilePhotoChanges = newPhotos.filter(photo =>
         photo.isProfile && !photos.find(p => p.id === photo.id && p.isProfile)
       );
 
@@ -163,12 +164,12 @@ export function PrivateProfilePage() {
         if (photo.url.startsWith('blob:')) {
           continue;
         }
-        
+
         const result = await addProfilePhoto({
           url: photo.url,
           isProfile: photo.isProfile
         });
-        
+
         if (result.success && result.data) {
           // Update the photo with its ID from the backend
           photo.id = result.data.id;
@@ -203,12 +204,12 @@ export function PrivateProfilePage() {
   // Function to handle image URLs - use placeholder if blob URL is not accessible
   const getImageUrl = (url: string) => {
     if (!url) return "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face";
-    
+
     // If it's a blob URL, use a placeholder instead
     if (url.startsWith('blob:')) {
       return "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face";
     }
-    
+
     return url;
   };
 
@@ -221,18 +222,142 @@ export function PrivateProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10 p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background pb-16">
+      <div className="max-w-4xl mx-auto px-4">
         <Card className="w-full">
-          <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 space-y-0">
-            <div className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Modifier votre profil</CardTitle>
-              <CardDescription>
-                Mettez à jour vos informations pour améliorer vos correspondances
-              </CardDescription>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold">Modifier votre profil</CardTitle>
+            <CardDescription>
+              Mettez à jour vos informations pour améliorer vos correspondances
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="bio" className="text-sm font-medium">
+                  Biographie
+                </label>
+                <Textarea
+                  id="bio"
+                  placeholder="Gamer and tech enthusiast 🎮💻"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  required
+                  className="min-h-[120px]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label htmlFor="gender" className="text-sm font-medium">
+                    Genre
+                  </label>
+                  <Select value={gender} onValueChange={setGender} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez votre genre" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Homme</SelectItem>
+                      <SelectItem value="female">Femme</SelectItem>
+                      <SelectItem value="other">Autre</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="orientation" className="text-sm font-medium">
+                    Orientation
+                  </label>
+                  <Select value={orientation} onValueChange={setOrientation} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez votre orientation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="straight">Hétérosexuel</SelectItem>
+                      <SelectItem value="gay">Homosexuel</SelectItem>
+                      <SelectItem value="lesbian">Lesbienne</SelectItem>
+                      <SelectItem value="bisexual">Bisexuel</SelectItem>
+                      <SelectItem value="pansexual">Pansexuel</SelectItem>
+                      <SelectItem value="other">Autre</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="birthDate" className="text-sm font-medium">
+                  Date de naissance
+                </label>
+                <input
+                  id="birthDate"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
             </div>
-            <Button 
-              variant="outline" 
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Centres d'intérêt</h3>
+              <p className="text-sm text-muted-foreground">
+                Mettez à jour vos centres d'intérêt pour améliorer vos correspondances
+              </p>
+              <TagSelector
+                selectedTags={selectedTags}
+                onTagsChange={setSelectedTags}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Photos</h3>
+              <p className="text-sm text-muted-foreground">
+                Gérez vos photos. La photo de profil sera celle qui apparaîtra en premier.
+              </p>
+              <PhotoUploader
+                photos={photos.map(photo => ({
+                  ...photo,
+                  url: getImageUrl(photo.url)
+                }))}
+                onPhotosChange={handlePhotosChange}
+                maxPhotos={5}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Localisation</h3>
+              <p className="text-sm text-muted-foreground">
+                Mettez à jour votre localisation pour trouver des correspondances à proximité
+              </p>
+              <LocationSelector
+                onLocationChange={setLocation}
+                initialLocation={location || undefined}
+              />
+            </div>
+          </CardContent>
+
+          <CardFooter className="flex flex-col gap-3 pt-6 border-t border-border/30">
+            <div className="flex flex-col w-full gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/profile")}
+                disabled={updating}
+                className="w-full"
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleSaveProfile}
+                disabled={updating}
+                className="w-full"
+              >
+                {updating ? "Enregistrement en cours..." : "Enregistrer les modifications"}
+              </Button>
+            </div>
+            <Button
+              variant="ghost"
               onClick={() => {
                 // Make API call to logout
                 const accessToken = localStorage.getItem("accessToken");
@@ -260,131 +385,9 @@ export function PrivateProfilePage() {
                 // Navigate to landing page
                 navigate("/");
               }}
-              className="flex items-center gap-2 bg-red-500 text-white hover:bg-red-600 w-fit"
+              className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 py-4"
             >
               Se déconnecter
-            </Button>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="bio" className="text-sm font-medium">
-                  Biographie
-                </label>
-                <Textarea
-                  id="bio"
-                  placeholder="Parlez-nous de vous..."
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  required
-                  className="min-h-[120px]"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="gender" className="text-sm font-medium">
-                    Genre
-                  </label>
-                  <Select value={gender} onValueChange={setGender} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez votre genre" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Homme</SelectItem>
-                      <SelectItem value="female">Femme</SelectItem>
-                      <SelectItem value="other">Autre</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="orientation" className="text-sm font-medium">
-                    Orientation
-                  </label>
-                  <Select value={orientation} onValueChange={setOrientation} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez votre orientation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="straight">Hétérosexuel</SelectItem>
-                      <SelectItem value="gay">Homosexuel</SelectItem>
-                      <SelectItem value="lesbian">Lesbienne</SelectItem>
-                      <SelectItem value="bisexual">Bisexuel</SelectItem>
-                      <SelectItem value="pansexual">Pansexuel</SelectItem>
-                      <SelectItem value="other">Autre</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="birthDate" className="text-sm font-medium">
-                  Date de naissance
-                </label>
-                <input
-                  id="birthDate"
-                  type="date"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Centres d'intérêt</h3>
-              <p className="text-sm text-muted-foreground">
-                Mettez à jour vos centres d'intérêt pour améliorer vos correspondances
-              </p>
-              <TagSelector 
-                selectedTags={selectedTags} 
-                onTagsChange={setSelectedTags} 
-              />
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Photos</h3>
-              <p className="text-sm text-muted-foreground">
-                Gérez vos photos. La photo de profil sera celle qui apparaîtra en premier.
-              </p>
-              <PhotoUploader 
-                photos={photos.map(photo => ({
-                  ...photo,
-                  url: getImageUrl(photo.url)
-                }))} 
-                onPhotosChange={handlePhotosChange} 
-                maxPhotos={5} 
-              />
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Localisation</h3>
-              <p className="text-sm text-muted-foreground">
-                Mettez à jour votre localisation pour trouver des correspondances à proximité
-              </p>
-              <LocationSelector 
-                onLocationChange={setLocation} 
-                initialLocation={location || undefined}
-              />
-            </div>
-          </CardContent>
-          
-          <CardFooter className="flex justify-end gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/profile")}
-              disabled={updating}
-            >
-              Annuler
-            </Button>
-            <Button 
-              onClick={handleSaveProfile} 
-              disabled={updating}
-            >
-              {updating ? "Enregistrement en cours..." : "Enregistrer les modifications"}
             </Button>
           </CardFooter>
         </Card>

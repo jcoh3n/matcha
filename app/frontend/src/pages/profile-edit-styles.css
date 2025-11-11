@@ -1,0 +1,44 @@
+/* Mobile-friendly profile edit page styles */
+.profile-edit-container {
+  position: relative;
+}
+
+/* Ensure proper spacing on mobile */
+.profile-edit-card {
+  margin-top: 1rem;
+  border-radius: 1.5rem; /* More rounded corners */
+  overflow: hidden;
+}
+
+/* Style for form sections */
+.profile-edit-section {
+  padding: 1rem 0;
+  border-bottom: 1px solid hsl(var(--border)/0.3);
+}
+
+.profile-edit-section:last-child {
+  border-bottom: none;
+}
+
+/* Style for logout button at bottom */
+.logout-button {
+  margin-top: 1rem;
+  border-top: 1px solid hsl(var(--border)/0.3);
+  padding-top: 1rem;
+}
+
+/* Better responsive behavior for form elements */
+@media (max-width: 768px) {
+  .profile-edit-card {
+    margin: 0.5rem;
+    border-radius: 1rem;
+  }
+  
+  .card-content {
+    padding: 1rem;
+  }
+  
+  .card-footer {
+    padding: 1rem;
+  }
+}

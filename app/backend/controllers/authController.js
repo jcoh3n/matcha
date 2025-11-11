@@ -32,64 +32,63 @@ const sendVerificationEmail = async (user) => {
       to: user.email,
       subject: 'Bienvenue sur Matcha - Vérifiez votre adresse email',
       html: `
-        <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #eae9e5; color: #2f330b;">
+        <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; color: #4b5563;">
           <!-- Header with Matcha branding -->
-          <div style="text-align: center; background-color: #78875e; color: #eae9e5; padding: 30px 20px; border-radius: 12px 12px 0 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; background-color: #f5f5f5; color: #1f2937; padding: 30px 20px; border-radius: 12px 12px 0 0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
             <img src="cid:logo" style="max-width: 80px; margin-bottom: 15px;" alt="Matcha Logo" />
-            <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Matcha</h1>
-            <p style="margin: 8px 0 0 0; font-size: 18px; opacity: 0.9;">Trouvez l'amour à votre goût</p>
+            <p style="margin: 8px 0 0 0; font-size: 18px; opacity: 0.8; color: #6b7280;">Trouvez l'amour à votre goût</p>
           </div>
           
           <!-- Main content -->
           <div style="background-color: #ffffff; padding: 40px 30px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
-            <h2 style="color: #2f330b; margin-top: 0; font-size: 24px; font-weight: 600;">Bienvenue ${user.firstName} !</h2>
+            <h2 style="color: #1f2937; margin-top: 0; font-size: 24px; font-weight: 600;">Bienvenue ${user.firstName} !</h2>
             
-            <p style="font-size: 16px; line-height: 1.6; color: #444111; margin: 20px 0;">
+            <p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 20px 0;">
               Merci de vous être inscrit sur Matcha. Nous sommes ravis de vous compter parmi nos membres.
             </p>
             
-            <p style="font-size: 16px; line-height: 1.6; color: #444111; margin: 20px 0;">
+            <p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 20px 0;">
               Pour finaliser votre inscription et commencer à rencontrer des personnes formidables, veuillez vérifier votre adresse email en cliquant sur le bouton ci-dessous :
             </p>
             
             <!-- Verification button -->
             <div style="text-align: center; margin: 40px 0;">
               <a href="${verificationUrl}" 
-                 style="background-color: #78875e; color: #eae9e5; padding: 16px 32px; text-decoration: none; 
-                        border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(120, 135, 94, 0.3);">
+                 style="background-color: #23a224; color: #ffffff; padding: 16px 32px; text-decoration: none; 
+                        border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(35, 162, 36, 0.3);">
                 Vérifier mon email
               </a>
             </div>
             
             <!-- Alternative link -->
-            <div style="background-color: #bcc4ac; padding: 20px; border-radius: 8px; margin: 30px 0;">
-              <p style="font-size: 14px; color: #2f330b; margin: 0 0 10px 0; text-align: center;">
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 30px 0;">
+              <p style="font-size: 14px; color: #4b5563; margin: 0 0 10px 0; text-align: center;">
                 Si le bouton ne fonctionne pas, copiez et collez le lien suivant :
               </p>
-              <p style="word-break: break-all; color: #78875e; font-size: 13px; margin: 0; text-align: center; font-family: monospace;">
+              <p style="word-break: break-all; color: #23a224; font-size: 13px; margin: 0; text-align: center; font-family: monospace;">
                 ${verificationUrl}
               </p>
             </div>
             
-            <p style="font-size: 14px; line-height: 1.5; color: #444111; margin: 30px 0 0 0;">
+            <p style="font-size: 14px; line-height: 1.5; color: #4b5563; margin: 30px 0 0 0;">
               Si vous n'avez pas créé de compte sur Matcha, vous pouvez ignorer cet email.
             </p>
             
             <!-- Footer -->
-            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #bcc4ac; color: #444111; font-size: 14px;">
-              <p style="margin: 0;">Cordialement,<br/><span style="font-weight: 600; color: #78875e;">L'équipe Matcha</span></p>
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #4b5563; font-size: 14px;">
+              <p style="margin: 0;">Cordialement,<br/><span style="font-weight: 600; color: #23a224;">L'équipe Matcha</span></p>
             </div>
           </div>
           
           <!-- Footer note -->
-          <div style="text-align: center; margin-top: 20px; color: #444111; font-size: 12px;">
+          <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px;">
             <p style="margin: 0;">© 2025 Matcha. Tous droits réservés.</p>
           </div>
         </div>
       `,
       attachments: [{
-        filename: 'logo-matcha.png',
-        path: './public/logo-matcha.png',
+        filename: 'matcha.svg',
+        path: './public/matcha.svg',
         cid: 'logo' // same cid value as in the html img src
       }]
     };
