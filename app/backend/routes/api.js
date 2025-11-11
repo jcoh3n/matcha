@@ -8,6 +8,7 @@ const locationRoutes = require('./location');
 const notificationsRoutes = require('./notifications');
 const messagesRoutes = require('./messages');
 const meRoutes = require('./me');
+const photosRoutes = require('./photos');
 const { authJWT } = require('../middleware/authJWT');
 
 const router = express.Router();
@@ -36,11 +37,6 @@ router.use('/', discoveryRoutes);
 
 // Location routes
 router.use('/', locationRoutes);
-// Notifications routes
-router.use('/notifications', notificationsRoutes);
-
-// Messages routes
-router.use('/messages', messagesRoutes);
 
 // Notifications routes
 router.use('/notifications', notificationsRoutes);
@@ -48,14 +44,8 @@ router.use('/notifications', notificationsRoutes);
 // Messages routes
 router.use('/messages', messagesRoutes);
 
-// Me routes (viewers, likers)
-router.use('/me', meRoutes);
-
-// Notifications routes
-router.use('/notifications', notificationsRoutes);
-
-// Messages routes
-router.use('/messages', messagesRoutes);
+// Photos routes
+router.use('/', photosRoutes);
 
 // Me routes (viewers, likers)
 router.use('/me', meRoutes);

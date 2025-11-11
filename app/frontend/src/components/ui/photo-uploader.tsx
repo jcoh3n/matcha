@@ -46,25 +46,44 @@ export function PhotoUploader({ photos, onPhotosChange, maxPhotos = 5 }: PhotoUp
     setIsUploading(true);
 
     try {
-      // In a real app, you would upload the file to your backend here
-      // For now, we'll create a preview URL
-      const previewUrl = URL.createObjectURL(file);
-      
-      // Add the new photo
+      // Upload the file to the backend
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      // Get the access token from local storage
+      const accessToken = localStorage.getItem('accessToken');
+
+      const response = await fetch('http://localhost:3000/api/upload-photo', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Échec de l\'upload de la photo');
+      }
+
+      const result = await response.json();
+      const uploadedPhoto = result.photo;
+
+      // Add the new photo with the actual URL from the backend
       const newPhoto = {
-        url: previewUrl,
+        id: uploadedPhoto.id,
+        url: uploadedPhoto.url,
         isProfile: false
       };
-      
+
       const newPhotos = [...photos, newPhoto];
-      
+
       // If this is the first photo, set it as profile photo by default
       if (newPhotos.length === 1) {
         newPhotos[0].isProfile = true;
       }
-      
+
       onPhotosChange(newPhotos);
-      
+
       toast({
         title: "Succès",
         description: "Photo ajoutée avec succès."
