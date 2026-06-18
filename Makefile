@@ -1,6 +1,9 @@
 # Matcha Project Makefile
 
-.PHONY: up down logs build rebuild clean prune kill help
+.PHONY: setup up down logs build rebuild clean prune kill help
+
+setup: ## One-command setup: configure .env (JWT secrets + email) + build + start
+	./setup.sh
 
 # Default target
 help: ## Show this help
