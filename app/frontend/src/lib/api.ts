@@ -70,6 +70,7 @@ export const api = {
       sortBy?: string;
       sortOrder?: string;
       fameRating?: number;
+      fameRatingMax?: number;
     }, limit?: number, offset?: number  ) => {
         const params = new URLSearchParams();
         if (limit) params.append("limit", limit.toString());
@@ -83,6 +84,8 @@ export const api = {
         if (filters.sortOrder) params.append("sortOrder", filters.sortOrder);
         if (filters.fameRating)
           params.append("fameRating", filters.fameRating.toString());
+        if (filters.fameRatingMax)
+          params.append("fameRatingMax", filters.fameRatingMax.toString());
 
         return authService.authenticatedFetch(`${API_ENDPOINTS.DISCOVERY}/filtered?${params.toString()}`);
       },

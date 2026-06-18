@@ -43,6 +43,7 @@ interface Filters {
   sortBy?: "fame" | "distance" | "age" | "tags";
   sortOrder?: "asc" | "desc";
   fameRating?: number;
+  fameRatingMax?: number;
 }
 
 const availableTags = [
@@ -110,6 +111,7 @@ export function DiscoverPage() {
     distance: 50,
     tags: [],
     fameRating: 0,
+    fameRatingMax: 5,
   });
   const [peers, setPeers] = useState<CardUser[]>([]);
   const [activePeerId, setActivePeerId] = useState<string>("");
@@ -331,6 +333,7 @@ export function DiscoverPage() {
           sortBy: filters.sortBy,
           sortOrder: filters.sortOrder,
           fameRating: filters.fameRating,
+          fameRatingMax: filters.fameRatingMax,
         },
         8,
         offset
@@ -381,6 +384,7 @@ export function DiscoverPage() {
       distance: 50,
       tags: [],
       fameRating: 0,
+      fameRatingMax: 5,
     });
   };
 
@@ -515,6 +519,23 @@ export function DiscoverPage() {
             />
             <div className="text-sm text-gray-500 mt-2">
               {filters.fameRating} étoiles minimum
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="5"
+              step="0.5"
+              value={filters.fameRatingMax ?? 5}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  fameRatingMax: parseFloat(e.target.value),
+                }))
+              }
+              className="w-full mt-3"
+            />
+            <div className="text-sm text-gray-500 mt-2">
+              {filters.fameRatingMax ?? 5} étoiles maximum
             </div>
           </div>
 

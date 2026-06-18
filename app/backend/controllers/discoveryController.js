@@ -510,9 +510,6 @@ const searchUsers = async (req, res) => {
         ) AND NOT EXISTS (
           SELECT 1 FROM blocks b WHERE (b.user_id = $4 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $4)
               )
-              AND NOT EXISTS (
-                SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $4 AND pv.viewed_user_id = u.id
-              )
       `
       : `
         SELECT 
@@ -560,9 +557,6 @@ const searchUsers = async (req, res) => {
                 SELECT 1 FROM passes ps WHERE ps.viewer_id = $4 AND ps.passed_user_id = u.id
         ) AND NOT EXISTS (
           SELECT 1 FROM blocks b WHERE (b.user_id = $4 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $4)
-              )
-              AND NOT EXISTS (
-                SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $4 AND pv.viewed_user_id = u.id
               )
       `;
 
@@ -694,9 +688,6 @@ const searchUsers = async (req, res) => {
         ) AND NOT EXISTS (
           SELECT 1 FROM blocks b WHERE (b.user_id = $2 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $2)
             )
-            AND NOT EXISTS (
-              SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $2 AND pv.viewed_user_id = u.id
-            )
     `;
 
     // Build count parameters
@@ -742,7 +733,7 @@ const searchUsers = async (req, res) => {
 const getFilteredUsers = async (req, res) => {
   try {
     const { limit = 20, offset = 0, lite } = req.query;
-    const { ageMin, ageMax, distance, tags, sortBy, sortOrder, fameRating } =
+    const { ageMin, ageMax, distance, tags, sortBy, sortOrder, fameRating, fameRatingMax } =
       req.query;
 
     // Determine if we should use lite response
@@ -812,9 +803,6 @@ const getFilteredUsers = async (req, res) => {
         ) AND NOT EXISTS (
           SELECT 1 FROM blocks b WHERE (b.user_id = $1 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $1)
         )
-        AND NOT EXISTS (
-          SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $1 AND pv.viewed_user_id = u.id
-        )
       `;
     } else {
       // Full response - all fields
@@ -863,9 +851,6 @@ const getFilteredUsers = async (req, res) => {
         ) AND NOT EXISTS (
           SELECT 1 FROM blocks b WHERE (b.user_id = $1 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $1)
         )
-        AND NOT EXISTS (
-          SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $1 AND pv.viewed_user_id = u.id
-        )
       `;
     }
 
@@ -909,6 +894,15 @@ const getFilteredUsers = async (req, res) => {
     ) {
       query += ` AND p.fame_rating >= $${++paramIndex}`;
       params.push(safeParseInt(fameRating, 0));
+    }
+
+    if (
+      fameRatingMax !== undefined &&
+      fameRatingMax !== "" &&
+      !Number.isNaN(safeParseInt(fameRatingMax))
+    ) {
+      query += ` AND p.fame_rating <= $${++paramIndex}`;
+      params.push(safeParseInt(fameRatingMax, 0));
     }
 
     if (distance && !Number.isNaN(safeParseInt(distance))) {
@@ -1079,9 +1073,6 @@ const getFilteredUsers = async (req, res) => {
         ) AND NOT EXISTS (
           SELECT 1 FROM blocks b WHERE (b.user_id = $1 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $1)
       )
-      AND NOT EXISTS (
-        SELECT 1 FROM profile_views pv WHERE pv.viewer_id = $1 AND pv.viewed_user_id = u.id
-      )
     `;
 
     let countParams = [req.user.id];
@@ -1120,6 +1111,15 @@ const getFilteredUsers = async (req, res) => {
     ) {
       countParams.push(safeParseInt(fameRating, 0));
       countQuery += ` AND p.fame_rating >= $${countParams.length}`;
+    }
+
+    if (
+      fameRatingMax !== undefined &&
+      fameRatingMax !== "" &&
+      !Number.isNaN(safeParseInt(fameRatingMax))
+    ) {
+      countParams.push(safeParseInt(fameRatingMax, 0));
+      countQuery += ` AND p.fame_rating <= $${countParams.length}`;
     }
 
     if (distance && !Number.isNaN(safeParseInt(distance))) {
