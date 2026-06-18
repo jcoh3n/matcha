@@ -8,19 +8,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 5173,
   },
-  plugins: [react({ 
-    babel: {
-      plugins: [
-        [
-          "babel-plugin-styled-components",
-          {
-            displayName: true,
-            fileName: false,
-          }
-        ]
-      ]
-    }
-  })],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
