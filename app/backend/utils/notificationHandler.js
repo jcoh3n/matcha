@@ -33,6 +33,12 @@ function getUserSocketId(userId) {
   return ids.length ? ids[0] : undefined;
 }
 
+// Real-time presence: a user is online if they have at least one active socket
+function isUserConnected(userId) {
+  const set = connectedUsers.get(String(userId));
+  return !!(set && set.size > 0);
+}
+
 // Send notification to a specific user (all connected sockets)
 function sendNotificationToUser(io, userId, notification) {
   const socketIds = getUserSocketIds(userId);
@@ -69,6 +75,7 @@ module.exports = {
   removeUser,
   getUserSocketIds,
   getUserSocketId,
+  isUserConnected,
   sendNotificationToUser,
   createAndSendNotification
 };

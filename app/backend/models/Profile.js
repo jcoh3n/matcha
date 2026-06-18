@@ -13,6 +13,7 @@ class Profile {
   if (this.gender === 'other') this.gender = 'non-binary';
     this.birthDate = data.birth_date;
     this.fameRating = data.fame_rating;
+    this.lastActive = data.last_active || data.lastActive || null;
     this.createdAt = data.created_at || data.createdAt || new Date();
     this.updatedAt = data.updated_at || data.updatedAt || new Date();
   }
@@ -27,9 +28,19 @@ class Profile {
       orientation: this.orientation,
       birthDate: this.birthDate,
       fameRating: this.fameRating,
+      lastActive: this.lastActive,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
+  }
+
+  // Update the user's last activity timestamp (used for presence / "last seen")
+  static async touchLastActive(userId) {
+    try {
+      await db.query('UPDATE profiles SET last_active = NOW() WHERE user_id = $1', [userId]);
+    } catch (err) {
+      console.error('Error updating last_active for user', userId, err.message || err);
+    }
   }
 
   // Create a new profile in the database

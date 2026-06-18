@@ -10,7 +10,7 @@ const ProfileView = require("../models/ProfileView");
 const Pass = require("../models/Pass");
 const { updateFameRating } = require("../services/fameRatingService");
 const Match = require("../models/Match");
-const { createAndSendNotification } = require('../utils/notificationHandler');
+const { createAndSendNotification, isUserConnected } = require('../utils/notificationHandler');
 
 // Helper function to calculate age from birth date
 const calculateAge = (birthDate) => {
@@ -165,8 +165,8 @@ const getPublicProfile = async (req, res) => {
         : null,
       viewsCount: viewsCount.length,
       likedCount: likedCount.length,
-      isOnline: false, // Will be implemented later
-      lastSeen: profileUser.updatedAt, // Will be improved later
+      isOnline: isUserConnected(profileUserId),
+      lastSeen: profile.lastActive || profileUser.updatedAt,
       isLiked,
       isLikedByUser,
       isMatch,

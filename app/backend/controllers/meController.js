@@ -5,6 +5,7 @@ const Location = require('../models/Location');
 const Like = require('../models/Like');
 const Block = require('../models/Block');
 const ProfileView = require('../models/ProfileView');
+const { isUserConnected } = require('../utils/notificationHandler');
 
 // Helper function to calculate age from birth date
 const calculateAge = (birthDate) => {
@@ -38,12 +39,6 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
 const deg2rad = (deg) => {
   return deg * (Math.PI / 180);
-};
-
-// Helper function to check if user is online (active in last 5 minutes)
-const isUserOnline = (lastActive) => {
-  if (!lastActive) return false;
-  return (new Date() - new Date(lastActive)) < 5 * 60 * 1000;
 };
 
 // Helper function to parse pagination parameters
@@ -154,8 +149,8 @@ const getViewers = async (req, res) => {
                 country: viewerLocation.country,
               }
             : null,
-          isOnline: isUserOnline(viewerUser.updatedAt),
-          lastSeen: viewerUser.updatedAt,
+          isOnline: isUserConnected(viewerUser.id),
+          lastSeen: (viewerProfile && viewerProfile.lastActive) || viewerUser.updatedAt,
           isLiked,
           isLikedByUser,
           isMatch,
@@ -248,8 +243,8 @@ const getLikers = async (req, res) => {
                 country: likerLocation.country,
               }
             : null,
-          isOnline: isUserOnline(likerUser.updatedAt),
-          lastSeen: likerUser.updatedAt,
+          isOnline: isUserConnected(likerUser.id),
+          lastSeen: (likerProfile && likerProfile.lastActive) || likerUser.updatedAt,
           isLiked,
           isMatch,
           likedAt: like.createdAt
@@ -274,14 +269,16 @@ const getOnlineStatus = async (req, res) => {
   try {
     const currentUserId = req.user.id;
     const user = await User.findById(currentUserId);
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    
+
+    const profile = await Profile.findByUserId(currentUserId);
+
     res.json({
-      isOnline: isUserOnline(user.updatedAt),
-      lastSeen: user.updatedAt
+      isOnline: isUserConnected(currentUserId),
+      lastSeen: (profile && profile.lastActive) || user.updatedAt
     });
   } catch (error) {
     console.error("Error fetching online status:", error);

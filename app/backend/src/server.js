@@ -25,6 +25,7 @@ const chat = io.of('/chat');
 
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Profile = require('../models/Profile');
 
 chat.use(async (socket, next) => {
   try {
@@ -39,6 +40,8 @@ chat.use(async (socket, next) => {
     // Attach user to socket and register it
     socket.user = user;
     addUser(user.id, socket.id);
+    // Mark the user as active (presence / "last seen")
+    Profile.touchLastActive(user.id);
     console.log(`Socket ${socket.id} authenticated as user ${user.id}`);
     return next();
   } catch (err) {
@@ -53,6 +56,10 @@ chat.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Chat client disconnected:', socket.id);
     removeUser(socket.id);
+    // Record the time of the last connection as "last seen"
+    if (socket.user) {
+      Profile.touchLastActive(socket.user.id);
+    }
   });
 });
 
