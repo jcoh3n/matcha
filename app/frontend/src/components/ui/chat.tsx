@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
 import io from 'socket.io-client'
-import DoneIcon from '@mui/icons-material/Done'
+import { Check as DoneIcon } from 'lucide-react'
 
 export interface ChatMessage {
   id: string
@@ -235,7 +235,7 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
                 <span>{formatTime(m.createdAt)}</span>
                 {m.pending && <span>…</span>}
                 {mine && !m.pending && !m.read && (
-                  <DoneIcon style={{ fontSize: 14, marginLeft: 8, opacity: 0.8, transition: 'opacity 160ms linear' }} />
+                  <DoneIcon size={14} style={{ marginLeft: 8, opacity: 0.8, transition: 'opacity 160ms linear' }} />
                 )}
                 {mine && m.read && !m.pending && (
                   <span className="ml-2 text-[10px] opacity-90" style={{ transition: 'opacity 220ms ease' }}>Seen</span>

@@ -1,9 +1,11 @@
 import React from "react";
-import SearchIcon from '@mui/icons-material/Search';
-import PersonIcon from '@mui/icons-material/Person';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
-import LogoutIcon from '@mui/icons-material/Logout';
+import {
+  Search as SearchIcon,
+  User as PersonIcon,
+  MessageCircle as ChatBubbleOutlineIcon,
+  Bell as NotificationsNoneIcon,
+  LogOut as LogoutIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
