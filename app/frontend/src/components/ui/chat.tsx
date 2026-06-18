@@ -32,20 +32,17 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
 
   // Get token from localStorage and setup WebSocket connection
   useEffect(() => {
-    console.log('[DEBUG Frontend] Chat component mounted for peerId:', peerId, 'selfId:', selfId);
     const accessToken = localStorage.getItem("accessToken")
     setToken(accessToken)
     
     // Load conversation history
     if (accessToken) {
-      console.log('[DEBUG Frontend] Loading conversation history for peerId:', peerId);
       loadConversation(accessToken)
     } else {
       console.error('[DEBUG Frontend] No access token found');
     }
     
     // Initialize WebSocket connection to /chat namespace with JWT auth
-    console.log('[DEBUG Frontend] Initializing WebSocket connection to:', (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/chat');
     if (!accessToken) {
       console.error('[DEBUG Frontend] No access token found, skipping WebSocket init');
     } else {
@@ -59,7 +56,6 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
     
     // Create a stable handler function to avoid recreating on each render
     const handleMessage = (data) => {
-      console.log('[DEBUG Frontend] Received WebSocket message:', data);
 
       // Support two payload shapes: legacy { senderId, receiverId, content, timestamp }
       // and new { message: { id, sender_id, receiver_id, content, created_at, read }, sender: { id } }
@@ -75,7 +71,6 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
 
       // Only add the message if it's for our current chat (to us from our peer)
       if (receiverIdStr === selfIdStr && senderIdStr === peerIdStr) {
-        console.log('[DEBUG Frontend] Adding message from peer to chat:', senderIdStr);
         setMessages(prev => {
           // Check if message already exists to avoid duplicates
           const messageExists = prev.some(msgItem => 
@@ -85,7 +80,6 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
           );
 
           if (messageExists) {
-            console.log('[DEBUG Frontend] Message already exists, skipping');
             return prev;
           }
 
@@ -98,11 +92,9 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
             read: readFlag
           };
 
-          console.log('[DEBUG Frontend] Adding new message to messages state');
           return [...prev, newMessage];
         });
       } else {
-        console.log('[DEBUG Frontend] Message not for current peer, ignoring. Expected receiver:', selfIdStr, 'sender:', peerIdStr, 'Got receiver:', receiverIdStr, 'sender:', senderIdStr);
       }
     };
     
@@ -110,7 +102,6 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
     socket.on('new_message', handleMessage);
 
     const handleMessageRead = (data) => {
-      console.log('[DEBUG Frontend] Received message_read event:', data);
       const { messageIds, readerId } = data || {};
       // If the reader is our current peer, mark matching messages as read
       if (!messageIds) return;
@@ -128,7 +119,6 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
 
     const startPolling = () => {
       if (pollInterval) return;
-      console.log('[DEBUG Frontend] Starting polling fallback (every 5s)');
       pollInterval = window.setInterval(() => {
         if (accessToken) loadConversation(accessToken);
       }, 5000);
@@ -136,25 +126,21 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
 
     const stopPolling = () => {
       if (pollInterval) {
-        console.log('[DEBUG Frontend] Stopping polling fallback');
         clearInterval(pollInterval);
         pollInterval = null;
       }
     };
 
     socket.on('connect', () => {
-      console.log('[DEBUG Frontend] WebSocket connected with id:', socket.id);
       stopPolling();
     });
 
     socket.on('disconnect', () => {
-      console.log('[DEBUG Frontend] WebSocket disconnected');
       startPolling();
     });
 
     // Cleanup function - remove listeners before disconnecting
     return () => {
-      console.log('[DEBUG Frontend] Cleaning up WebSocket listeners and disconnecting');
       stopPolling();
       socket.off('new_message', handleMessage);
       socket.off('message_read', handleMessageRead);
@@ -164,15 +150,12 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
   }, [selfId, peerId])
 
   const loadConversation = async (accessToken: string) => {
-    console.log('[DEBUG Frontend] Loading conversation with peerId:', peerId);
     try {
       // Use the updated API call that handles authentication automatically
       const response = await api.getConversation(parseInt(peerId))
-      console.log('[DEBUG Frontend] getConversation API response:', response.status, response.ok);
       
       if (response.ok) {
         const conversation = await response.json()
-        console.log('[DEBUG Frontend] Loaded', conversation.length, 'messages from API');
         const formattedMessages = conversation.map((msg: any) => ({
           id: msg.id.toString(),
           from: msg.senderId.toString(),
@@ -181,7 +164,6 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
           createdAt: msg.createdAt,
           read: !!msg.read
         }))
-        console.log('[DEBUG Frontend] Setting formatted messages:', formattedMessages.length);
         setMessages(formattedMessages)
       } else {
         console.error('[DEBUG Frontend] Failed to load conversation, response:', await response.text());
@@ -197,11 +179,9 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
 
   const handleSend = async () => {
     if (!input.trim() || !token) {
-      console.log('[DEBUG Frontend] Cannot send message - missing input or token:', { input: input.trim(), hasToken: !!token });
       return;
     }
     
-    console.log('[DEBUG Frontend] Sending message:', { content: input.trim(), to: peerId, from: selfId });
     
     const optimistic: ChatMessage = {
       id: Date.now().toString(),
@@ -213,7 +193,6 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
       read: false
     }
     
-    console.log('[DEBUG Frontend] Adding optimistic message:', optimistic);
     setMessages(m => [...m, optimistic])
     setInput("")
     
@@ -223,11 +202,9 @@ export function Chat({ selfId, peerId, initialMessages = [], onSend }: ChatProps
         content: input.trim()
       })
       
-      console.log('[DEBUG Frontend] sendMessage API response:', response.status, response.ok);
       
       if (response.ok) {
         const savedMessage = await response.json()
-        console.log('[DEBUG Frontend] Message saved successfully:', savedMessage);
         // Replace optimistic message with saved message
         setMessages(m => m.map(msg => 
           msg.id === optimistic.id 

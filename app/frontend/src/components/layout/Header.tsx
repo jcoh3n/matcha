@@ -36,23 +36,16 @@ export function Header({
 
   // Log when component mounts and when props change
   useEffect(() => {
-    console.log("Header component mounted/updated");
-    console.log("onLogout prop:", onLogout);
   }, [onLogout]);
 
   const handleLogout = () => {
-    console.log("Logout button clicked in Header");
-    console.log("onLogout function:", onLogout);
     if (onLogout) {
-      console.log("Calling onLogout function");
       onLogout();
     } else {
-      console.log("No onLogout function provided");
     }
   };
 
   const handleNavigation = (page: string, query?: string) => {
-    console.log("Navigate to:", page, "with query:", query);
     if (onNavigate) {
       onNavigate(page, query);
     } else {

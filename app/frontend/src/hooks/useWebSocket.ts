@@ -39,7 +39,6 @@ export function useWebSocket() {
         setSocket(newSocket);
         
         newSocket.on("connect", () => {
-          console.log("Socket.IO connected");
           setIsConnected(true);
           
           // Authenticate the user
@@ -47,13 +46,11 @@ export function useWebSocket() {
         });
         
         newSocket.on("notification", (data) => {
-          console.log("Received notification:", data);
           // Add new notification to the list
           setNotifications(prev => [data, ...prev]);
         });
         
         newSocket.on("disconnect", () => {
-          console.log("Socket.IO disconnected");
           setIsConnected(false);
         });
         

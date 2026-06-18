@@ -103,19 +103,16 @@ export function useNotification() {
       });
       
       socket.on("connect", () => {
-        console.log("Socket.IO connected");
         // Authenticate the user
         socket.emit("authenticate", { userId });
       });
       
       socket.on("notification", (data) => {
-        console.log("Received real-time notification:", data);
         // Add new notification to the list
         addNotification(data);
       });
       
       socket.on("message", (data) => {
-        console.log("Received real-time message:", data);
         // We could handle real-time messages here if needed
         // For now, we'll just trigger a notification
         if (data.senderId !== getUserId()) {
@@ -133,7 +130,6 @@ export function useNotification() {
       });
       
       socket.on("disconnect", () => {
-        console.log("Socket.IO disconnected");
       });
       
       socket.on("connect_error", (error) => {

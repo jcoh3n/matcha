@@ -49,7 +49,6 @@ export function MessagesPage() {
 
   // Fetch current user info and chat peers
   const fetchUserData = async () => {
-    console.log('[DEBUG Frontend] fetchUserData called');
     setLoading(true);
     try {
       // Get current user info to get the user ID
@@ -59,14 +58,11 @@ export function MessagesPage() {
         return;
       }
 
-      console.log('[DEBUG Frontend] Getting current user info');
       // Get current user to get the ID
       const userResponse = await api.getCurrentUser();
-      console.log('[DEBUG Frontend] getCurrentUser response:', userResponse.status, userResponse.ok);
       
       if (userResponse.ok) {
         const userData = await userResponse.json();
-        console.log('[DEBUG Frontend] Current user data:', userData.id);
         setSelfId(userData.id.toString()); // Set the current user ID as string to match message format
       } else {
         console.error("Failed to fetch current user");
@@ -74,13 +70,10 @@ export function MessagesPage() {
       }
 
       // Use conversations endpoint to get users we can chat with (mutual matches)
-      console.log('[DEBUG Frontend] Fetching conversations');
       const response = await api.getConversations();
-      console.log('[DEBUG Frontend] getConversations response:', response.status, response.ok); 
       
       if (response.ok) {
         const conversations = await response.json();
-        console.log('[DEBUG Frontend] Received', conversations.length, 'conversations from API');
         
         // Transform conversations to match the expected format for the UI
         const formattedConversations = conversations.map(conv => ({
@@ -92,13 +85,10 @@ export function MessagesPage() {
           lastMessage: conv.lastMessage
         }));
         
-        console.log('[DEBUG Frontend] Setting', formattedConversations.length, 'formatted conversations as peers');
         setPeers(formattedConversations);
         if (formattedConversations.length > 0) {
-          console.log('[DEBUG Frontend] Setting first peer as active:', formattedConversations[0].name);
           setActivePeer(formattedConversations[0]);
         } else {
-          console.log('[DEBUG Frontend] No conversations found - no peers to display');
         }
       } else {
         console.error("Failed to fetch conversations");

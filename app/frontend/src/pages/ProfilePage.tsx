@@ -20,7 +20,6 @@ export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
 
   useEffect(() => {
     if (!accessToken) {
-      console.log("No access token found, calling onLogout");
       onLogout?.();
     }
   }, [accessToken, onLogout]);

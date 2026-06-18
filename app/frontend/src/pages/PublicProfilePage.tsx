@@ -89,7 +89,6 @@ export function PublicProfilePage() {
         setLoading(true);
         setError(null); // Reset any previous errors
         const profileData = await getPublicProfile(parseInt(id), accessToken);
-        console.log("Profile data received:", profileData); // Debug log
         setProfile(profileData);
       } catch (error: any) {
         console.error("Error fetching profile:", error);
@@ -294,7 +293,6 @@ export function PublicProfilePage() {
   const otherPhotos = profile.photos.filter(photo => photo !== profilePhoto);
   
   // Debug log to see what fields are available
-  console.log("Profile fields:", Object.keys(profile));
   
   // Calculate age from birth date
   const age = calculateAge(profile.profile?.birthDate);

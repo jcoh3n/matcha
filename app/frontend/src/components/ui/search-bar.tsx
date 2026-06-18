@@ -80,7 +80,6 @@ export function SearchBar({
         const response = await api.searchUsers(query);
         if (response.ok) {
           const results: UserProfile[] = await response.json();
-          console.log("Search API response:", results);
           onResults?.(results);
         } else {
           const errorText = await response.text();

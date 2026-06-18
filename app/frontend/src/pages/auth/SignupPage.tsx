@@ -91,7 +91,6 @@ export function SignupPage() {
     };
     
     // Log the data being sent for debugging
-    console.log('Sending registration data:', userData);
     
     setIsLoading(true);
 
@@ -115,7 +114,6 @@ export function SignupPage() {
         data = {};
       }
       
-      console.log('Registration response:', data);
 
       if (response.ok) {
         // Show success message

@@ -31,7 +31,6 @@ export function AppShell({
   const navigate = useNavigate();
 
   const handleNavigation = (page: string, query?: string) => {
-    console.log("AppShell navigation:", page, query);
     if (page === "search" && query) {
       navigate(`/search?q=${encodeURIComponent(query)}`);
     } else if (page === "profile" && query) {

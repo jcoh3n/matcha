@@ -370,7 +370,6 @@ export function PrivateProfilePage() {
                     },
                   })
                     .then((response) => {
-                      console.log("Logout API response:", response);
                     })
                     .catch((error) => {
                       console.error("Logout API error:", error);
@@ -378,7 +377,6 @@ export function PrivateProfilePage() {
                 }
 
                 // Clear localStorage
-                console.log("Clearing localStorage");
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
                 localStorage.removeItem("user");

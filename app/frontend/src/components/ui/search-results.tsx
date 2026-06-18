@@ -87,13 +87,11 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
   };
 
   const handleSearchResults = (results: UserProfile[]) => {
-    console.log("Search results received:", results);
     setSearchResults(results);
     setShowResults(results.length > 0);
   };
 
   const handleSearchSubmit = (query: string) => {
-    console.log("Search submitted with query:", query);
     setSearchValue(query); // ← Mettre à jour la valeur de recherche
     if (onNavigate) {
       onNavigate("search", query);

@@ -150,15 +150,12 @@ export function DiscoverPage() {
         console.error("No access token found");
         return;
       }
-      console.log("Fetching discovery users...");
       const response = await api.getDiscoveryUsers(token, 8, offset);
       if (response.ok) {
         const data = await response.json();
         // Check if response has pagination structure and extract data if needed
         const users: UserProfile[] = Array.isArray(data) ? data : (data.data || []);
-        console.log("Received users:", users);
         const transformedUsers = users.map(transformUserForProfileCard);
-        console.log("Transformed users:", transformedUsers);
         if (offset === 0) {
           // Replace profiles for initial load
           setProfiles(transformedUsers);
@@ -171,7 +168,6 @@ export function DiscoverPage() {
         if (transformedUsers.length > 0 && offset === 0) {
           setActivePeerId(transformedUsers[0].id);
         } else if (transformedUsers.length === 0 && offset === 0) {
-          console.log("No users found for discovery");
         }
       } else {
         console.error(
@@ -201,8 +197,6 @@ export function DiscoverPage() {
         if (response.ok) {
           const userData = await response.json();
           // Check if essential profile fields are filled
-          console.log("User data:", userData);
-          console.log("Profile data:", userData.profile);
           if (
             !userData.profile ||
             !userData.profile.bio ||
@@ -230,10 +224,8 @@ export function DiscoverPage() {
   const moveToNextProfile = useCallback(() => {
     if (currentIndex < profiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
-      console.log(`Moved to next profile, new index: ${currentIndex + 1}`);
     } else {
       // Load more profiles
-      console.log("No more profiles, fetching new ones");
       fetchDiscoveryUsers(profiles.length);
       setCurrentIndex(currentIndex + 1);
     }
@@ -325,7 +317,6 @@ export function DiscoverPage() {
         console.error("No access token found");
         return;
       }
-      console.log("Fetching filtered users with filters:", filters);
       const response = await api.getFilteredUsers(
         token,
         {
@@ -349,10 +340,8 @@ export function DiscoverPage() {
         const data = await response.json();
         // Check if response has pagination structure and extract data if needed
         const users: UserProfile[] = Array.isArray(data) ? data : (data.data || []);
-        console.log("Received filtered users:", users);
         // Transform; backend already filters/sorts, client sort remains as fallback
         const transformedUsers = users.map(transformUserForProfileCard);
-        console.log("Transformed filtered users:", transformedUsers);
         if (offset === 0) {
           // Replace profiles for initial load
           setProfiles(transformedUsers);
@@ -365,7 +354,6 @@ export function DiscoverPage() {
         if (transformedUsers.length > 0 && offset === 0) {
           setActivePeerId(transformedUsers[0].id);
         } else if (transformedUsers.length === 0 && offset === 0) {
-          console.log("No users found for discovery with applied filters");
         }
       } else {
         console.error(
