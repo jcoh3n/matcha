@@ -224,15 +224,11 @@ const likeUser = async (req, res) => {
 
     // Check if it's a match
     const isMatch = await Like.exists(likedUserId, currentUserId);
-    console.log('[DEBUG] Like check result for', currentUserId, 'liking', likedUserId, ': isMatch =', isMatch);
     
     // If it's a mutual like, create a match in the matches table
     if (isMatch) {
-        console.log('[DEBUG] Creating match between', currentUserId, 'and', likedUserId);
         await Match.createIfNotExists(currentUserId, likedUserId);
-        console.log('[DEBUG] Match created successfully between', currentUserId, 'and', likedUserId);
     } else {
-        console.log('[DEBUG] No match created - not a mutual like between', currentUserId, 'and', likedUserId);
     }
     
     // Send notification to the liked user
@@ -298,7 +294,6 @@ const unlikeUser = async (req, res) => {
     try {
       const matchDeleted = await Match.delete(currentUserId, unlikedUserId);
       if (matchDeleted) {
-        console.log('[DEBUG] Match deleted due to unlike between', currentUserId, 'and', unlikedUserId);
       }
     } catch (matchErr) {
       console.error('Error deleting match on unlike:', matchErr);

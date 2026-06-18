@@ -10,24 +10,20 @@ const sendMessage = async (req, res) => {
     const senderId = req.user.id;
     const { receiverId, content } = req.body;
     
-    console.log('[DEBUG] sendMessage called:', { senderId, receiverId, content: content?.substring(0, 50) + '...' });
     
     // Validate input
     if (!receiverId || !content || content.trim().length === 0) {
-      console.log('[DEBUG] Validation failed for sendMessage:', { receiverId, hasContent: !!content, contentLength: content?.trim().length });
       return res.status(400).json({ message: 'Receiver ID and content are required' });
     }
     
     // Check if receiver exists
     const receiver = await User.findById(receiverId);
     if (!receiver) {
-      console.log('[DEBUG] Receiver not found:', receiverId);
       return res.status(404).json({ message: 'Receiver not found' });
     }
     
     // Check if user is trying to message themselves
     if (senderId === receiverId) {
-      console.log('[DEBUG] User tried to message themselves:', senderId);
       return res.status(400).json({ message: 'Cannot send message to yourself' });
     }
 
@@ -35,7 +31,6 @@ const sendMessage = async (req, res) => {
     try {
       const areMatched = await Match.exists(senderId, receiverId);
       if (!areMatched) {
-        console.log('[DEBUG] Message blocked - users are not matched:', senderId, receiverId);
         return res.status(403).json({ message: 'You can only send messages to users you have matched with' });
       }
     } catch (matchErr) {
@@ -50,13 +45,11 @@ const sendMessage = async (req, res) => {
       content: content.trim()
     });
     
-    console.log('[DEBUG] Message created successfully:', message.id);
     
     // Emit real-time message event to the receiver socket only (read flag included)
     const sender = await User.findById(senderId);
     if (sender && global.io) {
       try {
-        console.log('[DEBUG] Emitting new_message via WebSocket to receiver:', receiverId);
         const socketIds = getUserSocketIds(receiverId);
         const payload = {
           message: message.toJSON(),
@@ -80,21 +73,17 @@ const sendMessage = async (req, res) => {
           }
         } else {
           // Receiver not connected
-          console.log('[DEBUG] Receiver not connected, skipping real-time emit');
         }
       } catch (emitErr) {
         console.error('[ERROR] Failed to emit new_message:', emitErr);
       }
-    } else {
-      console.log('[DEBUG] Could not emit message via WebSocket - sender or io not available');
     }
-    
+
     // Send notification to receiver if they're not the sender
     if (senderId !== receiverId) {
       if (sender) {
         const notificationContent = `${sender.firstName} ${sender.lastName}: ${content.trim().substring(0, 50)}${content.trim().length > 50 ? '...' : ''}`;
         
-        console.log('[DEBUG] Sending notification to receiver:', receiverId);
         // Send notification
         await createAndSendNotification(global.io, {
           userId: receiverId,
@@ -105,7 +94,6 @@ const sendMessage = async (req, res) => {
       }
     }
     
-    console.log('[DEBUG] sendMessage completed successfully, returning message:', message.id);
     res.status(201).json(message.toJSON());
   } catch (error) {
     console.error('Error sending message:', error);
@@ -119,28 +107,23 @@ const getConversation = async (req, res) => {
     const userId = req.user.id;
     const { userId: otherUserId } = req.params;
     
-    console.log('[DEBUG] getConversation called:', { userId, otherUserId });
     
     // Validate input
     if (!otherUserId) {
-      console.log('[DEBUG] Validation failed - otherUserId is required');
       return res.status(400).json({ message: 'User ID is required' });
     }
     
     // Check if user exists
     const otherUser = await User.findById(otherUserId);
     if (!otherUser) {
-      console.log('[DEBUG] Other user not found:', otherUserId);
       return res.status(404).json({ message: 'User not found' });
     }
     
     // Get conversation
     const messages = await Message.findConversation(userId, otherUserId);
-    console.log('[DEBUG] Found', messages.length, 'messages in conversation between', userId, 'and', otherUserId);
     
     // Mark messages as read (messages sent by otherUserId to userId)
     const updatedMessages = await Message.markConversationAsRead(otherUserId, userId);
-    console.log('[DEBUG] Marked', updatedMessages.length, 'messages as read for conversation between', userId, 'and', otherUserId);
 
     // Notify the original sender that their messages were read
     try {
@@ -172,7 +155,6 @@ const getConversation = async (req, res) => {
     }
     
     const messagesJson = messages.map(message => message.toJSON());
-    console.log('[DEBUG] Returning', messagesJson.length, 'messages');
     
     res.json(messagesJson);
   } catch (error) {
@@ -197,7 +179,6 @@ const getUnreadMessagesCount = async (req, res) => {
 const getConversations = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log('[DEBUG] getConversations called for user:', userId);
     
     // Get all matched users with their latest message information
     const { rows } = await db.query(
@@ -285,7 +266,6 @@ const getConversations = async (req, res) => {
       [userId]
     );
 
-    console.log('[DEBUG] Query returned', rows.length, 'matches for user', userId);
     
     // Transform the results to match the expected format
     const conversations = rows.map(row => ({
@@ -311,7 +291,6 @@ const getConversations = async (req, res) => {
       } : null
     }));
 
-    console.log('[DEBUG] Returning', conversations.length, 'conversations for user', userId);
     res.json(conversations);
   } catch (error) {
     console.error('Error fetching conversations:', error);

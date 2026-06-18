@@ -68,17 +68,14 @@ const getDiscoveryUsers = async (req, res) => {
     const useLiteResponse = lite === 'true' || lite === true || lite === '1';
 
     // Log the current user
-    console.log("Current user:", req.user);
 
     // Query to get users with their profiles, photos, and locations
     // Orientation-based gender filtering
     const viewerProfile = await fetchViewerProfile(req.user.id);
-    console.log("Viewer profile (orientation filter):", viewerProfile);
     const allowedGenders = computeAllowedGenders(
       viewerProfile.gender,
       viewerProfile.orientation
     );
-    console.log("Allowed genders derived:", allowedGenders);
 
     let genderFilterClause = "";
     const params = [safeParseInt(limit, 20), safeParseInt(offset, 0), req.user.id];
@@ -259,7 +256,6 @@ const getDiscoveryUsers = async (req, res) => {
     });
 
     // Log the transformed users
-    console.log("Transformed users:", users);
 
     // Check if pagination parameters are provided
     if (req.query.page !== undefined || req.query.limit !== undefined) {
@@ -323,14 +319,11 @@ const getDiscoveryUsers = async (req, res) => {
 const getRandomUsers = async (req, res) => {
   try {
   const { limit = 9 } = req.query;
-    console.log("Current user (random):", req.user);
     const viewerProfile = await fetchViewerProfile(req.user.id);
-    console.log("Viewer profile (random/orientation filter):", viewerProfile);
     const allowedGenders = computeAllowedGenders(
       viewerProfile.gender,
       viewerProfile.orientation
     );
-    console.log("Allowed genders (random):", allowedGenders);
 
   let genderFilterClause = "";
   const params = [safeParseInt(limit, 9), req.user.id];
@@ -445,7 +438,6 @@ const getRandomUsers = async (req, res) => {
     }));
 
     // Log the transformed users
-    console.log("Transformed random users:", users);
 
     res.json(users);
   } catch (error) {
@@ -467,8 +459,6 @@ const searchUsers = async (req, res) => {
     const useLiteResponse = lite === 'true' || lite === true || lite === '1';
 
     // Log the current user
-    console.log("Current user (search):", req.user);
-    console.log("Search query:", searchQuery);
 
     // Query to search users by username, first name, or last name
     const viewerProfile = await fetchViewerProfile(req.user.id);
@@ -476,8 +466,6 @@ const searchUsers = async (req, res) => {
       viewerProfile.gender,
       viewerProfile.orientation
     );
-    console.log("Viewer profile (search/orientation filter):", viewerProfile);
-    console.log("Allowed genders (search):", allowedGenders);
 
     // Build the search query - parameters will be:
     // $1: limit, $2: offset, $3: search query, $4: user id, $5: gender array (if any)
@@ -615,8 +603,6 @@ const searchUsers = async (req, res) => {
       `;
     }
 
-    console.log("Search query:", fullQuery);
-    console.log("Search params:", params);
 
     const result = await db.query(fullQuery, params);
     if (result.rows.length === 0 && allowedGenders.length > 0) {
@@ -691,7 +677,6 @@ const searchUsers = async (req, res) => {
     });
 
     // Log the transformed users
-    console.log("Transformed search users:", users);
 
     // Count query - parameters will be:
     // $1: search query, $2: user id, $3: gender array (if any)
@@ -727,8 +712,6 @@ const searchUsers = async (req, res) => {
       fullCountQuery += ` AND (LOWER(p.gender) = ANY($${countParams.length}))`; // Reference correct parameter number
     }
 
-    console.log("Count query:", fullCountQuery);
-    console.log("Count params:", countParams);
 
     const countResult = await db.query(fullCountQuery, countParams);
     const total = parseInt(countResult.rows[0].total);
@@ -765,7 +748,6 @@ const getFilteredUsers = async (req, res) => {
     // Determine if we should use lite response
     const useLiteResponse = lite === 'true' || lite === true || lite === '1';
 
-    console.log("Current user (filtered):", req.user);
     console.log("Filters:", {
       ageMin,
       ageMax,
@@ -1013,8 +995,6 @@ const getFilteredUsers = async (req, res) => {
     query += `LIMIT $${++paramIndex} OFFSET $${++paramIndex}`;
     params.push(safeParseInt(limit, 20), safeParseInt(offset, 0));
 
-    console.log("Final query:", query);
-    console.log("Parameters:", params);
 
     const result = await db.query(query, params);
     if (result.rows.length === 0 && allowedGenders.length > 0) {
@@ -1085,7 +1065,6 @@ const getFilteredUsers = async (req, res) => {
       }
     });
 
-    console.log("Transformed filtered users:", users);
 
     // Count total for pagination (with a separate query for accuracy)
     const countQuery = `
@@ -1212,7 +1191,6 @@ const getSuggestedUsers = async (req, res) => {
     // Parse additional filters that may be provided
     const { ageMin, ageMax, distance, tags, sortBy, sortOrder, fameRating } = req.query;
 
-    console.log("Current user (suggested):", req.user);
     console.log("Filters:", {
       ageMin,
       ageMax,
@@ -1474,8 +1452,6 @@ const getSuggestedUsers = async (req, res) => {
     query += `LIMIT $${++paramIndex} OFFSET $${++paramIndex}`;
     params.push(safeParseInt(limit, 20), safeParseInt(offset, 0));
 
-    console.log("Final suggested query:", query);
-    console.log("Parameters:", params);
 
     const result = await db.query(query, params);
     if (result.rows.length === 0 && allowedGenders.length > 0) {
@@ -1548,7 +1524,6 @@ const getSuggestedUsers = async (req, res) => {
       }
     });
 
-    console.log("Transformed suggested users:", users);
 
     // Count total for pagination (with a separate query for accuracy)
     const countQuery = `

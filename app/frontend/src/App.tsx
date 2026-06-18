@@ -48,33 +48,26 @@ const App = () => {
   };
 
   const handleLogout = () => {
-    console.log("handleLogout called in App component");
     // Make API call to logout
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
-      console.log("Making API call to logout with token:", accessToken);
-      fetch("http://localhost:3000/api/auth/logout", {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      fetch(`${apiUrl}/api/auth/logout`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      })
-        .then((response) => {
-          console.log("Logout API response:", response);
-        })
-        .catch((error) => {
-          console.error("Logout API error:", error);
-        });
+      }).catch((error) => {
+        console.error("Logout API error:", error);
+      });
     }
 
     // Clear localStorage
-    console.log("Clearing localStorage");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
 
     // Update state
-    console.log("Setting isAuthenticated to false");
     setIsAuthenticated(false);
   };
 
