@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { fameScore } from "@/lib/utils";
 import { 
   Heart, 
   MapPin, 
@@ -370,7 +371,7 @@ export function PublicProfilePage() {
                   <Star className="w-4 h-4 mr-2" />
                   Fame Rating
                 </span>
-                <span className="font-medium">{profile.fameRating || 0}%</span>
+                <span className="font-medium">{fameScore(profile.fameRating)}/100</span>
               </div>
             </div>
           </div>
@@ -406,7 +407,7 @@ export function PublicProfilePage() {
             <div className="flex flex-col items-end">
               {profile.fameRating !== undefined && (
                 <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full font-bold text-lg">
-                  {profile.fameRating}% match
+                  Popularité {fameScore(profile.fameRating)}/100
                 </div>
               )}
               {profile.distance !== null && (

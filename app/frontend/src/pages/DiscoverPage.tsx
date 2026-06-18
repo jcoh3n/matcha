@@ -11,6 +11,7 @@ import {
   Tag,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { fameScore, fameScoreToRaw } from "@/lib/utils";
 import { likeUser as likeUserApi } from "@/services/profileService";
 import { authService } from "@/services/authService";
 
@@ -94,7 +95,7 @@ const transformUserForProfileCard = (user: UserProfile) => {
       : "",
     distance: typeof user.distanceKm === "number" ? user.distanceKm : 0,
     tags: user.tags || [],
-    fameRating: user.profile?.fameRating || 0,
+    fameRating: fameScore(user.profile?.fameRating),
     isOnline: Math.random() > 0.5, // Placeholder
     orientation: user.profile?.orientation || "straight",
     gender: user.profile?.gender || "female",
@@ -111,7 +112,7 @@ export function DiscoverPage() {
     distance: 50,
     tags: [],
     fameRating: 0,
-    fameRatingMax: 5,
+    fameRatingMax: 100,
   });
   const [peers, setPeers] = useState<CardUser[]>([]);
   const [activePeerId, setActivePeerId] = useState<string>("");
@@ -332,8 +333,12 @@ export function DiscoverPage() {
           tags: filters.tags,
           sortBy: filters.sortBy,
           sortOrder: filters.sortOrder,
-          fameRating: filters.fameRating,
-          fameRatingMax: filters.fameRatingMax,
+          // UI uses a 0-100 score; backend filters on the raw 0-1000 scale
+          fameRating: fameScoreToRaw(filters.fameRating),
+          fameRatingMax:
+            filters.fameRatingMax !== undefined && filters.fameRatingMax < 100
+              ? fameScoreToRaw(filters.fameRatingMax)
+              : undefined,
         },
         8,
         offset
@@ -384,7 +389,7 @@ export function DiscoverPage() {
       distance: 50,
       tags: [],
       fameRating: 0,
-      fameRatingMax: 5,
+      fameRatingMax: 100,
     });
   };
 
@@ -495,47 +500,47 @@ export function DiscoverPage() {
             </div>
           </div>
 
-          {/* Fame Rating */}
+          {/* Fame Rating (score 0-100) */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Star className="w-4 h-4 text-gray-600" />
               <label className="font-semibold text-gray-700">
-                Note de popularité
+                Popularité (0-100)
               </label>
             </div>
             <input
               type="range"
               min="0"
-              max="5"
-              step="0.5"
-              value={filters.fameRating || 0}
+              max="100"
+              step="5"
+              value={filters.fameRating ?? 0}
               onChange={(e) =>
                 setFilters((prev) => ({
                   ...prev,
-                  fameRating: parseFloat(e.target.value),
+                  fameRating: parseInt(e.target.value, 10),
                 }))
               }
               className="w-full"
             />
             <div className="text-sm text-gray-500 mt-2">
-              {filters.fameRating} étoiles minimum
+              {filters.fameRating ?? 0} minimum
             </div>
             <input
               type="range"
               min="0"
-              max="5"
-              step="0.5"
-              value={filters.fameRatingMax ?? 5}
+              max="100"
+              step="5"
+              value={filters.fameRatingMax ?? 100}
               onChange={(e) =>
                 setFilters((prev) => ({
                   ...prev,
-                  fameRatingMax: parseFloat(e.target.value),
+                  fameRatingMax: parseInt(e.target.value, 10),
                 }))
               }
               className="w-full mt-3"
             />
             <div className="text-sm text-gray-500 mt-2">
-              {filters.fameRatingMax ?? 5} étoiles maximum
+              {filters.fameRatingMax ?? 100} maximum
             </div>
           </div>
 
