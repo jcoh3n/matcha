@@ -1,7 +1,7 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
 const Match = require('../models/Match');
-const { createAndSendNotification, getUserSocketId } = require('../utils/notificationHandler');
+const { createAndSendNotification, getUserSocketIds } = require('../utils/notificationHandler');
 const db = require('../config/db');
 
 // Send a message
@@ -146,7 +146,6 @@ const getConversation = async (req, res) => {
     try {
       if (updatedMessages.length > 0 && global.io) {
         const messageIds = updatedMessages.map(m => m.id);
-        const senderSocketId = getUserSocketId(otherUserId);
         const senderSocketIds = getUserSocketIds(otherUserId);
         if (senderSocketIds.length > 0) {
           try {
