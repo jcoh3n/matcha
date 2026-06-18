@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { config } from "@/config/api";
 import {
   Card,
   CardHeader,
@@ -21,7 +22,7 @@ export function HealthCheck() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("http://localhost:3000/health");
+      const response = await fetch(`${config.apiUrl}/health`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

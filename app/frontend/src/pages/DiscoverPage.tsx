@@ -11,6 +11,7 @@ import {
   Tag,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { config } from "@/config/api";
 import { fameScore, fameScoreToRaw } from "@/lib/utils";
 import { likeUser as likeUserApi } from "@/services/profileService";
 import { authService } from "@/services/authService";
@@ -265,7 +266,7 @@ export function DiscoverPage() {
       try {
         const token = localStorage.getItem("accessToken");
         if (token) {
-          await fetch(`http://localhost:3000/api/profiles/${userId}/pass`, {
+          await fetch(`${config.apiUrl}/api/profiles/${userId}/pass`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
           });

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { config } from "@/config/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -118,7 +119,7 @@ export function OnboardingPage() {
       };
 
       let response = await fetch(
-        "http://localhost:3000/api/onboarding/complete",
+        `${config.apiUrl}/api/onboarding/complete`,
         {
           method: "POST",
           headers: {
@@ -134,7 +135,7 @@ export function OnboardingPage() {
         const refreshToken = localStorage.getItem("refreshToken");
         if (refreshToken) {
           const refreshResponse = await fetch(
-            "http://localhost:3000/api/auth/refresh",
+            `${config.apiUrl}/api/auth/refresh`,
             {
               method: "POST",
               headers: {
@@ -150,7 +151,7 @@ export function OnboardingPage() {
 
             // Retry the onboarding request with the new token
             response = await fetch(
-              "http://localhost:3000/api/onboarding/complete",
+              `${config.apiUrl}/api/onboarding/complete`,
               {
                 method: "POST",
                 headers: {

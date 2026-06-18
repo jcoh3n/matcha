@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { config } from "@/config/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -362,7 +363,7 @@ export function PrivateProfilePage() {
                 // Make API call to logout
                 const accessToken = localStorage.getItem("accessToken");
                 if (accessToken) {
-                  fetch("http://localhost:3000/api/auth/logout", {
+                  fetch(`${config.apiUrl}/api/auth/logout`, {
                     method: "POST",
                     headers: {
                       Authorization: `Bearer ${accessToken}`,

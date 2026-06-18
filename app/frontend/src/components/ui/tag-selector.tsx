@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { config } from "@/config/api";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
@@ -18,7 +19,7 @@ export function TagSelector({ selectedTags, onTagsChange }: TagSelectorProps) {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/tags');
+        const response = await fetch(`${config.apiUrl}/api/tags`);
         if (response.ok) {
           const tagsData = await response.json();
           setAllTags(tagsData.map((tag: { name: string }) => tag.name));
