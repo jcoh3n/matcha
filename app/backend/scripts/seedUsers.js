@@ -446,15 +446,24 @@ async function seedDatabase() {
 
     console.log("Connected to database successfully");
 
-    // Check if seeding has already been completed
+    // Target number of complete profiles (the subject requires at least 500)
+    const TARGET = parseInt(process.env.SEED_TARGET || "505", 10);
+
+    // Skip only if seeding is marked done AND we already have enough profiles;
+    // otherwise top up to TARGET (covers duplicates lost on a previous run).
     const seedingCompleted = await isSeedingCompleted(client);
-    if (seedingCompleted) {
-      console.log("Database seeding has already been completed. Skipping...");
+    const { rows: preRows } = await client.query(
+      "SELECT COUNT(*)::int AS n FROM profiles"
+    );
+    if (seedingCompleted && preRows[0].n >= TARGET) {
+      console.log(
+        `Database already has ${preRows[0].n} profiles (>= ${TARGET}). Skipping...`
+      );
       return;
     }
 
     console.log(
-      "Database seeding not yet completed. Proceeding with seeding..."
+      `Seeding to reach ${TARGET} profiles (currently ${preRows[0].n})...`
     );
 
     // Begin transaction
@@ -465,61 +474,61 @@ async function seedDatabase() {
     const tagMap = await ensureTags(client);
     const allTagIds = Array.from(tagMap.values());
 
-    // Fetch users from API
+    // Fetch and insert users in batches until we reach TARGET profiles.
+    // randomuser.me occasionally returns duplicate emails/usernames which are
+    // skipped, so we keep topping up rather than fetching a fixed 500 once.
     console.log("Fetching users from randomuser.me API...");
-    const users = await fetchUsers(500);
-    console.log(`Fetched ${users.length} users`);
-
-    // Process each user
-    console.log("Inserting users into database...");
     let count = 0;
     let index = 0;
     let skipped = 0;
+    let safety = 0;
+    let total = preRows[0].n;
 
-    for (const user of users) {
-      try {
-        await client.query("SAVEPOINT user_seed");
-        // Insert user
-        const userId = await insertUser(client, user, index);
-        // If user was not inserted due to conflict, skip to next
-        if (userId === null) {
-          skipped++;
-          index++;
-          await client.query("RELEASE SAVEPOINT user_seed");
-          continue;
-        }
+    while (total < TARGET && safety < 30) {
+      safety++;
+      const need = TARGET - total;
+      const batch = await fetchUsers(Math.max(20, need + 15));
+      console.log(`Fetched ${batch.length} users (need ${need} more)`);
 
-        // Insert profile
-        await insertProfile(client, userId, user);
-
-        // Insert photo
-        await insertPhoto(client, userId, user, true);
-
-        // Insert 0-4 extra photos
-        await insertExtraPhotos(client, userId, user);
-
-        // Insert location
-        await insertLocation(client, userId, user);
-
-        // Assign random tags to user
-        await assignRandomTagsToUser(client, userId, allTagIds);
-
-        count++;
-        index++;
-        if (count % 50 === 0) {
-          console.log(
-            `Processed ${count} users... (Skipped ${skipped} duplicates)`
-          );
-        }
-        await client.query("RELEASE SAVEPOINT user_seed");
-      } catch (error) {
-        console.error(`Error processing user ${user.login.username}:`, error);
-        // Roll back this user only, then continue
+      for (const user of batch) {
+        if (total >= TARGET) break;
         try {
-          await client.query("ROLLBACK TO SAVEPOINT user_seed");
-        } catch (_) {}
+          await client.query("SAVEPOINT user_seed");
+          const userId = await insertUser(client, user, index);
+          if (userId === null) {
+            skipped++;
+            index++;
+            await client.query("RELEASE SAVEPOINT user_seed");
+            continue;
+          }
+          await insertProfile(client, userId, user);
+          await insertPhoto(client, userId, user, true);
+          await insertExtraPhotos(client, userId, user);
+          await insertLocation(client, userId, user);
+          await assignRandomTagsToUser(client, userId, allTagIds);
+          count++;
+          index++;
+          total++;
+          if (count % 50 === 0) {
+            console.log(
+              `Processed ${count} new users... (Skipped ${skipped} duplicates)`
+            );
+          }
+          await client.query("RELEASE SAVEPOINT user_seed");
+        } catch (error) {
+          console.error(
+            `Error processing user ${user.login?.username}:`,
+            error.message
+          );
+          try {
+            await client.query("ROLLBACK TO SAVEPOINT user_seed");
+          } catch (_) {}
+        }
       }
     }
+    console.log(
+      `Added ${count} new users; total profiles now ~${total} (skipped ${skipped} duplicates)`
+    );
 
     // Mark seeding as completed
     await markSeedingAsCompleted(client);

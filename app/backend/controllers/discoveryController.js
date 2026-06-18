@@ -855,7 +855,6 @@ const getFilteredUsers = async (req, res) => {
     }
 
     const params = [req.user.id];
-    let paramIndex = 1;
 
     if (allowedGenders.length > 0) {
       params.push(allowedGenders.map((g) => g.toLowerCase()));
@@ -873,16 +872,16 @@ const getFilteredUsers = async (req, res) => {
         const lower = new Date(today);
         lower.setFullYear(today.getFullYear() - (aMax + 1));
         lower.setDate(lower.getDate() + 1);
-        query += ` AND p.birth_date >= $${++paramIndex}`;
         params.push(lower.toISOString().split("T")[0]);
+        query += ` AND p.birth_date >= $${params.length}`;
       }
 
       // Youngest acceptable birthdate (upper bound): today - aMin years
       if (aMin !== undefined) {
         const upper = new Date(today);
         upper.setFullYear(today.getFullYear() - aMin);
-        query += ` AND p.birth_date <= $${++paramIndex}`;
         params.push(upper.toISOString().split("T")[0]);
+        query += ` AND p.birth_date <= $${params.length}`;
       }
     }
 
@@ -892,8 +891,8 @@ const getFilteredUsers = async (req, res) => {
       fameRating !== "" &&
       !Number.isNaN(safeParseInt(fameRating))
     ) {
-      query += ` AND p.fame_rating >= $${++paramIndex}`;
       params.push(safeParseInt(fameRating, 0));
+      query += ` AND p.fame_rating >= $${params.length}`;
     }
 
     if (
@@ -901,11 +900,12 @@ const getFilteredUsers = async (req, res) => {
       fameRatingMax !== "" &&
       !Number.isNaN(safeParseInt(fameRatingMax))
     ) {
-      query += ` AND p.fame_rating <= $${++paramIndex}`;
       params.push(safeParseInt(fameRatingMax, 0));
+      query += ` AND p.fame_rating <= $${params.length}`;
     }
 
     if (distance && !Number.isNaN(safeParseInt(distance))) {
+      params.push(safeParseInt(distance, 0));
       query += ` AND (
         l.latitude IS NOT NULL AND l.longitude IS NOT NULL AND
         (
@@ -915,9 +915,8 @@ const getFilteredUsers = async (req, res) => {
               COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
             )
           )
-        ) <= $${++paramIndex}
+        ) <= $${params.length}
       )`;
-      params.push(safeParseInt(distance, 0));
     }
     // Tags filter (match users having at least one of the provided tag names)
     if (tags) {
@@ -986,8 +985,8 @@ const getFilteredUsers = async (req, res) => {
     }
 
     // LIMIT / OFFSET
-    query += `LIMIT $${++paramIndex} OFFSET $${++paramIndex}`;
     params.push(safeParseInt(limit, 20), safeParseInt(offset, 0));
+    query += `LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
 
     const result = await db.query(query, params);
@@ -1061,7 +1060,7 @@ const getFilteredUsers = async (req, res) => {
 
 
     // Count total for pagination (with a separate query for accuracy)
-    const countQuery = `
+    let countQuery = `
       SELECT COUNT(*) as total
       FROM users u
       LEFT JOIN profiles p ON u.id = p.user_id
@@ -1076,7 +1075,6 @@ const getFilteredUsers = async (req, res) => {
     `;
 
     let countParams = [req.user.id];
-    paramIndex = 1;
 
     if (allowedGenders.length > 0) {
       countParams.push(allowedGenders.map((g) => g.toLowerCase()));
@@ -1323,7 +1321,6 @@ const getSuggestedUsers = async (req, res) => {
     }
 
     const params = [currentUserId];
-    let paramIndex = 1;
 
     // Gender filter based on orientation
     if (allowedGenders.length > 0) {
@@ -1342,16 +1339,16 @@ const getSuggestedUsers = async (req, res) => {
         const lower = new Date(today);
         lower.setFullYear(today.getFullYear() - (aMax + 1));
         lower.setDate(lower.getDate() + 1);
-        query += ` AND p.birth_date >= $${++paramIndex}`;
         params.push(lower.toISOString().split("T")[0]);
+        query += ` AND p.birth_date >= $${params.length}`;
       }
 
       // Youngest acceptable birthdate (upper bound): today - aMin years
       if (aMin !== undefined) {
         const upper = new Date(today);
         upper.setFullYear(today.getFullYear() - aMin);
-        query += ` AND p.birth_date <= $${++paramIndex}`;
         params.push(upper.toISOString().split("T")[0]);
+        query += ` AND p.birth_date <= $${params.length}`;
       }
     }
 
@@ -1361,12 +1358,13 @@ const getSuggestedUsers = async (req, res) => {
       fameRating !== "" &&
       !Number.isNaN(safeParseInt(fameRating))
     ) {
-      query += ` AND p.fame_rating >= $${++paramIndex}`;
       params.push(safeParseInt(fameRating, 0));
+      query += ` AND p.fame_rating >= $${params.length}`;
     }
 
     // Distance filter
     if (distance && !Number.isNaN(safeParseInt(distance))) {
+      params.push(safeParseInt(distance, 0));
       query += ` AND (
         l.latitude IS NOT NULL AND l.longitude IS NOT NULL AND
         (
@@ -1376,9 +1374,8 @@ const getSuggestedUsers = async (req, res) => {
               COS(RADIANS(lv.latitude)) * COS(RADIANS(l.latitude)) * POWER(SIN(RADIANS(l.longitude - lv.longitude) / 2), 2)
             )
           )
-        ) <= $${++paramIndex}
+        ) <= $${params.length}
       )`;
-      params.push(safeParseInt(distance, 0));
     }
 
     // Tags filter (match users having at least one of the provided tag names)
@@ -1449,8 +1446,8 @@ const getSuggestedUsers = async (req, res) => {
     }
 
     // LIMIT / OFFSET
-    query += `LIMIT $${++paramIndex} OFFSET $${++paramIndex}`;
     params.push(safeParseInt(limit, 20), safeParseInt(offset, 0));
+    query += `LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
 
     const result = await db.query(query, params);
@@ -1526,7 +1523,7 @@ const getSuggestedUsers = async (req, res) => {
 
 
     // Count total for pagination (with a separate query for accuracy)
-    const countQuery = `
+    let countQuery = `
       SELECT COUNT(*) as total
       FROM users u
       LEFT JOIN profiles p ON u.id = p.user_id
@@ -1544,7 +1541,6 @@ const getSuggestedUsers = async (req, res) => {
     `;
 
     let countParams = [currentUserId];
-    paramIndex = 1;
 
     if (allowedGenders.length > 0) {
       countParams.push(allowedGenders.map((g) => g.toLowerCase()));
