@@ -10,10 +10,11 @@ class User {
     this.lastName = data.last_name || data.lastName;
     this.password = data.password;  // This will be the hashed password
     this.emailVerified = data.email_verified || data.emailVerified || false;
-    this.emailVerificationToken = data.email_verification_token || data.emailVerificationToken;
-    this.emailVerificationSentAt = data.email_verification_sent_at || data.emailVerificationSentAt;
-    this.passwordResetToken = data.password_reset_token || data.passwordResetToken;
-    this.passwordResetExpiresAt = data.password_reset_expires_at || data.passwordResetExpiresAt;
+    // Use ?? so a cleared (NULL) token stays null instead of becoming undefined
+    this.emailVerificationToken = data.email_verification_token ?? data.emailVerificationToken ?? null;
+    this.emailVerificationSentAt = data.email_verification_sent_at ?? data.emailVerificationSentAt ?? null;
+    this.passwordResetToken = data.password_reset_token ?? data.passwordResetToken ?? null;
+    this.passwordResetExpiresAt = data.password_reset_expires_at ?? data.passwordResetExpiresAt ?? null;
     this.createdAt = data.created_at || data.createdAt || new Date();
     this.updatedAt = data.updated_at || data.updatedAt || new Date();
   }

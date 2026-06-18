@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 const db = require('../config/db');
+const { signToken } = require('./helpers');
 const User = require('../models/User');
 const Profile = require('../models/Profile');
 const Photo = require('../models/Photo');
@@ -138,13 +139,14 @@ describe('Profiles API Tests', () => {
     // Generate auth tokens (mock implementation - in real app this would be actual JWT)
     // For testing purposes, we'll need to simulate JWT authentication
     // This is a simplified version - in real implementation, you'd need to handle actual JWT generation
-    authToken = 'valid-jwt-token-for-user1';
-    authToken2 = 'valid-jwt-token-for-user2';
-    authToken3 = 'valid-jwt-token-for-user3';
+    // Mark all test users as verified so they appear in discovery/search
+    await db.query("UPDATE users SET email_verified = true");
+    authToken = signToken(testUser.id);
+    authToken2 = signToken(testUser2.id);
+    authToken3 = signToken(testUser3.id);
   });
 
   afterAll(async () => {
-    await db.pool.end();
   });
 
   describe('GET /api/profiles', () => {

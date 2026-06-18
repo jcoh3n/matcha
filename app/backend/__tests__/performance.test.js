@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 const db = require('../config/db');
+const { signToken } = require('./helpers');
 const User = require('../models/User');
 const Profile = require('../models/Profile');
 const Photo = require('../models/Photo');
@@ -106,11 +107,12 @@ describe('Database Indexes Performance Tests', () => {
     await Promise.all(userTagPromises);
 
     // Mock auth token 
-    authToken = 'valid-jwt-token-for-performance-test';
+    // Mark all test users as verified so they appear in discovery/search
+    await db.query("UPDATE users SET email_verified = true");
+    authToken = signToken(testUsers[0].id);
   });
 
   afterAll(async () => {
-    await db.pool.end();
   });
 
   describe('Performance with Indexes', () => {
@@ -133,10 +135,12 @@ describe('Database Indexes Performance Tests', () => {
       
       // Verify that the filter is working correctly
       const data = response.body.data;
+      const currentYear = new Date().getFullYear();
       data.forEach(profile => {
         const birthYear = new Date(profile.profile.birthDate).getFullYear();
-        expect(birthYear).toBeLessThanOrEqual(2000); // Born after 1990 (35 or younger in 2025)
-        expect(birthYear).toBeGreaterThanOrEqual(1990); // Born before 1999 (25 or older in 2025)
+        // Age window 25-35 (allow +/-1 year for birthday boundaries)
+        expect(birthYear).toBeLessThanOrEqual(currentYear - 25 + 1);
+        expect(birthYear).toBeGreaterThanOrEqual(currentYear - 35 - 1);
       });
     });
 

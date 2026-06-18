@@ -13,6 +13,18 @@
     "update-fame-ratings": "node scripts/updateFameRatings.js",
     "test": "jest"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ],
+    "maxWorkers": 1,
+    "globalSetup": "<rootDir>/__tests__/globalSetup.js",
+    "setupFiles": [
+      "<rootDir>/__tests__/env.js"
+    ],
+    "forceExit": true
+  },
   "keywords": [
     "matcha",
     "dating",

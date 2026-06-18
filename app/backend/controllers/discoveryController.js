@@ -268,8 +268,8 @@ const getDiscoveryUsers = async (req, res) => {
 
     // Log the transformed users
 
-    // Check if pagination parameters are provided
-    if (req.query.page !== undefined || req.query.limit !== undefined) {
+    // Always return a paginated response for consistency with the other lists
+    {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 20;
       const offset = (page - 1) * limit;
@@ -317,10 +317,6 @@ const getDiscoveryUsers = async (req, res) => {
 
       attachOnline(paginatedResponse.data);
       res.json(paginatedResponse);
-    } else {
-      // Maintain backward compatibility
-      attachOnline(users);
-      res.json(users);
     }
   } catch (error) {
     console.error("Error fetching discovery users:", error);
@@ -727,7 +723,7 @@ const searchUsers = async (req, res) => {
       data: users,
       pagination: {
         page: Math.floor(offset / limit) + 1,
-        limit: limit,
+        limit: parseInt(limit, 10),
         total: total,
         totalPages,
         hasNext: (offset + limit) < total,
@@ -954,8 +950,8 @@ const getFilteredUsers = async (req, res) => {
 
     // Group by and order by clause - different for lite vs full response
     if (useLiteResponse) {
-      query += ` GROUP BY 
-          u.id, u.username, ph.url, p.birth_date, p.gender, p.fame_rating, 
+      query += ` GROUP BY
+          u.id, u.username, ph.url, p.birth_date, p.gender, p.fame_rating, p.last_active,
           l.city, l.country, l.latitude, l.longitude, lv.latitude, lv.longitude
         ORDER BY `;
     } else {
@@ -1177,7 +1173,7 @@ const getFilteredUsers = async (req, res) => {
       data: users,
       pagination: {
         page: Math.floor(offset / limit) + 1,
-        limit: limit,
+        limit: parseInt(limit, 10),
         total: total,
         totalPages,
         hasNext: (offset + limit) < total,
@@ -1415,8 +1411,8 @@ const getSuggestedUsers = async (req, res) => {
 
     // Group by clause - different for lite vs full response
     if (useLiteResponse) {
-      query += ` GROUP BY 
-          u.id, u.username, ph.url, p.birth_date, p.gender, p.fame_rating, 
+      query += ` GROUP BY
+          u.id, u.username, ph.url, p.birth_date, p.gender, p.fame_rating, p.last_active,
           l.city, l.country, l.latitude, l.longitude, lv.latitude, lv.longitude
         ORDER BY `;
     } else {
@@ -1635,7 +1631,7 @@ const getSuggestedUsers = async (req, res) => {
       data: users,
       pagination: {
         page: Math.floor(offset / limit) + 1,
-        limit: limit,
+        limit: parseInt(limit, 10),
         total: total,
         totalPages: totalPages,
         hasNext: (offset + limit) < total,

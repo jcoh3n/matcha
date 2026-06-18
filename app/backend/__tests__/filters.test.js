@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 const db = require('../config/db');
+const { signToken } = require('./helpers');
 const User = require('../models/User');
 const Profile = require('../models/Profile');
 const Photo = require('../models/Photo');
@@ -132,15 +133,17 @@ describe('Dynamic Filters Tests', () => {
     await UserTag.create(testUser.id, tag2.id); // music
     await UserTag.create(testUser2.id, tag2.id); // music
     await UserTag.create(testUser2.id, tag3.id); // travel
+    await UserTag.create(testUser2.id, tag1.id); // sports
     await UserTag.create(testUser3.id, tag3.id); // travel
     await UserTag.create(testUser3.id, tag4.id); // cooking
 
     // Mock auth token
-    authToken = 'valid-jwt-token-for-user1';
+    // Mark all test users as verified so they appear in discovery/search
+    await db.query("UPDATE users SET email_verified = true");
+    authToken = signToken(testUser.id);
   });
 
   afterAll(async () => {
-    await db.pool.end();
   });
 
   describe('Age Filters', () => {
