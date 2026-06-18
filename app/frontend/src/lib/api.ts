@@ -39,8 +39,16 @@ export const api = {
       }
     }),
     
-  getCurrentUser: () => 
+  getCurrentUser: () =>
     authService.authenticatedFetch(API_ENDPOINTS.CURRENT_USER),
+
+  // Update the current user's account info (first name, last name, email)
+  updateCurrentUser: (data: { firstName: string; lastName: string; email: string }) =>
+    authService.authenticatedFetch(API_ENDPOINTS.CURRENT_USER, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
     
   // Discovery endpoints
 

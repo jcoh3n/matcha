@@ -110,11 +110,53 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
+// Update the current user's account info (first name, last name, email)
+const updateCurrentUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { firstName, lastName, email } = req.body;
+
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({
+        message: 'First name, last name and email are required',
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email address' });
+    }
+
+    // Ensure the email isn't already used by another account
+    const existing = await User.findByEmail(email);
+    if (existing && existing.id !== userId) {
+      return res.status(409).json({ message: 'This email is already in use' });
+    }
+
+    const updated = await User.update(userId, {
+      email,
+      username: req.user.username, // keep the existing username
+      firstName,
+      lastName,
+    });
+
+    if (!updated) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(updated.toJSON());
+  } catch (error) {
+    console.error('Error updating current user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
-  getCurrentUser
+  getCurrentUser,
+  updateCurrentUser
 };

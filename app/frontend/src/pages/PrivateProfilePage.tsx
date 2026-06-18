@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { config } from "@/config/api";
+import { api } from "@/lib/api";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +32,9 @@ export function PrivateProfilePage() {
     updateUserTags
   } = useProfile(accessToken);
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [bio, setBio] = useState("");
   const [gender, setGender] = useState("");
   const [orientation, setOrientation] = useState("");
@@ -55,6 +60,9 @@ export function PrivateProfilePage() {
   useEffect(() => {
     if (profile) {
       // Populate form fields with profile data
+      setFirstName(profile.firstName || "");
+      setLastName(profile.lastName || "");
+      setEmail(profile.email || "");
       setBio(profile.profile?.bio || "");
       setGender(profile.profile?.gender || "");
       setOrientation(profile.profile?.orientation || "");
@@ -81,6 +89,24 @@ export function PrivateProfilePage() {
   }, [accessToken, fetchProfile]);
 
   const handleSaveProfile = async () => {
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Prénom, nom et email sont obligatoires.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!bio || !gender || !orientation || !birthDate) {
       toast({
         title: "Erreur",
@@ -91,6 +117,24 @@ export function PrivateProfilePage() {
     }
 
     try {
+      // Update account info (first name, last name, email)
+      const accountRes = await api.updateCurrentUser({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+      });
+      if (!accountRes.ok) {
+        const err = await accountRes.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to update account");
+      }
+      // Keep the locally stored user in sync
+      const updatedUser = await accountRes.json();
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ ...stored, firstName: updatedUser.firstName, lastName: updatedUser.lastName, email: updatedUser.email })
+      );
+
       // Update basic profile information
       const profileResult = await updateProfileData({
         bio,
@@ -138,7 +182,7 @@ export function PrivateProfilePage() {
       console.error('Error updating profile:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur s'est produite lors de la mise à jour de votre profil.",
+        description: error instanceof Error ? error.message : "Une erreur s'est produite lors de la mise à jour de votre profil.",
         variant: "destructive"
       });
     }
@@ -235,6 +279,42 @@ export function PrivateProfilePage() {
 
           <CardContent className="space-y-6">
             <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="firstName" className="text-sm font-medium">
+                    Prénom
+                  </label>
+                  <Input
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="lastName" className="text-sm font-medium">
+                    Nom
+                  </label>
+                  <Input
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <label htmlFor="bio" className="text-sm font-medium">
                   Biographie

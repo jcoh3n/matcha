@@ -459,7 +459,7 @@ const getRandomUsers = async (req, res) => {
 // Search users by name
 const searchUsers = async (req, res) => {
   try {
-    const { query: searchQuery, limit = 20, offset = 0, lite } = req.query;
+    const { query: searchQuery, limit = 20, offset = 0, lite, sortBy, sortOrder } = req.query;
 
     if (!searchQuery) {
       return res.status(400).json({ message: "Query parameter is required" });
@@ -585,13 +585,31 @@ const searchUsers = async (req, res) => {
       fullQuery += ` AND (LOWER(p.gender) = ANY($${params.length}))`; // Reference correct parameter number
     }
 
+    // Build ORDER BY from sort params (current user id is $4 for the tags sort)
+    let orderBy;
+    switch (sortBy) {
+      case "distance":
+        orderBy = `distance_km ${sortOrder === "desc" ? "DESC" : "ASC"}`;
+        break;
+      case "age":
+        orderBy = `p.birth_date ${sortOrder === "asc" ? "DESC" : "ASC"}`;
+        break;
+      case "tags":
+        orderBy = `(SELECT COUNT(*) FROM user_tags ut_a JOIN user_tags ut_b ON ut_a.tag_id = ut_b.tag_id WHERE ut_a.user_id = u.id AND ut_b.user_id = $4) ${sortOrder === "asc" ? "ASC" : "DESC"}`;
+        break;
+      case "fame":
+      default:
+        orderBy = `p.fame_rating ${sortOrder === "asc" ? "ASC" : "DESC"}`;
+        break;
+    }
+
     // Add GROUP BY and ORDER BY (and LIMIT/OFFSET) clauses
     if (useLiteResponse) {
       fullQuery += `
         GROUP BY 
           u.id, u.username, ph.url, p.birth_date, p.gender, p.fame_rating, 
           l.city, l.country, l.latitude, l.longitude, lv.latitude, lv.longitude
-        ORDER BY p.fame_rating DESC, u.created_at DESC
+        ORDER BY ${orderBy}, u.created_at DESC
         LIMIT $1 OFFSET $2
       `;
     } else {
@@ -602,7 +620,7 @@ const searchUsers = async (req, res) => {
           ph.url,
           l.latitude, l.longitude, l.city, l.country,
           lv.latitude, lv.longitude
-        ORDER BY p.fame_rating DESC, u.created_at DESC
+        ORDER BY ${orderBy}, u.created_at DESC
         LIMIT $1 OFFSET $2
       `;
     }

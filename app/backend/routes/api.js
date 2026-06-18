@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllUsers, getUserById, createUser, updateUser, deleteUser, getCurrentUser } = require('../controllers/userController');
+const { getAllUsers, getUserById, getCurrentUser, updateCurrentUser } = require('../controllers/userController');
 const profileRoutes = require('./profile');
 const authRoutes = require('./auth');
 const onboardingRoutes = require('./onboarding');
@@ -13,15 +13,15 @@ const { authJWT } = require('../middleware/authJWT');
 
 const router = express.Router();
 
-// User routes
-router.get('/users', getAllUsers);
-router.get('/users/:id', getUserById);
-router.post('/users', createUser);
-router.put('/users/:id', updateUser);
-router.delete('/users/:id', deleteUser);
+// User routes (read-only, authenticated). Account creation goes through
+// /auth/register; account updates through PUT /me below. The previous
+// unauthenticated POST/PUT/DELETE /users routes were removed (security).
+router.get('/users', authJWT, getAllUsers);
+router.get('/users/:id', authJWT, getUserById);
 
-// Protected route to get current user
+// Current user
 router.get('/me', authJWT, getCurrentUser);
+router.put('/me', authJWT, updateCurrentUser);
 
 // Profile routes
 router.use('/profiles', profileRoutes);
