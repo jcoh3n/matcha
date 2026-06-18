@@ -21,6 +21,10 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    # Secrets (JWT, email, CORS) come from the gitignored app/backend/.env.
+    # The inline environment below overrides any host-specific values from it.
+    env_file:
+      - ./app/backend/.env
     environment:
       DATABASE_URL: postgresql://matcha_user:matcha_password@db:5432/matcha_db
       DB_USER: matcha_user
@@ -34,7 +38,6 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       RUNNING_IN_DOCKER: "true"
-      JWT_SECRET: your_jwt_secret_here
       NODE_ENV: development
     depends_on:
       - db

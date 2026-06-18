@@ -7,10 +7,12 @@ require('dotenv').config();
 // Initialize fame rating cron jobs
 require('../jobs/fameRatingJob');
 
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*",
+    origin: CORS_ORIGIN,
     methods: ["GET", "POST"]
   }
 });
@@ -26,6 +28,7 @@ const chat = io.of('/chat');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Profile = require('../models/Profile');
+const { ACCESS_SECRET } = require('../config/jwt');
 
 chat.use(async (socket, next) => {
   try {
@@ -33,7 +36,7 @@ chat.use(async (socket, next) => {
     if (!token) return next(new Error('Authentication error: token missing'));
 
     // Verify token using same secret as REST middleware
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'access_secret_key');
+    const decoded = jwt.verify(token, ACCESS_SECRET);
     const user = await User.findById(decoded.userId);
     if (!user) return next(new Error('Authentication error: user not found'));
 

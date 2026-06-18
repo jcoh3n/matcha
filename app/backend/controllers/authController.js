@@ -4,21 +4,22 @@ const User = require('../models/User');
 const db = require('../config/db');
 const { createTransporter, generateVerificationUrl } = require('../config/email');
 const { validatePassword } = require('../utils/passwordValidator');
+const { ACCESS_SECRET, REFRESH_SECRET, ACCESS_EXPIRES_IN, REFRESH_EXPIRES_IN } = require('../config/jwt');
 
 // Generate JWT tokens
 const generateTokens = (userId) => {
   const accessToken = jwt.sign(
     { userId },
-    process.env.JWT_ACCESS_SECRET || 'access_secret_key',
-    { expiresIn: '15m' }
+    ACCESS_SECRET,
+    { expiresIn: ACCESS_EXPIRES_IN }
   );
-  
+
   const refreshToken = jwt.sign(
     { userId },
-    process.env.JWT_REFRESH_SECRET || 'refresh_secret_key',
-    { expiresIn: '7d' }
+    REFRESH_SECRET,
+    { expiresIn: REFRESH_EXPIRES_IN }
   );
-  
+
   return { accessToken, refreshToken };
 };
 

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
+const { ACCESS_SECRET, REFRESH_SECRET, ACCESS_EXPIRES_IN } = require('../config/jwt');
 
 // Logout user
 const logout = async (req, res) => {
@@ -42,7 +43,7 @@ const refresh = async (req, res) => {
     }
     
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret_key');
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
     
     // Check if refresh token exists in database
     const result = await db.query('SELECT * FROM sessions WHERE token = $1 AND expires_at > NOW()', [refreshToken]);
@@ -56,8 +57,8 @@ const refresh = async (req, res) => {
     // Generate new access token
     const accessToken = jwt.sign(
       { userId: decoded.userId },
-      process.env.JWT_ACCESS_SECRET || 'access_secret_key',
-      { expiresIn: '15m' }
+      ACCESS_SECRET,
+      { expiresIn: ACCESS_EXPIRES_IN }
     );
     
     res.status(200).json({

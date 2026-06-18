@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const db = require("../config/db");
+const { ACCESS_SECRET } = require("../config/jwt");
 
 // JWT authentication middleware
 const authJWT = async (req, res, next) => {
@@ -18,10 +19,7 @@ const authJWT = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     // Verify token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_SECRET || "access_secret_key"
-    );
+    const decoded = jwt.verify(token, ACCESS_SECRET);
 
     // Get user from database
     const user = await User.findById(decoded.userId);

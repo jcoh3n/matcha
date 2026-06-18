@@ -6,7 +6,13 @@ const apiRoutes = require("../routes/api");
 const app = express();
 
 // Middleware
-app.use(cors());
+// Restrict CORS to the configured frontend origin (falls back to local dev).
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Serve static files from uploads directory
