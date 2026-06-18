@@ -100,6 +100,21 @@ class User {
     return result.rows.length ? new User(result.rows[0]) : null;
   }
 
+  // Find user by username
+  static async findByUsername(username) {
+    const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+    return result.rows.length ? new User(result.rows[0]) : null;
+  }
+
+  // Find user by email or username (used for login)
+  static async findByEmailOrUsername(identifier) {
+    const result = await db.query(
+      'SELECT * FROM users WHERE email = $1 OR username = $1',
+      [identifier]
+    );
+    return result.rows.length ? new User(result.rows[0]) : null;
+  }
+
   // Update user
   static async update(id, userData) {
     const { email, username, firstName, lastName } = userData;

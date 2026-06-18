@@ -27,7 +27,7 @@ describe('Profile Lite Responses Tests', () => {
       username: 'user1',
       firstName: 'Alice',
       lastName: 'Smith',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
     
     testUser2 = await User.create({
@@ -35,7 +35,7 @@ describe('Profile Lite Responses Tests', () => {
       username: 'user2',
       firstName: 'Bob',
       lastName: 'Johnson',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
 
     // Create profiles

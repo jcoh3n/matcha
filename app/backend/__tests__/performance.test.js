@@ -29,7 +29,7 @@ describe('Database Indexes Performance Tests', () => {
         username: `user${i}`,
         firstName: `User${i}`,
         lastName: `Test${i}`,
-        password: 'password123'
+        password: 'Str0ngP@ss9'
       }));
     }
     

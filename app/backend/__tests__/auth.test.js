@@ -20,7 +20,7 @@ describe('Email Verification', () => {
         email: 'test@example.com',
         firstName: 'Test',
         lastName: 'User',
-        password: 'password123'
+        password: 'Str0ngP@ss9'
       };
 
       const response = await request(app)
@@ -41,7 +41,7 @@ describe('Email Verification', () => {
         email: 'test@example.com',
         firstName: 'Test',
         lastName: 'User',
-        password: 'password123'
+        password: 'Str0ngP@ss9'
       };
 
       const registerResponse = await request(app)
@@ -82,7 +82,7 @@ describe('Email Verification', () => {
         email: 'test@example.com',
         firstName: 'Test',
         lastName: 'User',
-        password: 'password123'
+        password: 'Str0ngP@ss9'
       };
 
       await request(app)
@@ -107,7 +107,7 @@ describe('Email Verification', () => {
         email: 'test@example.com',
         firstName: 'Test',
         lastName: 'User',
-        password: 'password123'
+        password: 'Str0ngP@ss9'
       };
 
       await request(app)

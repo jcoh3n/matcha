@@ -27,7 +27,7 @@ describe('Discovery API Tests', () => {
       username: 'user1',
       firstName: 'User',
       lastName: 'One',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
     
     testUser2 = await User.create({
@@ -35,7 +35,7 @@ describe('Discovery API Tests', () => {
       username: 'user2',
       firstName: 'User',
       lastName: 'Two',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
     
     testUser3 = await User.create({
@@ -43,7 +43,7 @@ describe('Discovery API Tests', () => {
       username: 'user3',
       firstName: 'User',
       lastName: 'Three',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
 
     testUser4 = await User.create({
@@ -51,7 +51,7 @@ describe('Discovery API Tests', () => {
       username: 'user4',
       firstName: 'User',
       lastName: 'Four',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
 
     // Create profiles for test users

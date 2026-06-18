@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 export function SignupPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,7 +35,16 @@ export function SignupPage() {
       });
       return;
     }
-    
+
+    if (!username.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez choisir un nom d'utilisateur.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!email.trim()) {
       toast({
         title: "Erreur",
@@ -62,21 +72,22 @@ export function SignupPage() {
       return;
     }
     
-    if (password.length < 6) {
+    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
       toast({
         title: "Erreur",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
+        description: "Le mot de passe doit contenir au moins 8 caractères, dont une lettre et un chiffre, et ne pas être un mot courant.",
         variant: "destructive"
       });
       return;
     }
 
     // Prepare the data to send
-    const userData = { 
-      firstName: firstName.trim(), 
-      lastName: lastName.trim(), 
-      email: email.trim(), 
-      password 
+    const userData = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      username: username.trim(),
+      email: email.trim(),
+      password
     };
     
     // Log the data being sent for debugging
@@ -166,6 +177,16 @@ export function SignupPage() {
                   required
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="username">Nom d'utilisateur</Label>
+              <Input
+                id="username"
+                placeholder="jdupont"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

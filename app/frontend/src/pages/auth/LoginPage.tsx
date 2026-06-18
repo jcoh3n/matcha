@@ -19,18 +19,17 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simple email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+
+    // Accept either a username or an email as the login identifier
+    if (!email.trim()) {
       toast({
         title: "Erreur",
-        description: "Veuillez entrer une adresse email valide.",
+        description: "Veuillez entrer votre nom d'utilisateur ou votre email.",
         variant: "destructive"
       });
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
@@ -165,11 +164,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Nom d'utilisateur ou email</Label>
               <Input
                 id="email"
-                type="email"
-                placeholder="votre@email.com"
+                type="text"
+                placeholder="jdupont ou votre@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

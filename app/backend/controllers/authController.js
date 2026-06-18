@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const db = require('../config/db');
 const { createTransporter, generateVerificationUrl } = require('../config/email');
+const { validatePassword } = require('../utils/passwordValidator');
 
 // Generate JWT tokens
 const generateTokens = (userId) => {
@@ -121,13 +122,12 @@ const register = async (req, res) => {
       username = email.split('@')[0];
     }
     
-    // Check password strength (minimum 6 characters)
-    if (password.length < 6) {
-      return res.status(400).json({ 
-        message: 'Password must be at least 6 characters long' 
-      });
+    // Check password strength (length, letter+digit, not a common word)
+    const passwordCheck = validatePassword(password);
+    if (!passwordCheck.valid) {
+      return res.status(400).json({ message: passwordCheck.message });
     }
-    
+
     // Check if user already exists
     console.log('Checking if user already exists...');
     const existingUser = await User.findByEmail(email);
@@ -226,20 +226,23 @@ const register = async (req, res) => {
 // Login user
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    
+    const { email, username, password } = req.body;
+
+    // Accept either an email or a username as the login identifier
+    const identifier = username || email;
+
     // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ 
-        message: 'Email and password are required' 
+    if (!identifier || !password) {
+      return res.status(400).json({
+        message: 'Username (or email) and password are required'
       });
     }
-    
-    // Find user by email
-    const user = await User.findByEmail(email);
+
+    // Find user by email or username
+    const user = await User.findByEmailOrUsername(identifier);
     if (!user) {
-      return res.status(401).json({ 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        message: 'Invalid username or password'
       });
     }
     
@@ -253,8 +256,8 @@ const login = async (req, res) => {
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        message: 'Invalid username or password'
       });
     }
     
@@ -572,11 +575,10 @@ const resetPassword = async (req, res) => {
       });
     }
     
-    // Check password strength
-    if (newPassword.length < 6) {
-      return res.status(400).json({ 
-        message: 'Password must be at least 6 characters long' 
-      });
+    // Check password strength (length, letter+digit, not a common word)
+    const passwordCheck = validatePassword(newPassword);
+    if (!passwordCheck.valid) {
+      return res.status(400).json({ message: passwordCheck.message });
     }
     
     // Verify the token

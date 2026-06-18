@@ -27,7 +27,7 @@ describe('Dynamic Filters Tests', () => {
       username: 'user1',
       firstName: 'Alice',
       lastName: 'Smith',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
     
     testUser2 = await User.create({
@@ -35,7 +35,7 @@ describe('Dynamic Filters Tests', () => {
       username: 'user2',
       firstName: 'Bob',
       lastName: 'Johnson',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
     
     testUser3 = await User.create({
@@ -43,7 +43,7 @@ describe('Dynamic Filters Tests', () => {
       username: 'user3',
       firstName: 'Carol',
       lastName: 'Williams',
-      password: 'password123'
+      password: 'Str0ngP@ss9'
     });
 
     // Create profiles with different fame ratings and birth dates for testing filters
