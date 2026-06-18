@@ -18,6 +18,7 @@ describe('Email Verification', () => {
     it('should register a user and send verification email', async () => {
       const userData = {
         email: 'test@example.com',
+        username: 'testuser',
         firstName: 'Test',
         lastName: 'User',
         password: 'Str0ngP@ss9'
@@ -39,6 +40,7 @@ describe('Email Verification', () => {
       // First, register a user
       const userData = {
         email: 'test@example.com',
+        username: 'testuser',
         firstName: 'Test',
         lastName: 'User',
         password: 'Str0ngP@ss9'
@@ -80,6 +82,7 @@ describe('Email Verification', () => {
       // First, register a user
       const userData = {
         email: 'test@example.com',
+        username: 'testuser',
         firstName: 'Test',
         lastName: 'User',
         password: 'Str0ngP@ss9'
@@ -105,6 +108,7 @@ describe('Email Verification', () => {
       // First, register a user
       const userData = {
         email: 'test@example.com',
+        username: 'testuser',
         firstName: 'Test',
         lastName: 'User',
         password: 'Str0ngP@ss9'
