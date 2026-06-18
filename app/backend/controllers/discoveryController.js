@@ -993,7 +993,14 @@ const getFilteredUsers = async (req, res) => {
         }
         break;
       case "tags":
-        query += "u.created_at ";
+        // Sort by number of tags shared with the current user ($1)
+        query += `(
+          SELECT COUNT(*)
+          FROM user_tags ut_a
+          JOIN user_tags ut_b ON ut_a.tag_id = ut_b.tag_id
+          WHERE ut_a.user_id = u.id AND ut_b.user_id = $1
+        ) `;
+        query += sortOrder === "asc" ? "ASC " : "DESC ";
         break;
       case "fame":
       default:
@@ -1102,7 +1109,7 @@ const getFilteredUsers = async (req, res) => {
     paramIndex = 1;
 
     if (allowedGenders.length > 0) {
-      params.push(allowedGenders.map((g) => g.toLowerCase()));
+      countParams.push(allowedGenders.map((g) => g.toLowerCase()));
       countQuery += ` AND (LOWER(p.gender) = ANY($${countParams.length}))`;
     }
 
