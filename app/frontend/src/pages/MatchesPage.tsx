@@ -21,6 +21,7 @@ interface UserProfile {
     country?: string | null;
   };
   distanceKm?: number | null;
+  isOnline?: boolean;
 }
 
 // Calculate age from birth date
@@ -52,7 +53,7 @@ const transformUserForProfileCard = (user: UserProfile) => {
     distance: user.distanceKm ?? 0,
     tags: [],
     fame: user.profile?.fameRating || 0,
-    isOnline: Math.random() > 0.5,
+    isOnline: user.isOnline ?? false,
     orientation: user.profile?.orientation || "straight",
     gender: user.profile?.gender || "female",
   };

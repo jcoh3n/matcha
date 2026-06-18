@@ -1,7 +1,7 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
 const Match = require('../models/Match');
-const { createAndSendNotification, getUserSocketIds } = require('../utils/notificationHandler');
+const { createAndSendNotification, getUserSocketIds, isUserConnected } = require('../utils/notificationHandler');
 const db = require('../config/db');
 
 // Send a message
@@ -284,6 +284,7 @@ const getConversations = async (req, res) => {
       },
       location: { city: row.city || null, country: row.country || null },
       distanceKm: row.distanceKm,
+      isOnline: isUserConnected(row.id),
       lastMessage: row.lastMessageContent ? {
         content: row.lastMessageContent,
         senderId: row.lastMessageSenderId,

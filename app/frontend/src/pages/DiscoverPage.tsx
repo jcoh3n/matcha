@@ -35,6 +35,7 @@ interface UserProfile {
   };
   tags?: string[];
   distanceKm?: number | null;
+  isOnline?: boolean;
 }
 
 interface Filters {
@@ -96,7 +97,7 @@ const transformUserForProfileCard = (user: UserProfile) => {
     distance: typeof user.distanceKm === "number" ? user.distanceKm : 0,
     tags: user.tags || [],
     fameRating: fameScore(user.profile?.fameRating),
-    isOnline: Math.random() > 0.5, // Placeholder
+    isOnline: user.isOnline ?? false,
     orientation: user.profile?.orientation || "straight",
     gender: user.profile?.gender || "female",
   };

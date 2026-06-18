@@ -4,6 +4,7 @@ const UserTag = require("../models/UserTag");
 const Photo = require("../models/Photo");
 const Location = require("../models/Location");
 const { forwardGeocode, reverseGeocode } = require("../utils/geocoding");
+const { isUserConnected } = require("../utils/notificationHandler");
 const db = require("../config/db");
 
 // Get current user profile
@@ -120,6 +121,7 @@ const getMatchesUser = async (req, res) => {
       },
       location: { city: r.city || null, country: r.country || null },
       distanceKm: r.distanceKm,
+      isOnline: isUserConnected(r.id),
     }));
 
     res.json(data);

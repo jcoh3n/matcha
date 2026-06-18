@@ -26,6 +26,7 @@ interface UserProfile {
   };
   tags?: string[];
   distanceKm?: number;
+  isOnline?: boolean;
 }
 
 interface SearchResultsProps {
@@ -60,10 +61,8 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
       user.distanceKm : 
       (user.location?.city && user.location?.country ? 10 : 0); // Fallback to old logic
     
-    // Déterminer le statut en ligne de manière plus cohérente (basé sur la dernière activité)
-    const isOnline = user.profile?.lastActive ? 
-      (new Date().getTime() - new Date(user.profile.lastActive).getTime()) < 30 * 60 * 1000 : // En ligne si actif dans les 30 dernières minutes
-      false;
+    // Statut en ligne réel fourni par le backend (présence via WebSocket)
+    const isOnline = user.isOnline ?? false;
     
     // Calculer un pourcentage de compatibilité plus réaliste
     const matchPercent = user.profile?.fameRating ? 

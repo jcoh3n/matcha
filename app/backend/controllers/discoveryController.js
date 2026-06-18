@@ -3,11 +3,22 @@ const Profile = require("../models/Profile");
 const Photo = require("../models/Photo");
 const Location = require("../models/Location");
 const db = require("../config/db");
+const { isUserConnected } = require("../utils/notificationHandler");
 
 // Small helper to safely parse integers from query params. Returns fallback when parsing fails.
 function safeParseInt(value, fallback = undefined) {
   const n = parseInt(value);
   return Number.isNaN(n) ? fallback : n;
+}
+
+// Attach real-time presence (isOnline) to each user object in a list response.
+function attachOnline(list) {
+  if (Array.isArray(list)) {
+    for (const u of list) {
+      if (u && u.id != null) u.isOnline = isUserConnected(u.id);
+    }
+  }
+  return list;
 }
 
 // Helper: fetch current user's gender & orientation (support both schema variants)
@@ -304,9 +315,11 @@ const getDiscoveryUsers = async (req, res) => {
         }
       };
 
+      attachOnline(paginatedResponse.data);
       res.json(paginatedResponse);
     } else {
       // Maintain backward compatibility
+      attachOnline(users);
       res.json(users);
     }
   } catch (error) {
@@ -439,6 +452,7 @@ const getRandomUsers = async (req, res) => {
 
     // Log the transformed users
 
+    attachOnline(users);
     res.json(users);
   } catch (error) {
     console.error("Error fetching random users:", error);
@@ -721,6 +735,7 @@ const searchUsers = async (req, res) => {
       }
     };
 
+    attachOnline(paginatedResponse.data);
     res.json(paginatedResponse);
   } catch (error) {
     console.error("Error searching users:", error);
@@ -1170,6 +1185,7 @@ const getFilteredUsers = async (req, res) => {
       }
     };
 
+    attachOnline(paginatedResponse.data);
     res.json(paginatedResponse);
   } catch (error) {
     console.error("Error fetching filtered users:", error);
@@ -1627,6 +1643,7 @@ const getSuggestedUsers = async (req, res) => {
       }
     };
 
+    attachOnline(paginatedResponse.data);
     res.json(paginatedResponse);
   } catch (error) {
     console.error("Error fetching suggested users:", error);
