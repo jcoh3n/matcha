@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Pencil, LogOut, ChevronLeft, Heart, Eye } from "lucide-react";
 import { MatchPercentage } from "@/components/ui/match-percentage";
+import { fameScore } from "@/lib/utils";
 import { OrientationBadge } from "@/components/ui/orientation-badge";
 import { OnlineStatus } from "@/components/ui/online-status";
 import { ViewerLikersSection } from "@/components/ui/viewer-likers-section";
@@ -87,7 +88,7 @@ export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
     "Location not set";
   const orientation = profile.profile?.orientation || "Not specified";
   const isOnline = true; // This would come from the backend in a real implementation
-  const matchPercent = profile.profile?.fameRating || Math.floor(Math.random() * 40) + 60;
+  const matchPercent = fameScore(profile.profile?.fameRating);
 
   // Function to handle image URLs - use placeholder if blob URL is not accessible
   const getImageUrl = (url: string) => {

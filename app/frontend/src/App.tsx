@@ -15,9 +15,7 @@ import { PublicProfilePage } from "./pages/PublicProfilePage";
 import { PrivateProfilePage } from "./pages/PrivateProfilePage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { SearchPage } from "./pages/SearchPage";
-import { HealthPage } from "./pages/HealthPage";
 import { AppShell } from "./components/layout/AppShell";
-import { HealthTestPage } from "./pages/HealthTestPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
@@ -89,8 +87,6 @@ const App = () => {
               }
             />
             {/** canonical auth routes under /auth */}
-            <Route path="/health" element={<HealthPage />} />
-            <Route path="/health-test" element={<HealthTestPage />} />
             <Route
               path="/auth/login"
               element={<LoginPage onLogin={handleLogin} />}
