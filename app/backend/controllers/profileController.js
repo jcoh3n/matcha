@@ -398,6 +398,9 @@ const getAllProfiles = async (req, res) => {
         LEFT JOIN locations l ON u.id = l.user_id
         LEFT JOIN locations lv ON lv.user_id = $3  -- Current user's location for distance calculation
         WHERE COALESCE(u.email_verified, true) = true AND u.id != $3
+          AND NOT EXISTS (
+            SELECT 1 FROM blocks b WHERE (b.user_id = $3 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $3)
+          )
       `;
     } else {
       // Full response - all fields
@@ -430,6 +433,9 @@ const getAllProfiles = async (req, res) => {
         LEFT JOIN user_tags ut ON u.id = ut.user_id
         LEFT JOIN tags t ON t.id = ut.tag_id
         WHERE COALESCE(u.email_verified, true) = true AND u.id != $3
+          AND NOT EXISTS (
+            SELECT 1 FROM blocks b WHERE (b.user_id = $3 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $3)
+          )
       `;
     }
 
@@ -530,6 +536,9 @@ const getAllProfiles = async (req, res) => {
       LEFT JOIN locations l ON u.id = l.user_id
       LEFT JOIN locations lv ON lv.user_id = $1
       WHERE COALESCE(u.email_verified, true) = true AND u.id != $1
+        AND NOT EXISTS (
+          SELECT 1 FROM blocks b WHERE (b.user_id = $1 AND b.blocked_user_id = u.id) OR (b.user_id = u.id AND b.blocked_user_id = $1)
+        )
     `;
 
     // Parameters for count query
