@@ -5,25 +5,37 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { MapPin, Wifi, Navigation } from "lucide-react";
 
-interface LocationSelectorProps {
-  onLocationChange: (location: { 
-    latitude: number; 
-    longitude: number; 
-    city?: string; 
-    country?: string;
-    method: 'GPS' | 'IP' | 'MANUAL'
-  }) => void;
+interface LocationValue {
+  latitude: number;
+  longitude: number;
+  city?: string;
+  country?: string;
+  method: 'GPS' | 'IP' | 'MANUAL';
 }
 
-export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
-  const [locationMethod, setLocationMethod] = useState<'GPS' | 'IP' | 'MANUAL'>('GPS');
-  const [manualLocation, setManualLocation] = useState({ city: '', country: '' });
+interface LocationSelectorProps {
+  onLocationChange: (location: LocationValue) => void;
+  initialLocation?: Partial<LocationValue> | null;
+}
+
+export function LocationSelector({ onLocationChange, initialLocation }: LocationSelectorProps) {
+  const [locationMethod, setLocationMethod] = useState<'GPS' | 'IP' | 'MANUAL'>(
+    initialLocation ? 'MANUAL' : 'GPS'
+  );
+  const [manualLocation, setManualLocation] = useState({
+    city: initialLocation?.city || '',
+    country: initialLocation?.country || ''
+  });
   const [isDetecting, setIsDetecting] = useState(false);
   const { toast } = useToast();
 
-  // Try to get location from IP on component mount
+  // On mount: keep the existing location when editing, otherwise approximate
+  // the user's location from their IP (fallback that needs no consent).
   useEffect(() => {
-    detectLocationFromIP();
+    if (!initialLocation) {
+      detectLocationFromIP();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const detectLocationFromIP = async () => {

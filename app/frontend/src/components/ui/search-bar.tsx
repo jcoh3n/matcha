@@ -77,7 +77,7 @@ export function SearchBar({
           return;
         }
 
-        const response = await api.searchUsers(token, query);
+        const response = await api.searchUsers(query);
         if (response.ok) {
           const results: UserProfile[] = await response.json();
           console.log("Search API response:", results);

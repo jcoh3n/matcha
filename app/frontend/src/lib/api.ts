@@ -1,6 +1,5 @@
 import { authService } from "@/services/authService";
 import { config, API_ENDPOINTS } from "@/config/api";
-import { get } from "http";
 
 export const api = {
   // User endpoints

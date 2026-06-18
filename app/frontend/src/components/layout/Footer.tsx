@@ -45,7 +45,7 @@ export function Footer({ currentPage = "discover", onNavigate }: FooterProps) {
             }`}
             aria-label={item.label}
           >
-            {typeof item.icon === 'function' ? item.icon() : <item.icon className="w-6 h-6" />}
+            <item.icon className="w-6 h-6" />
             <span className="text-xs font-medium">{item.label}</span>
           </button>
         ))}
