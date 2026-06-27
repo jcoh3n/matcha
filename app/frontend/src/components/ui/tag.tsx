@@ -6,7 +6,7 @@ const tagVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gray-100 text-gray-800",
+        default: "bg-secondary text-foreground",
         interest: "bg-accent/30 text-accent-foreground",
         match: "bg-primary/20 text-primary",
         primary: "bg-primary/10 text-primary",

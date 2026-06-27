@@ -1,26 +1,24 @@
-import React from "react";
 import {
+  Compass,
   Search as SearchIcon,
-  User as PersonIcon,
-  MessageCircle as ChatBubbleOutlineIcon,
-  Bell as NotificationsNoneIcon,
-  LogOut as LogoutIcon,
+  MessageCircle,
+  Bell,
+  User as UserIcon,
+  LogOut,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { SearchResults } from "@/components/ui/search-results";
-import { Button } from "react-day-picker";
+
+type NavKey =
+  | "discover"
+  | "matches"
+  | "messages"
+  | "profile"
+  | "notifications"
+  | "search";
 
 interface HeaderProps {
-  currentPage?:
-    | "discover"
-    | "matches"
-    | "messages"
-    | "profile"
-    | "notifications"
-    | "search";
+  currentPage?: NavKey;
   notificationCount?: number;
   messageCount?: number;
   onNavigate?: (page: string, query?: string) => void;
@@ -36,150 +34,68 @@ export function Header({
 }: HeaderProps) {
   const navigate = useNavigate();
 
-  // Log when component mounts and when props change
-  useEffect(() => {
-  }, [onLogout]);
-
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-    }
+  const go = (page: string) => {
+    if (onNavigate) onNavigate(page);
+    else navigate(`/${page}`);
   };
 
-  const handleNavigation = (page: string, query?: string) => {
-    if (onNavigate) {
-      onNavigate(page, query);
-    } else {
-      const url = query ? `/search?q=${encodeURIComponent(query)}` : `/${page}`;
-      navigate(url);
-    }
-  };
+  const navItems: { id: NavKey; label: string; icon: typeof Compass; badge?: number }[] = [
+    { id: "discover", label: "Discover", icon: Compass },
+    { id: "search", label: "Search", icon: SearchIcon },
+    { id: "messages", label: "Messages", icon: MessageCircle, badge: messageCount },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
+    { id: "profile", label: "Profile", icon: UserIcon },
+  ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16 backdrop-blur-sm border-b border-gray-200 shadow-sm text-black">
-  <div className="flex items-center gap-2 h-full">
-        <button onClick={() => handleNavigation("discover")}>
-          {/* Matcha logo in header */}
-          <img src="/matcha.svg" alt="Matcha Logo" className="h-8 w-auto" />
-        </button>
-      </div>
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16 bg-white/90 backdrop-blur-md border-b border-border">
+      <button
+        onClick={() => go("discover")}
+        className="flex items-center gap-2"
+        aria-label="Matcha — accueil"
+      >
+        <img src="/matcha.svg" alt="Matcha" className="h-7 w-auto" />
+        <span className="text-lg font-semibold tracking-tight">matcha</span>
+      </button>
 
-  {/* Barre de recherche au centre sur les écrans moyens et larges */}
-  <div className="hidden md:block flex-1 max-w-md mx-8 relative" />
-
-  <ul className="hidden md:flex items-center gap-8 font-medium font-montserrat h-full">
-        <li>
-          <button
-            onClick={() => handleNavigation("search")}
-            className="w-full flex flex-row"
-          >
-            <SearchIcon className="w-5 h-5 mr-2 text-muted-foreground" />
-            <span>Search</span>
-          </button>
-        </li>
-        <li>
-          <button
-            onClick={() => {
-              if (onNavigate) onNavigate("profile");
-              else navigate("/profile");
-            }}
-            className={cn(
-              "flex items-center gap-2 hover:opacity-80 transition",
-              currentPage === "profile" && "font-bold"
-            )}
-          >
-            <PersonIcon className="w-5 h-5" />
-            <span>Profil</span>
-          </button>
-        </li>
-        <li>
-          <button
-            onClick={() => {
-              if (onNavigate) onNavigate("messages");
-              else navigate("/messages");
-            }}
-            className="relative flex items-center gap-2 hover:opacity-80 transition"
-          >
-            <ChatBubbleOutlineIcon className="w-5 h-5" />
-            <span>Messages</span>
-            {messageCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center rounded-full bg-primary/90 text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
-                {messageCount > 99 ? "99+" : messageCount}
-              </span>
-            )}
-          </button>
-        </li>
-        <li>
-          <button
-            onClick={() => {
-              if (onNavigate) onNavigate("notifications");
-              else navigate("/notifications");
-            }}
-            className="relative flex items-center gap-2 hover:opacity-80 transition "
-          >
-            <NotificationsNoneIcon className="w-5 h-5" />
-            <span>Notifications</span>
-            {notificationCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
-                {notificationCount > 99 ? "99+" : notificationCount}
-              </span>
-            )}
-          </button>
-        </li>
-
+      <ul className="flex items-center gap-1">
+        {navItems.map(({ id, label, icon: Icon, badge }) => {
+          const active = currentPage === id;
+          return (
+            <li key={id}>
+              <button
+                onClick={() => go(id)}
+                className={cn(
+                  "relative flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-smooth",
+                  active
+                    ? "bg-secondary text-foreground font-semibold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                )}
+                aria-current={active ? "page" : undefined}
+              >
+                <span className="relative">
+                  <Icon className="w-5 h-5" />
+                  {badge ? (
+                    <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
+                      {badge > 99 ? "99+" : badge}
+                    </span>
+                  ) : null}
+                </span>
+                <span className="hidden lg:inline">{label}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
-      {/* Version mobile: icône de recherche + autres icônes */}
-      <div className="md:hidden flex items-center gap-4">
-        <div className="relative">
-          <SearchIcon className="w-5 h-5 text-muted-foreground" />
-        </div>
-        <button
-          onClick={() => {
-            if (onNavigate) onNavigate("profile");
-            else navigate("/profile");
-          }}
-          className={cn(
-            "p-2 rounded-full border border-white/30 hover:bg-white/10 transition",
-            currentPage === "profile" && "bg-white/20"
-          )}
-          aria-label="Profil"
-        >
-          <PersonIcon className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() =>
-            onNavigate ? onNavigate("messages") : navigate("/messages")
-          }
-          className="relative p-2 rounded-full border border-white/30 hover:bg-white/10 transition"
-          aria-label="Messages"
-        >
-          <ChatBubbleOutlineIcon className="w-5 h-5" />
-          {messageCount > 0 && (
-            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
-              {messageCount > 99 ? "99+" : messageCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() =>
-            onNavigate
-              ? onNavigate("notifications")
-              : navigate("/notifications")
-          }
-          className="relative p-2 rounded-full border border-white/30 hover:bg-white/10 transition"
-          aria-label="Notifications"
-        >
-          <NotificationsNoneIcon className="w-5 h-5" />
-          {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center rounded-full bg-[#FF6F61] text-white text-[10px] leading-none h-4 min-w-[16px] px-1 font-semibold">
-              {notificationCount > 99 ? "99+" : notificationCount}
-            </span>
-          )}
-        </button>
-
-      </div>
+      <button
+        onClick={() => onLogout?.()}
+        className="flex items-center gap-2 px-3 py-2 rounded-full text-sm text-muted-foreground hover:text-destructive hover:bg-secondary/60 transition-smooth"
+        aria-label="Log out"
+      >
+        <LogOut className="w-5 h-5" />
+        <span className="hidden lg:inline">Log out</span>
+      </button>
     </nav>
   );
 }

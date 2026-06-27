@@ -117,13 +117,13 @@ export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
                 className="w-32 h-32 rounded-full border-4 border-background object-cover transition-transform hover:scale-105"
               />
             ) : (
-              <div className="w-32 h-32 rounded-full border-4 border-background bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500">No photo</span>
+              <div className="w-32 h-32 rounded-full border-4 border-background bg-secondary-muted flex items-center justify-center">
+                <span className="text-muted-foreground">No photo</span>
               </div>
             )}
             {/* Online status indicator */}
             <div className="absolute bottom-0 right-0 bg-background rounded-full p-1.5 border border-border">
-              <div className={`w-4 h-4 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <div className={`w-4 h-4 rounded-full ${isOnline ? 'bg-green-500' : 'bg-secondary-muted'}`}></div>
             </div>
           </div>
         </div>
@@ -225,7 +225,7 @@ export function ProfilePage({ onLogout }: { onLogout?: () => void }) {
               onClick={onLogout}
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Se déconnecter
+              Log out
             </Button>
           </div>
         )}

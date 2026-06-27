@@ -91,8 +91,8 @@ export function PrivateProfilePage() {
   const handleSaveProfile = async () => {
     if (!firstName.trim() || !lastName.trim() || !email.trim()) {
       toast({
-        title: "Erreur",
-        description: "Prénom, nom et email sont obligatoires.",
+        title: "Error",
+        description: "First name, last name and email are required.",
         variant: "destructive"
       });
       return;
@@ -100,8 +100,8 @@ export function PrivateProfilePage() {
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer une adresse email valide.",
+        title: "Error",
+        description: "Please enter a valid email address.",
         variant: "destructive"
       });
       return;
@@ -109,8 +109,8 @@ export function PrivateProfilePage() {
 
     if (!bio || !gender || !orientation || !birthDate) {
       toast({
-        title: "Erreur",
-        description: "Veuillez remplir toutes les informations de base.",
+        title: "Error",
+        description: "Please fill in all the basic information.",
         variant: "destructive"
       });
       return;
@@ -170,8 +170,8 @@ export function PrivateProfilePage() {
       }
 
       toast({
-        title: "Succès",
-        description: "Votre profil a été mis à jour avec succès."
+        title: "Success",
+        description: "Your profile has been updated successfully."
       });
 
       // Redirect to profile page after successful update
@@ -181,8 +181,8 @@ export function PrivateProfilePage() {
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: "Erreur",
-        description: error instanceof Error ? error.message : "Une erreur s'est produite lors de la mise à jour de votre profil.",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong while updating your profile.",
         variant: "destructive"
       });
     }
@@ -239,8 +239,8 @@ export function PrivateProfilePage() {
     } catch (error) {
       console.error('Error handling photos:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de la mise à jour des photos.",
+        title: "Error",
+        description: "Something went wrong while updating your photos.",
         variant: "destructive"
       });
     }
@@ -271,9 +271,9 @@ export function PrivateProfilePage() {
       <div className="max-w-4xl mx-auto px-4">
         <Card className="w-full">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Modifier votre profil</CardTitle>
+            <CardTitle className="text-2xl font-bold">Edit your profile</CardTitle>
             <CardDescription>
-              Mettez à jour vos informations pour améliorer vos correspondances
+              Update your information to improve your matches
             </CardDescription>
           </CardHeader>
 
@@ -281,9 +281,7 @@ export function PrivateProfilePage() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label htmlFor="firstName" className="text-sm font-medium">
-                    Prénom
-                  </label>
+                  <label htmlFor="firstName" className="text-sm font-medium">First name</label>
                   <Input
                     id="firstName"
                     value={firstName}
@@ -316,9 +314,7 @@ export function PrivateProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="bio" className="text-sm font-medium">
-                  Biographie
-                </label>
+                <label htmlFor="bio" className="text-sm font-medium">Bio</label>
                 <Textarea
                   id="bio"
                   placeholder="Gamer and tech enthusiast 🎮💻"
@@ -331,17 +327,15 @@ export function PrivateProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="gender" className="text-sm font-medium">
-                    Genre
-                  </label>
+                  <label htmlFor="gender" className="text-sm font-medium">Gender</label>
                   <Select value={gender} onValueChange={setGender} required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez votre genre" />
+                      <SelectValue placeholder="Select your gender" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="male">Homme</SelectItem>
-                      <SelectItem value="female">Femme</SelectItem>
-                      <SelectItem value="other">Autre</SelectItem>
+                      <SelectItem value="male">Man</SelectItem>
+                      <SelectItem value="female">Woman</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -352,24 +346,22 @@ export function PrivateProfilePage() {
                   </label>
                   <Select value={orientation} onValueChange={setOrientation} required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez votre orientation" />
+                      <SelectValue placeholder="Select your orientation" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="straight">Hétérosexuel</SelectItem>
-                      <SelectItem value="gay">Homosexuel</SelectItem>
-                      <SelectItem value="lesbian">Lesbienne</SelectItem>
-                      <SelectItem value="bisexual">Bisexuel</SelectItem>
-                      <SelectItem value="pansexual">Pansexuel</SelectItem>
-                      <SelectItem value="other">Autre</SelectItem>
+                      <SelectItem value="straight">Straight</SelectItem>
+                      <SelectItem value="gay">Gay</SelectItem>
+                      <SelectItem value="lesbian">Lesbian</SelectItem>
+                      <SelectItem value="bisexual">Bisexual</SelectItem>
+                      <SelectItem value="pansexual">Pansexual</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="birthDate" className="text-sm font-medium">
-                  Date de naissance
-                </label>
+                <label htmlFor="birthDate" className="text-sm font-medium">Date of birth</label>
                 <input
                   id="birthDate"
                   type="date"
@@ -382,9 +374,9 @@ export function PrivateProfilePage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Centres d'intérêt</h3>
+              <h3 className="text-lg font-medium">Interests</h3>
               <p className="text-sm text-muted-foreground">
-                Mettez à jour vos centres d'intérêt pour améliorer vos correspondances
+                Update your interests to improve your matches
               </p>
               <TagSelector
                 selectedTags={selectedTags}
@@ -395,7 +387,7 @@ export function PrivateProfilePage() {
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Photos</h3>
               <p className="text-sm text-muted-foreground">
-                Gérez vos photos. La photo de profil sera celle qui apparaîtra en premier.
+                Manage your photos. Your profile picture is the one shown first.
               </p>
               <PhotoUploader
                 photos={photos.map(photo => ({
@@ -408,9 +400,9 @@ export function PrivateProfilePage() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Localisation</h3>
+              <h3 className="text-lg font-medium">Location</h3>
               <p className="text-sm text-muted-foreground">
-                Mettez à jour votre localisation pour trouver des correspondances à proximité
+                Update your location to find nearby matches
               </p>
               <LocationSelector
                 onLocationChange={setLocation}
@@ -434,7 +426,7 @@ export function PrivateProfilePage() {
                 disabled={updating}
                 className="w-full"
               >
-                {updating ? "Enregistrement en cours..." : "Enregistrer les modifications"}
+                {updating ? "Saving..." : "Save changes"}
               </Button>
             </div>
             <Button
@@ -465,9 +457,7 @@ export function PrivateProfilePage() {
                 navigate("/");
               }}
               className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 py-4"
-            >
-              Se déconnecter
-            </Button>
+            >Log out</Button>
           </CardFooter>
         </Card>
       </div>

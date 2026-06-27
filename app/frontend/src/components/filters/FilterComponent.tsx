@@ -143,7 +143,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         {/* Célébrité */}
         <div className="space-y-3">
           <Label className="text-sm font-medium text-foreground">
-            Note de célébrité: {filters.fameRating[0]} - {filters.fameRating[1]}
+            Fame rating: {filters.fameRating[0]} - {filters.fameRating[1]}
           </Label>
           <Slider
             value={filters.fameRating}
@@ -202,7 +202,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
           {filters.tags.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Tags sélectionnés :</Label>
+              <Label className="text-xs text-muted-foreground">Selected tags:</Label>
               <div className="flex flex-wrap gap-1">
                 {filters.tags.map((tag) => (
                   <Badge key={tag} variant="default" className="text-xs">

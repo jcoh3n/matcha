@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { fameScore } from "@/lib/utils";
+import { fameScore, formatDistance } from "@/lib/utils";
 import { 
   Heart, 
   MapPin, 
@@ -173,12 +173,14 @@ export function PublicProfilePage() {
   const handleReport = async () => {
     if (!profile || !accessToken) return;
     
-    // In a real app, you would show a dialog to get the reason
-    const reason = prompt("Please provide a reason for reporting this user:");
-    if (!reason) return;
-    
+    // The subject defines reporting specifically as flagging a "fake account".
+    const confirmed = window.confirm(
+      `Report ${profile.username} as a fake account? Our team will review this profile.`,
+    );
+    if (!confirmed) return;
+
     try {
-      const result = await reportProfile(profile.id, reason);
+      const result = await reportProfile(profile.id, "fake account");
       if (result.success) {
         toast({
           title: "Reported",
@@ -316,8 +318,8 @@ export function PublicProfilePage() {
                 className="w-full h-96 object-cover"
               />
             ) : (
-              <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
-                <UserX className="w-16 h-16 text-gray-400" />
+              <div className="w-full h-96 bg-secondary-muted flex items-center justify-center">
+                <UserX className="w-16 h-16 text-muted-foreground" />
               </div>
             )}
           </div>
@@ -405,13 +407,13 @@ export function PublicProfilePage() {
             <div className="flex flex-col items-end">
               {profile.fameRating !== undefined && (
                 <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full font-bold text-lg">
-                  Popularité {fameScore(profile.fameRating)}/100
+                  Fame {fameScore(profile.fameRating)}/100
                 </div>
               )}
-              {profile.distance !== null && (
+              {profile.distance !== null && profile.distance !== undefined && (
                 <div className="mt-2 text-muted-foreground flex items-center">
                   <Globe className="w-4 h-4 mr-1" />
-                  {profile.distance} km away
+                  {formatDistance(profile.distance)}
                 </div>
               )}
             </div>
@@ -530,7 +532,7 @@ export function PublicProfilePage() {
                 variant="default"
                 size="lg"
                 onClick={() => navigate("/messages")}
-                className="flex-1 min-w-[120px] bg-green-500 hover:bg-green-600"
+                className="flex-1 min-w-[120px]"
               >
                 <MessageCircle className="w-5 h-5 mr-2" />
                 Message
@@ -562,17 +564,17 @@ export function PublicProfilePage() {
           
           {/* Match Badge */}
           {profile.isMatch && (
-            <div className="mt-4 p-4 bg-green-100 border border-green-300 rounded-lg text-center">
-              <Heart className="w-6 h-6 text-green-500 fill-current mx-auto mb-2" />
-              <p className="font-bold text-green-700">It's a match! You and {profile.username} like each other.</p>
+            <div className="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-2xl text-center">
+              <Heart className="w-6 h-6 text-primary fill-current mx-auto mb-2" />
+              <p className="font-semibold text-primary">It's a match! You and {profile.username} like each other.</p>
             </div>
           )}
-          
+
           {/* Liked By Badge */}
           {profile.isLikedByUser && !profile.isLiked && (
-            <div className="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-lg text-center">
-              <Heart className="w-6 h-6 text-blue-500 fill-current mx-auto mb-2" />
-              <p className="font-bold text-blue-700">{profile.username} likes you!</p>
+            <div className="mt-4 p-4 bg-secondary border border-border rounded-2xl text-center">
+              <Heart className="w-6 h-6 text-primary fill-current mx-auto mb-2" />
+              <p className="font-semibold text-foreground">{profile.username} likes you!</p>
             </div>
           )}
         </div>

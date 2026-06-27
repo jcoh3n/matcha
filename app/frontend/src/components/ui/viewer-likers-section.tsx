@@ -74,7 +74,7 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
+    return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -100,8 +100,8 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
 
   const activeData = activeTab === 'viewers' ? viewers : likers;
   const emptyMessage = activeTab === 'viewers' 
-    ? "Aucun utilisateur n'a consulté votre profil récemment." 
-    : "Aucun utilisateur ne vous a liké récemment.";
+    ? "No one has viewed your profile recently." 
+    : "No one has liked you recently.";
 
   return (
     <Card className="w-full border-0 shadow-sm">
@@ -109,7 +109,7 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
         <CardTitle className="text-xl font-bold flex items-center gap-2">
           <span>Who viewed / liked me</span>
           <Badge variant="secondary" className="text-xs">
-            {activeTab === 'viewers' ? `${viewers.length} vues` : `${likers.length} likes`}
+            {activeTab === 'viewers' ? `${viewers.length} views` : `${likers.length} likes`}
           </Badge>
         </CardTitle>
         
@@ -121,7 +121,7 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
             className="flex items-center gap-1"
           >
             <Eye className="w-4 h-4" />
-            Vus ({viewers.length})
+            Viewed ({viewers.length})
           </Button>
           <Button
             variant={activeTab === 'likers' ? 'default' : 'outline'}
@@ -130,7 +130,7 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
             className="flex items-center gap-1"
           >
             <Heart className="w-4 h-4" />
-            Likés ({likers.length})
+            Liked ({likers.length})
           </Button>
         </div>
       </CardHeader>
@@ -166,7 +166,7 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
                   <p className="text-sm text-muted-foreground truncate">
                     {person.location?.city ? `${person.location.city}, ` : ''}
                     {person.location?.country || ''}
-                    {person.distance ? ` • ${person.distance} km` : ''}
+                    {typeof person.distance === 'number' ? ` • ${Math.round(person.distance)} km` : ''}
                   </p>
                   
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -176,20 +176,20 @@ export function ViewerLikersSection({ accessToken }: ViewerLikersSectionProps) {
                       </Badge>
                     )}
                     {person.isLikedByUser && !person.isMatch && (
-                      <Badge variant="outline" className="text-xs border-green-500 text-green-600">
-                        Vous a liké
+                      <Badge variant="outline" className="text-xs border-primary text-primary">
+                        Likes you
                       </Badge>
                     )}
                     {person.viewedAt && activeTab === 'viewers' && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="w-3 h-3" />
-                        Vu {formatDate(person.viewedAt)}
+                        Viewed {formatDate(person.viewedAt)}
                       </div>
                     )}
                     {person.likedAt && activeTab === 'likers' && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="w-3 h-3" />
-                        Liké {formatDate(person.likedAt)}
+                        Liked {formatDate(person.likedAt)}
                       </div>
                     )}
                   </div>

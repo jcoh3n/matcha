@@ -55,8 +55,8 @@ export function OnboardingPage() {
   const nextStep = () => {
     if (step === 2 && selectedTags.length < 3) {
       toast({
-        title: "Ajoutez des centres d'intérêt",
-        description: "Veuillez sélectionner au moins 3 tags.",
+        title: "Add your interests",
+        description: "Please select at least 3 tags.",
         variant: "destructive",
       });
       return;
@@ -74,8 +74,8 @@ export function OnboardingPage() {
     // Validate all steps before submitting
     if (!bio || !gender || !orientation || !birthDate) {
       toast({
-        title: "Erreur",
-        description: "Veuillez remplir toutes les informations de base.",
+        title: "Error",
+        description: "Please fill in all the basic information.",
         variant: "destructive",
       });
       setStep(1);
@@ -84,8 +84,8 @@ export function OnboardingPage() {
 
     if (photos.length === 0) {
       toast({
-        title: "Erreur",
-        description: "Veuillez ajouter au moins une photo.",
+        title: "Error",
+        description: "Please add at least one photo.",
         variant: "destructive",
       });
       setStep(3);
@@ -94,8 +94,8 @@ export function OnboardingPage() {
 
     if (!location) {
       toast({
-        title: "Erreur",
-        description: "Veuillez spécifier votre localisation.",
+        title: "Error",
+        description: "Please specify your location.",
         variant: "destructive",
       });
       setStep(4);
@@ -183,8 +183,8 @@ export function OnboardingPage() {
 
       // Show success message
       toast({
-        title: "Profil complété",
-        description: "Vos informations ont été enregistrées avec succès.",
+        title: "Profile completed",
+        description: "Your information has been saved successfully.",
       });
 
       // Redirect to home page
@@ -192,9 +192,9 @@ export function OnboardingPage() {
     } catch (error) {
       console.error("Onboarding error:", error);
       toast({
-        title: "Erreur",
+        title: "Error",
         description:
-          "Une erreur s'est produite lors de l'enregistrement de vos informations.",
+          "Something went wrong while saving your information.",
         variant: "destructive",
       });
     } finally {
@@ -203,16 +203,15 @@ export function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10 p-4">
+    <div className="min-h-screen bg-secondary/40 p-4">
       <div className="max-w-4xl mx-auto">
         <Card className="w-full">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">
-              Complétez votre profil
+              Complete your profile
             </CardTitle>
             <CardDescription className="text-center">
-              Ces informations nous aideront à vous trouver des correspondances
-              pertinentes
+              This information helps us find relevant matches for you
             </CardDescription>
 
             {/* Progress indicator */}
@@ -234,12 +233,10 @@ export function OnboardingPage() {
             {step === 1 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="bio" className="text-sm font-medium">
-                    Biographie
-                  </label>
+                  <label htmlFor="bio" className="text-sm font-medium">Bio</label>
                   <Textarea
                     id="bio"
-                    placeholder="Parlez-nous de vous..."
+                    placeholder="Tell us about yourself..."
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     required
@@ -249,17 +246,15 @@ export function OnboardingPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label htmlFor="gender" className="text-sm font-medium">
-                      Genre
-                    </label>
+                    <label htmlFor="gender" className="text-sm font-medium">Gender</label>
                     <Select value={gender} onValueChange={setGender} required>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez votre genre" />
+                        <SelectValue placeholder="Select your gender" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="male">Homme</SelectItem>
-                        <SelectItem value="female">Femme</SelectItem>
-                        <SelectItem value="other">Autre</SelectItem>
+                        <SelectItem value="male">Man</SelectItem>
+                        <SelectItem value="female">Woman</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -277,24 +272,22 @@ export function OnboardingPage() {
                       required
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez votre orientation" />
+                        <SelectValue placeholder="Select your orientation" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="straight">Hétérosexuel</SelectItem>
-                        <SelectItem value="gay">Homosexuel</SelectItem>
-                        <SelectItem value="lesbian">Lesbienne</SelectItem>
-                        <SelectItem value="bisexual">Bisexuel</SelectItem>
-                        <SelectItem value="pansexual">Pansexuel</SelectItem>
-                        <SelectItem value="other">Autre</SelectItem>
+                        <SelectItem value="straight">Straight</SelectItem>
+                        <SelectItem value="gay">Gay</SelectItem>
+                        <SelectItem value="lesbian">Lesbian</SelectItem>
+                        <SelectItem value="bisexual">Bisexual</SelectItem>
+                        <SelectItem value="pansexual">Pansexual</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="birthDate" className="text-sm font-medium">
-                    Date de naissance
-                  </label>
+                  <label htmlFor="birthDate" className="text-sm font-medium">Date of birth</label>
                   <input
                     id="birthDate"
                     type="date"
@@ -309,10 +302,9 @@ export function OnboardingPage() {
 
             {step === 2 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Centres d'intérêt</h3>
+                <h3 className="text-lg font-medium">Interests</h3>
                 <p className="text-sm text-muted-foreground">
-                  Ajoutez vos centres d'intérêt pour améliorer vos
-                  correspondances (minimum 3)
+                  Add your interests to get better matches (minimum 3)
                 </p>
                 <TagSelector
                   selectedTags={selectedTags}
@@ -321,13 +313,13 @@ export function OnboardingPage() {
                 <p
                   className={`text-sm ${
                     selectedTags.length < 3
-                      ? "text-red-500"
+                      ? "text-destructive"
                       : "text-muted-foreground"
                   }`}
                 >
                   {selectedTags.length < 3
-                    ? `Encore ${3 - selectedTags.length} à sélectionner`
-                    : "Parfait, vous pouvez continuer"}
+                    ? `${3 - selectedTags.length} more to select`
+                    : "Perfect, you can continue"}
                 </p>
               </div>
             )}
@@ -336,8 +328,7 @@ export function OnboardingPage() {
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Photos</h3>
                 <p className="text-sm text-muted-foreground">
-                  Ajoutez jusqu'à 5 photos. La photo de profil sera celle qui
-                  apparaîtra en premier.
+                  Add up to 5 photos. Your profile picture is the one shown first.
                 </p>
                 <PhotoUploader
                   photos={photos}
@@ -349,10 +340,9 @@ export function OnboardingPage() {
 
             {step === 4 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Localisation</h3>
+                <h3 className="text-lg font-medium">Location</h3>
                 <p className="text-sm text-muted-foreground">
-                  Nous utilisons votre localisation pour trouver des
-                  correspondances à proximité
+                  We use your location to find nearby matches
                 </p>
                 <LocationSelector onLocationChange={setLocation} />
               </div>
@@ -364,20 +354,16 @@ export function OnboardingPage() {
               variant="outline"
               onClick={prevStep}
               disabled={step === 1 || isLoading}
-            >
-              Précédent
-            </Button>
+            >Back</Button>
 
             {step < 4 ? (
               <Button
                 onClick={nextStep}
                 disabled={isLoading || (step === 2 && selectedTags.length < 3)}
-              >
-                Suivant
-              </Button>
+              >Next</Button>
             ) : (
               <Button onClick={handleSubmit} disabled={isLoading}>
-                {isLoading ? "Enregistrement en cours..." : "Terminer"}
+                {isLoading ? "Saving..." : "Finish"}
               </Button>
             )}
           </CardFooter>

@@ -45,9 +45,9 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   return (
     <div
       id="notification-panel"
-      className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+      className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-border z-50"
     >
-      <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+      <div className="p-4 border-b border-border flex justify-between items-center">
         <h3 className="font-semibold">Notifications</h3>
         {allNotifications.some((n) => !n.read) && (
           <Button
@@ -64,7 +64,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
       <ScrollArea className="h-96">
         <div className="p-2">
           {allNotifications.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               Aucune notification
             </div>
           ) : (

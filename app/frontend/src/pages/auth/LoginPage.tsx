@@ -23,9 +23,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     // Accept either a username or an email as the login identifier
     if (!email.trim()) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer votre nom d'utilisateur ou votre email.",
-        variant: "destructive"
+        title: "Missing information",
+        description: "Please enter your username or email.",
+        variant: "destructive",
       });
       return;
     }
@@ -33,57 +33,49 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setIsLoading(true);
 
     try {
-      // Make API call to backend
-      // Make API call to backend
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const response = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
 
-      // Try to parse JSON, but handle case where response might be empty
       let data;
       try {
         data = await response.json();
-      } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
+      } catch {
         data = {};
       }
 
       if (response.ok) {
-        // Store tokens in localStorage (in a real app, you might want to use secure cookies)
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // Show success message
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté à votre compte."
+          title: "Welcome back",
+          description: "You are now signed in to your account.",
         });
-        
-        // Call onLogin callback if provided
+
         if (onLogin) {
           onLogin();
         }
-        
-        // Redirect to home page (which shows the discover page when authenticated)
+
         navigate("/");
       } else {
         toast({
-          title: "Erreur de connexion",
-          description: data.message || "Veuillez vérifier vos identifiants et réessayer.",
-          variant: "destructive"
+          title: "Sign-in failed",
+          description: data.message || "Please check your credentials and try again.",
+          variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: "Erreur de connexion",
-        description: "Une erreur s'est produite. Veuillez réessayer.",
-        variant: "destructive"
+        title: "Sign-in failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -93,89 +85,85 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const handleResendVerification = async () => {
     if (!email) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer votre adresse email.",
-        variant: "destructive"
+        title: "Missing information",
+        description: "Please enter your email address.",
+        variant: "destructive",
       });
       return;
     }
-    
-    // Simple email validation
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer une adresse email valide.",
-        variant: "destructive"
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
       });
       return;
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const response = await fetch(`${apiUrl}/api/auth/resend-verification`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
       });
 
-      // Try to parse JSON, but handle case where response might be empty
       let data;
       try {
         data = await response.json();
-      } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
+      } catch {
         data = {};
       }
-      
+
       if (response.ok) {
         toast({
-          title: "Succès",
-          description: data.message || "L'email de vérification a été renvoyé avec succès.",
+          title: "Email sent",
+          description: data.message || "The verification email has been sent again.",
         });
       } else {
         toast({
-          title: "Erreur",
-          description: data.message || "Une erreur s'est produite lors de l'envoi de l'email de vérification. Veuillez réessayer.",
+          title: "Error",
+          description: data.message || "Could not send the verification email. Please try again.",
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error('Resend verification email error:', error);
+    } catch {
       toast({
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de l'envoi de l'email de vérification. Veuillez réessayer.",
+        title: "Error",
+        description: "Could not send the verification email. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-secondary/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Connexion</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Sign in</CardTitle>
           <CardDescription className="text-center">
-            Entrez vos identifiants pour accéder à votre compte
+            Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Nom d'utilisateur ou email</Label>
+              <Label htmlFor="email">Username or email</Label>
               <Input
                 id="email"
                 type="text"
-                placeholder="jdupont ou votre@email.com"
+                placeholder="jdupont or you@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -188,26 +176,26 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading ? "Connexion en cours..." : "Se connecter"}
+              {isLoading ? "Signing in..." : "Sign in"}
             </Button>
             <div className="text-sm text-center">
               <Link to="/auth/forgot-password" className="text-primary hover:underline">
-                Mot de passe oublié ?
+                Forgot password?
               </Link>
             </div>
             <div className="text-sm text-center">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleResendVerification}
                 className="text-primary hover:underline bg-transparent border-none cursor-pointer"
               >
-                Renvoyer l'email de vérification
+                Resend verification email
               </button>
             </div>
             <div className="text-sm text-center">
-              Pas encore de compte ?{" "}
+              No account yet?{" "}
               <Link to="/auth/register" className="text-primary hover:underline">
-                Créer un compte
+                Create one
               </Link>
             </div>
           </CardFooter>

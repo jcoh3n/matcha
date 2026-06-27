@@ -31,18 +31,18 @@ export function MobileHeader({
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 h-16 bg-transparent shadow-none">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 h-16 bg-white/90 backdrop-blur-md border-b border-border">
       <div className="flex items-center gap-2 h-full">
-        <button 
+        <button
           onClick={() => navigate('/discover')}
-          className="h-full flex items-center"
+          className="h-full flex items-center gap-2"
         >
-          {/* Matcha logo in header */}
-          <img 
-            src="/matcha.svg" 
-            alt="Matcha Logo" 
-            className="h-8 w-auto"
+          <img
+            src="/matcha.svg"
+            alt="Matcha"
+            className="h-7 w-auto"
           />
+          <span className="text-lg font-semibold tracking-tight">matcha</span>
         </button>
       </div>
 
@@ -50,7 +50,7 @@ export function MobileHeader({
       {currentPage === "discover" && (
         <button
           onClick={onFilterClick}
-          className="p-2 rounded-full hover:bg-white/20 transition-colors text-gray-700"
+          className="p-2 rounded-full hover:bg-secondary transition-smooth text-foreground"
           aria-label="Filters"
         >
           <Filter className="w-6 h-6" />

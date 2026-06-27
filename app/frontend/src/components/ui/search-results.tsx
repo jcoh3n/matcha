@@ -118,7 +118,7 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
       <SearchBar 
         onSearch={handleSearchSubmit}
         onResults={handleSearchResults}
-        placeholder="Rechercher des profils..."
+        placeholder="Search profiles..."
         className="w-full"
         showSpinner={false} // Désactiver le spinner qui cause des problèmes
         value={searchValue} // ← Ajouter la valeur pour contrôler le composant
@@ -128,7 +128,7 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
       {showResults && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
           <div className="flex items-center justify-between p-3 border-b border-border">
-            <h3 className="font-medium">Résultats de recherche</h3>
+            <h3 className="font-medium">Search results</h3>
             <button 
               onClick={() => setShowResults(false)}
               className="p-1 rounded-full hover:bg-muted"
@@ -168,14 +168,14 @@ export function SearchResults({ className, onNavigate }: SearchResultsProps) {
                       }}
                       className="text-primary hover:underline"
                     >
-                      Voir tous les résultats ({searchResults.length})
+                      See all results ({searchResults.length})
                     </button>
                   </div>
                 )}
               </div>
             ) : (
               <div className="p-4 text-center text-muted-foreground">
-                Aucun résultat trouvé
+                No results found
               </div>
             )}
           </div>

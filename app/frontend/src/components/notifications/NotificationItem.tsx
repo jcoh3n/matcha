@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -45,21 +45,21 @@ export function NotificationItem({
   const getTimeAgo = () => {
     return formatDistanceToNow(new Date(createdAt), {
       addSuffix: true,
-      locale: fr,
+      locale: enUS,
     });
   };
 
   return (
     <Card
-      className={`p-4 mb-2 flex items-start gap-3 cursor-pointer ${read ? "bg-white" : "bg-blue-50"}`}
+      className={`p-4 mb-2 flex items-start gap-3 cursor-pointer ${read ? "bg-white" : "bg-primary/5"}`}
       onClick={onClick}
     >
       <div className="text-xl">{getIcon()}</div>
       <div className="flex-1">
-        <p className={`${read ? "text-gray-700" : "text-gray-900 font-medium"}`}>
+        <p className={`${read ? "text-foreground" : "text-foreground font-medium"}`}>
           {content}
         </p>
-        <p className="text-xs text-gray-500 mt-1">{getTimeAgo()}</p>
+        <p className="text-xs text-muted-foreground mt-1">{getTimeAgo()}</p>
       </div>
       {!read && (
         <Button

@@ -15,13 +15,13 @@ const NotFound = () => {
       <div className="relative z-10 glass-card p-12 max-w-lg text-center gradient-ring">
         <h1 className="text-8xl font-black font-display bg-gradient-to-tr from-primary via-secondary to-accent bg-clip-text text-transparent mb-6 leading-none">404</h1>
         <p className="text-xl font-medium text-muted-foreground mb-2">Page introuvable</p>
-        <p className="text-sm text-muted-foreground mb-8">Aucune page ne correspond à <span className="font-mono break-all">{location.pathname}</span></p>
+        <p className="text-sm text-muted-foreground mb-8">No page matches <span className="font-mono break-all">{location.pathname}</span></p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <BrutalButton asChild variant="hero" className="px-10">
             <Link to="/">Accueil</Link>
           </BrutalButton>
           <BrutalButton asChild variant="outline">
-            <Link to="/discover">Découvrir</Link>
+            <Link to="/discover">Discover</Link>
           </BrutalButton>
         </div>
       </div>

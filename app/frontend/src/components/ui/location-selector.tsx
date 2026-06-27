@@ -59,8 +59,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
         setIsDetecting(false);
         
         toast({
-          title: "Localisation détectée",
-          description: `Localisation détectée : ${location.city || 'Inconnu'}, ${location.country || 'Inconnu'}`
+          title: "Location detected",
+          description: `Location detected: ${location.city || 'Unknown'}, ${location.country || 'Unknown'}`
         });
       } else {
         throw new Error('Invalid response from IP geolocation service');
@@ -70,8 +70,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
       setIsDetecting(false);
       
       toast({
-        title: "Localisation non détectée",
-        description: "Impossible de détecter votre localisation par IP. Veuillez utiliser une autre méthode.",
+        title: "Location not detected",
+        description: "Couldn't detect your location by IP. Please use another method.",
         variant: "destructive"
       });
     }
@@ -80,8 +80,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
   const detectLocationFromGPS = () => {
     if (!navigator.geolocation) {
       toast({
-        title: "Géolocalisation non supportée",
-        description: "Votre navigateur ne supporte pas la géolocalisation.",
+        title: "Geolocation not supported",
+        description: "Your browser doesn't support geolocation.",
         variant: "destructive"
       });
       return;
@@ -115,8 +115,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
           setIsDetecting(false);
           
           toast({
-            title: "Localisation GPS",
-            description: `Votre position a été détectée : ${location.city || 'Inconnu'}, ${location.country || 'Inconnu'}`
+            title: "GPS location",
+            description: `Your position was detected: ${location.city || 'Unknown'}, ${location.country || 'Unknown'}`
           });
         } catch (error) {
           console.error('Reverse geocoding error:', error);
@@ -133,8 +133,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
           setIsDetecting(false);
           
           toast({
-            title: "Localisation GPS",
-            description: "Votre position a été détectée avec succès (adresse non disponible)."
+            title: "GPS location",
+            description: "Your position was detected successfully (address unavailable)."
           });
         }
       },
@@ -143,8 +143,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
         setIsDetecting(false);
         
         toast({
-          title: "Erreur GPS",
-          description: "Impossible d'obtenir votre position GPS. Veuillez réessayer ou utiliser une autre méthode.",
+          title: "GPS error",
+          description: "Couldn't get your GPS position. Please try again or use another method.",
           variant: "destructive"
         });
       }
@@ -154,8 +154,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
   const handleManualLocationSubmit = async () => {
     if (!manualLocation.city || !manualLocation.country) {
       toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs de localisation.",
+        title: "Error",
+        description: "Please fill in all location fields.",
         variant: "destructive"
       });
       return;
@@ -187,8 +187,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
         onLocationChange(location);
         
         toast({
-          title: "Localisation enregistrée",
-          description: `Localisation enregistrée : ${manualLocation.city}, ${manualLocation.country}`
+          title: "Location saved",
+          description: `Location saved: ${manualLocation.city}, ${manualLocation.country}`
         });
       } else {
         throw new Error('No results found for the provided location');
@@ -196,8 +196,8 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
     } catch (error) {
       console.error('Geocoding error:', error);
       toast({
-        title: "Erreur de géocodage",
-        description: "Impossible de trouver les coordonnées pour cette localisation. Veuillez vérifier et réessayer.",
+        title: "Geocoding error",
+        description: "Couldn't find coordinates for this location. Please check and try again.",
         variant: "destructive"
       });
     }
@@ -268,14 +268,14 @@ export function LocationSelector({ onLocationChange, initialLocation }: Location
               />
             </div>
           </div>
-          <Button onClick={handleManualLocationSubmit}>Enregistrer la localisation</Button>
+          <Button onClick={handleManualLocationSubmit}>Save location</Button>
         </div>
       )}
 
       {isDetecting && (
         <div className="text-center py-4">
           <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
-          <p className="mt-2">Détection de votre localisation en cours...</p>
+          <p className="mt-2">Detecting your location...</p>
         </div>
       )}
     </div>

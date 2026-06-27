@@ -109,8 +109,10 @@ export function AppShell({
       
       {/* Mobile Footer - Only show on mobile screens */}
       <div className="md:hidden">
-        <Footer 
-          currentPage={current} 
+        <Footer
+          currentPage={current}
+          notificationCount={unreadCount}
+          messageCount={messageCount}
           onNavigate={handleNavigation}
         />
       </div>

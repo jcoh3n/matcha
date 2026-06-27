@@ -50,7 +50,7 @@ interface SearchBarProps extends React.ComponentProps<"input"> {
 export function SearchBar({
   className,
   onSearch,
-  placeholder = "Rechercher...",
+  placeholder = "Search...",
   onResults,
   debounceDelay = 300,
   showSpinner = true, // Par défaut, le spinner est activé

@@ -101,7 +101,7 @@ export function TagSelector({ selectedTags, onTagsChange }: TagSelectorProps) {
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleInputKeyDown}
-          placeholder={selectedTags.length === 0 ? "Ajoutez vos centres d'intérêt..." : ""}
+          placeholder={selectedTags.length === 0 ? "Add your interests..." : ""}
           className="flex-1 border-0 focus-visible:ring-0 p-0 h-auto min-w-[100px]"
         />
       </div>

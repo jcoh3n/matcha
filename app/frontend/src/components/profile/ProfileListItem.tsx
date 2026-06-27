@@ -53,7 +53,7 @@ export function ProfileListItem({
           className="w-full h-64 object-cover"
         />
         <div className="absolute top-3 right-3">
-          <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-300'}`} />
+          <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-secondary-muted'}`} />
         </div>
         <div className="absolute bottom-3 left-3 flex items-center bg-white/80 backdrop-blur-sm rounded-full px-3 py-1">
           <Heart className="w-4 h-4 text-primary fill-current mr-1" />
@@ -68,7 +68,7 @@ export function ProfileListItem({
           </h3>
         </div>
         
-        <div className="flex items-center text-gray-600 mb-3 text-sm">
+        <div className="flex items-center text-muted-foreground mb-3 text-sm">
           <MapPin className="w-4 h-4 mr-1" />
           <span>{location}</span>
         </div>

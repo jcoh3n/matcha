@@ -17,27 +17,27 @@ export function ResetPasswordPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
+    const tokenParam = searchParams.get("token");
     if (tokenParam) {
       setToken(tokenParam);
     }
   }, [searchParams]);
 
   const validatePassword = (password: string, confirmPassword: string) => {
-    if (password.length < 6) {
+    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
       toast({
-        title: "Erreur",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
-        variant: "destructive"
+        title: "Weak password",
+        description: "Your password must be at least 8 characters and include a letter and a number.",
+        variant: "destructive",
       });
       return false;
     }
 
     if (password !== confirmPassword) {
       toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas.",
-        variant: "destructive"
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are identical.",
+        variant: "destructive",
       });
       return false;
     }
@@ -47,7 +47,7 @@ export function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validatePassword(password, confirmPassword)) {
       return;
     }
@@ -55,42 +55,40 @@ export function ResetPasswordPage() {
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const response = await fetch(`${apiUrl}/api/auth/reset-password`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ token, newPassword: password }),
       });
 
-      // Try to parse JSON, but handle case where response might be empty
       let data;
       try {
         data = await response.json();
-      } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
+      } catch {
         data = {};
       }
-      
+
       if (response.ok) {
         setIsSuccess(true);
         toast({
-          title: "Succès",
-          description: "Votre mot de passe a été réinitialisé avec succès."
+          title: "Password reset",
+          description: "Your password has been reset successfully.",
         });
       } else {
         toast({
-          title: "Erreur",
-          description: data.message || "Une erreur s'est produite lors de la réinitialisation du mot de passe.",
-          variant: "destructive"
+          title: "Error",
+          description: data.message || "Something went wrong while resetting your password.",
+          variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: "Erreur",
-        description: "Une erreur s'est produite. Veuillez réessayer.",
-        variant: "destructive"
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -98,47 +96,47 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-secondary/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Réinitialiser le mot de passe</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Reset password</CardTitle>
           <CardDescription className="text-center">
-            Entrez votre nouveau mot de passe
+            Enter your new password
           </CardDescription>
         </CardHeader>
         {isSuccess ? (
           <CardContent className="text-center space-y-4">
             <p className="text-muted-foreground">
-              Votre mot de passe a été réinitialisé avec succès.
+              Your password has been reset successfully.
             </p>
-            <Button onClick={() => navigate('/auth/login')} className="w-full">
-              Aller à la connexion
+            <Button onClick={() => navigate("/auth/login")} className="w-full">
+              Go to sign in
             </Button>
           </CardContent>
         ) : (
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password">Nouveau mot de passe</Label>
+                <Label htmlFor="password">New password</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Au moins 6 caractères"
+                  placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                 />
                 <p className="text-sm text-muted-foreground">
-                  Le mot de passe doit contenir au moins 6 caractères
+                  Must be at least 8 characters and include a letter and a number.
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                <Label htmlFor="confirmPassword">Confirm password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Confirmez votre mot de passe"
+                  placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -146,21 +144,21 @@ export function ResetPasswordPage() {
               </div>
               <div className="text-sm text-muted-foreground">
                 <p>
-                  Note : Pour des raisons de sécurité, votre nouveau mot de passe doit être différent de l'ancien.
+                  Note: for security reasons, your new password must be different from the old one.
                 </p>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button className="w-full" type="submit" disabled={isLoading || !token}>
-                {isLoading ? "Réinitialisation..." : "Réinitialiser le mot de passe"}
+                {isLoading ? "Resetting..." : "Reset password"}
               </Button>
               <div className="text-sm text-center">
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/auth/login')} 
+                <Button
+                  variant="link"
+                  onClick={() => navigate("/auth/login")}
                   className="text-primary hover:underline p-0 h-auto"
                 >
-                  Retour à la connexion
+                  Back to sign in
                 </Button>
               </div>
             </CardFooter>

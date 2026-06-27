@@ -16,7 +16,7 @@ export function Home({ onLogout }: HomeProps) {
   // Users can access the home page even if onboarding is not complete
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   // If onboarding is not complete, we still show the discover page

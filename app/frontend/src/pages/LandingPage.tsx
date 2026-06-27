@@ -3,13 +3,13 @@ import Loader from "@/components/Loader";
 
 export function LandingPage() {
   return (
-    <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-[#f5f3eb] via-[#f0eee4] to-[#f7f4ed] overflow-hidden">
+    <div className="relative min-h-screen flex flex-col bg-background overflow-hidden">
       
       {/* NAVBAR */}
       <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-end px-4 py-4">
         <Link
           to="/auth/login"
-          className="font-semibold px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm"
+          className="font-semibold px-4 py-2 rounded-full border border-border hover:bg-secondary transition text-sm"
         >
           Se Connecter
         </Link>
@@ -27,7 +27,7 @@ export function LandingPage() {
           />
 
           {/* TEXTE */}
-          <p className="text-gray-900 font-montserrat font-normal text-sm sm:text-base mt-3 max-w-[85%] md:max-w-[320px]">
+          <p className="text-foreground font-montserrat font-normal text-sm sm:text-base mt-3 max-w-[85%] md:max-w-[320px]">
             Parce que le meilleur Matcha, c'est celui qu'on partage.
           </p>
 

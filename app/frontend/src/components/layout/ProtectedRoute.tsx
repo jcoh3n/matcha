@@ -16,7 +16,7 @@ export function ProtectedRoute({
   const navigate = useNavigate();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   // If onboarding is required and not completed, show onboarding

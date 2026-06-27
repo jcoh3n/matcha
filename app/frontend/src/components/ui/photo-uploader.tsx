@@ -27,8 +27,8 @@ export function PhotoUploader({ photos, onPhotosChange, maxPhotos = 5 }: PhotoUp
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner un fichier image.",
+        title: "Error",
+        description: "Please select an image file.",
         variant: "destructive"
       });
       return;
@@ -37,8 +37,8 @@ export function PhotoUploader({ photos, onPhotosChange, maxPhotos = 5 }: PhotoUp
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Erreur",
-        description: "La taille de l'image ne doit pas dépasser 5MB.",
+        title: "Error",
+        description: "The image must not exceed 5MB.",
         variant: "destructive"
       });
       return;
@@ -63,7 +63,7 @@ export function PhotoUploader({ photos, onPhotosChange, maxPhotos = 5 }: PhotoUp
       });
 
       if (!response.ok) {
-        throw new Error('Échec de l\'upload de la photo');
+        throw new Error('Photo upload failed');
       }
 
       const result = await response.json();
@@ -86,14 +86,14 @@ export function PhotoUploader({ photos, onPhotosChange, maxPhotos = 5 }: PhotoUp
       onPhotosChange(newPhotos);
 
       toast({
-        title: "Succès",
-        description: "Photo ajoutée avec succès."
+        title: "Success",
+        description: "Photo added successfully."
       });
     } catch (error) {
       console.error('Upload error:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de l'ajout de la photo.",
+        title: "Error",
+        description: "Something went wrong while adding the photo.",
         variant: "destructive"
       });
     } finally {
@@ -194,9 +194,9 @@ export function PhotoUploader({ photos, onPhotosChange, maxPhotos = 5 }: PhotoUp
       />
       
       <div className="text-sm text-muted-foreground">
-        {photos.length} / {maxPhotos} photos ajoutées
+        {photos.length} / {maxPhotos} photos added
         {photos.length > 0 && !photos.some(p => p.isProfile) && (
-          <p className="text-muted-foreground italic mt-1">La première photo sera utilisée comme photo de profil.</p>
+          <p className="text-muted-foreground italic mt-1">The first photo will be used as your profile picture.</p>
         )}
       </div>
     </div>

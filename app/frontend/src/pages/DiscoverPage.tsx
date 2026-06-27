@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { config } from "@/config/api";
-import { fameScore, fameScoreToRaw } from "@/lib/utils";
+import { fameScore, fameScoreToRaw, formatDistance } from "@/lib/utils";
 import { likeUser as likeUserApi } from "@/services/profileService";
 import { authService } from "@/services/authService";
 
@@ -410,10 +410,10 @@ export function DiscoverPage() {
         <div className="p-6 h-full overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">Filtres</h2>
+            <h2 className="text-xl font-bold text-foreground">Filtres</h2>
             <button
               onClick={() => setIsFilterSidebarOpen(false)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-secondary rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -422,8 +422,8 @@ export function DiscoverPage() {
           {/* Age Range */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4 text-gray-600" />
-              <label className="font-semibold text-gray-700">Âge</label>
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <label className="font-semibold text-foreground">Âge</label>
             </div>
             <div className="flex items-center gap-4">
               <input
@@ -461,7 +461,7 @@ export function DiscoverPage() {
                 {filters.ageRange[1]}
               </span>
             </div>
-            <div className="text-sm text-gray-500 mt-2">
+            <div className="text-sm text-muted-foreground mt-2">
               {filters.ageRange[0]} - {filters.ageRange[1]} ans
             </div>
           </div>
@@ -469,8 +469,8 @@ export function DiscoverPage() {
           {/* Distance */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <MapPin className="w-4 h-4 text-gray-600" />
-              <label className="font-semibold text-gray-700">Distance</label>
+              <MapPin className="w-4 h-4 text-muted-foreground" />
+              <label className="font-semibold text-foreground">Distance</label>
             </div>
             <input
               type="range"
@@ -485,7 +485,7 @@ export function DiscoverPage() {
               }
               className="w-full"
             />
-            <div className="text-sm text-gray-500 mt-2">
+            <div className="text-sm text-muted-foreground mt-2">
               {filters.distance} km maximum
             </div>
           </div>
@@ -493,9 +493,9 @@ export function DiscoverPage() {
           {/* Fame Rating (score 0-100) */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <Star className="w-4 h-4 text-gray-600" />
-              <label className="font-semibold text-gray-700">
-                Popularité (0-100)
+              <Star className="w-4 h-4 text-muted-foreground" />
+              <label className="font-semibold text-foreground">
+                Fame (0-100)
               </label>
             </div>
             <input
@@ -512,7 +512,7 @@ export function DiscoverPage() {
               }
               className="w-full"
             />
-            <div className="text-sm text-gray-500 mt-2">
+            <div className="text-sm text-muted-foreground mt-2">
               {filters.fameRating ?? 0} minimum
             </div>
             <input
@@ -529,14 +529,14 @@ export function DiscoverPage() {
               }
               className="w-full mt-3"
             />
-            <div className="text-sm text-gray-500 mt-2">
+            <div className="text-sm text-muted-foreground mt-2">
               {filters.fameRatingMax ?? 100} maximum
             </div>
           </div>
 
           {/* Sort By */}
           <div className="mb-6">
-            <label className="font-semibold text-gray-700 mb-3 block">
+            <label className="font-semibold text-foreground mb-3 block">
               Trier par
             </label>
             <select
@@ -552,13 +552,13 @@ export function DiscoverPage() {
                     | undefined,
                 }))
               }
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7FB77E]"
+              className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="">Aucun tri</option>
+              <option value="">No sorting</option>
               <option value="age">Âge</option>
               <option value="distance">Distance</option>
-              <option value="fame">Popularité</option>
-              <option value="tags">Intérêts communs</option>
+              <option value="fame">Fame</option>
+              <option value="tags">Common interests</option>
             </select>
             {filters.sortBy && (
               <select
@@ -569,10 +569,10 @@ export function DiscoverPage() {
                     sortOrder: e.target.value as "asc" | "desc",
                   }))
                 }
-                className="w-full p-2 border border-gray-300 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-[#7FB77E]"
+                className="w-full p-2 border border-border rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="asc">Croissant</option>
-                <option value="desc">Décroissant</option>
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
               </select>
             )}
           </div>
@@ -580,8 +580,8 @@ export function DiscoverPage() {
           {/* Tags */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <Tag className="w-4 h-4 text-gray-600" />
-              <label className="font-semibold text-gray-700">Intérêts</label>
+              <Tag className="w-4 h-4 text-muted-foreground" />
+              <label className="font-semibold text-foreground">Interests</label>
             </div>
             <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
               {availableTags.map((tag) => (
@@ -590,8 +590,8 @@ export function DiscoverPage() {
                   onClick={() => toggleTag(tag)}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     filters.tags.includes(tag)
-                      ? "bg-[#7FB77E] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-primary text-white"
+                      : "bg-secondary text-foreground hover:bg-secondary-muted"
                   }`}
                 >
                   {tag}
@@ -599,8 +599,8 @@ export function DiscoverPage() {
               ))}
             </div>
             {filters.tags.length > 0 && (
-              <div className="text-sm text-gray-500 mt-2">
-                {filters.tags.length} intérêt(s) sélectionné(s)
+              <div className="text-sm text-muted-foreground mt-2">
+                {filters.tags.length} interest(s) selected
               </div>
             )}
           </div>
@@ -609,15 +609,15 @@ export function DiscoverPage() {
           <div className="flex flex-col gap-3 mt-8">
             <button
               onClick={() => applyFilters()}
-              className="w-full py-3 bg-[#7FB77E] text-white rounded-lg font-semibold hover:bg-[#6FA76E] transition-colors"
+              className="w-full py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
             >
               Appliquer les filtres
             </button>
             <button
               onClick={resetFilters}
-              className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              className="w-full py-3 bg-secondary text-foreground rounded-lg font-semibold hover:bg-secondary-muted transition-colors"
             >
-              Réinitialiser
+              Reset
             </button>
           </div>
         </div>
@@ -629,7 +629,7 @@ export function DiscoverPage() {
           {/* Filter button - only show on desktop since mobile header has it */}
           <div className="md:block hidden">
             <Filter
-              className="cursor-pointer mr-auto  hover:text-[#7FB77E] transition-colors"
+              className="cursor-pointer mr-auto  hover:text-primary transition-colors"
               onClick={() => setIsFilterSidebarOpen(true)}
             />
           </div>
@@ -648,7 +648,7 @@ export function DiscoverPage() {
                   }`}
                   onClick={() => handleProfileClick(currentProfile.id)}
                 >
-                  <div className="relative w-5/6 bg-[#9ed09d]">
+                  <div className="relative w-5/6 bg-secondary">
                     <img
                       src={
                         currentProfile.images[0] ||
@@ -658,16 +658,13 @@ export function DiscoverPage() {
                       className="inset-0 w-full h-full"
                     />
                   </div>
-                  <div className="w-full flex flex-col p-6 lg:p-8 gap-4 bg-[#9ed09d]">
+                  <div className="w-full flex flex-col p-6 lg:p-8 gap-4 bg-secondary">
                     <div className="flex flex-col space-y-3 items-start py-10 lg:py-40">
-                      <h2 className="font-poppins text-3xl lg:text-7xl font-bold tracking-tight text-black/70 drop-shadow-xl">
+                      <h2 className="text-3xl lg:text-7xl font-bold tracking-tight text-foreground">
                         {currentProfile.name}, {currentProfile.age}
                       </h2>
-                      <p className="flex items-center gap-2 text-black/80 text-lg mt-40 font-inter lg:text-xl font-medium">
-                        <span>
-                          {currentProfile.distance.toFixed(1)} km •{" "}
-                          {currentProfile.location}
-                        </span>
+                      <p className="flex items-center gap-2 text-foreground/80 text-lg mt-40 lg:text-xl font-medium">
+                        <span>{formatDistance(currentProfile.distance, currentProfile.location)}</span>
                       </p>
                       <div className="flex flex-wrap gap-2 pt-10">
                         {currentProfile.tags.slice(0, 4).map((t: string) => (
@@ -687,36 +684,36 @@ export function DiscoverPage() {
               <div className="mt-8 flex items-center justify-center gap-8">
                 <button
                   onClick={() => handlePass(currentProfile.id)}
-                  aria-label="Passer le profil"
-                  className="group relative px-10 py-4 rounded-xl font-montserrat text-sm tracking-widest font-semibold bg-gradient-to-b from-gray-100 to-gray-200 text-gray-700 border border-gray-300 shadow-[0_4px_0_0_rgba(0,0,0,0.12)] hover:shadow-[0_6px_0_0_rgba(0,0,0,0.18)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_0_0_rgba(0,0,0,0.1)] transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-gray-300/50"
+                  aria-label="Pass this profile"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-sm font-semibold bg-secondary text-foreground border border-border hover:bg-secondary-muted transition-smooth active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring/40"
                 >
-                  <ThumbsDown className="w-5 h-5 mr-2 inline-block opacity-70 group-hover:opacity-100 transition" />
-                  PASS
+                  <X className="w-5 h-5" />
+                  Pass
                 </button>
                 <button
                   onClick={() => handleLike(currentProfile.id)}
-                  aria-label="Aimer le profil"
-                  className="group relative px-12 py-4 rounded-xl font-montserrat text-sm tracking-widest font-semibold bg-gradient-to-r from-[#7FB77E] via-[#6FA76E] to-[#5d8f5c] text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_6px_0_0_rgba(0,0,0,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_0_0_rgba(0,0,0,0.12)] focus:outline-none focus:ring-4 focus:ring-[#7FB77E]/40 transition-all duration-200"
+                  aria-label="Like this profile"
+                  className="inline-flex items-center justify-center gap-2 px-10 py-3.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring/40"
                 >
-                  <Heart className="w-5 h-5 mr-2 inline-block animate-pulse group-hover:animate-none" />
-                  SMASH
+                  <Heart className="w-5 h-5 fill-current" />
+                  Like
                 </button>
               </div>
               {/* Keyboard hints */}
-              <div className="mt-4 text-center text-sm text-gray-500">
-                Utilisez ← pour PASS et → pour SMASH
+              <div className="mt-4 text-center text-sm text-muted-foreground">
+                Use ← to pass · → to like
               </div>
             </>
           ) : (
             <div className="text-lg font-medium text-muted-foreground">
-              Aucun profil
+              No profiles to show
             </div>
           )}
           {loading && (
             <div className="mt-8 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#7FB77E]"></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
               <p className="mt-2 text-muted-foreground">
-                Chargement de plus de profils...
+                Loading more profiles...
               </p>
             </div>
           )}

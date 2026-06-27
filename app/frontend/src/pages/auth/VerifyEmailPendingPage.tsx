@@ -10,90 +10,77 @@ export function VerifyEmailPendingPage() {
   const email = location.state?.email || "your email address";
 
   const handleResendEmail = async () => {
-    if (!email) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez entrer votre adresse email.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Simple email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer une adresse email valide.",
-        variant: "destructive"
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
       });
       return;
     }
-    
+
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const response = await fetch(`${apiUrl}/api/auth/resend-verification`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
       });
 
-      // Try to parse JSON, but handle case where response might be empty
       let data;
       try {
         data = await response.json();
-      } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
+      } catch {
         data = {};
       }
-      
+
       if (response.ok) {
         toast({
-          title: "Succès",
-          description: data.message || "L'email de vérification a été renvoyé avec succès.",
+          title: "Email sent",
+          description: data.message || "The verification email has been sent again.",
         });
       } else {
         toast({
-          title: "Erreur",
-          description: data.message || "Une erreur s'est produite lors de l'envoi de l'email de vérification. Veuillez réessayer.",
+          title: "Error",
+          description: data.message || "Could not send the verification email. Please try again.",
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error('Resend verification email error:', error);
+    } catch {
       toast({
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de l'envoi de l'email de vérification. Veuillez réessayer.",
+        title: "Error",
+        description: "Could not send the verification email. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-secondary/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Vérifiez votre email</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Check your email</CardTitle>
           <CardDescription className="text-center">
-            Presque terminé ! Nous avons envoyé un email de vérification à {email}
+            Almost done! We sent a verification email to {email}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-center">
-            Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification pour activer votre compte.
+            Please check your inbox and click the verification link to activate your account.
           </p>
           <p className="text-center text-sm text-muted-foreground">
-            Si vous n'avez pas reçu l'email, vérifiez votre dossier spam ou cliquez sur le bouton ci-dessous pour le renvoyer.
+            If you didn't receive the email, check your spam folder or click the button below to resend it.
           </p>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <Button onClick={handleResendEmail} variant="outline" className="w-full">
-            Renvoyer l'email de vérification
+            Resend verification email
           </Button>
           <Button onClick={() => navigate("/auth/login")} className="w-full">
-            Aller à la page de connexion
+            Go to sign in
           </Button>
         </CardFooter>
       </Card>
